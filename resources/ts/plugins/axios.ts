@@ -49,7 +49,7 @@ axios.interceptors.response.use(
           const userStore = useUserStore()
           userStore.logout().then(() => {
             router
-                .push('/?to=' + encodeURIComponent(router.currentRoute.fullPath))
+                .push({name: 'Login', query: {to: router.currentRoute.fullPath}})
                 .catch((e: Error) => e)
           })
         }

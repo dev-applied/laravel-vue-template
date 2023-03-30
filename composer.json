@@ -4,9 +4,9 @@
     "description": "Applied Imagination Laravel Vue Template.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
+    "repositories": [ { "type": "composer", "url": "https://composer.dev-applied3.com" } ],
     "require": {
         "php": "^8.1",
-        "barryvdh/laravel-ide-helper": "^2.13",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.0",
         "laravel/horizon": "^5.14",
@@ -16,6 +16,7 @@
         "tymon/jwt-auth": "^2.0"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^2.13",
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
