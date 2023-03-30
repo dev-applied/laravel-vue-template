@@ -1,7 +1,7 @@
 {
     "name": "dev-applied/laravel-vue-template",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "Applied Imagination Laravel Vue Template.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "require": {
