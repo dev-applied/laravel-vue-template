@@ -1,0 +1,53 @@
+version: '3.3'
+services:
+
+  webserver:
+    image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-apache-node${DOCKER_NODE_VERSION}
+    volumes:
+      - ./:/var/www/html/:delegated
+      - ~/.composer/docker-cache/:/root/.composer:cached
+    environment:
+      XDEBUG_CONFIG: remote_host=host.docker.internal
+      PHP_EXTENSION_XDEBUG: 1
+      PHP_EXTENSION_MYSQLI: 1
+      PHP_INI_MEMORY_LIMIT: 4g
+      PHP_EXTENSION_GD: 1
+      APACHE_DOCUMENT_ROOT: public/
+      PHP_EXTENSION_BZ2: 1
+      PHP_EXTENSION_IMAGICK: 1
+      PHP_INI_UPLOAD_MAX_FILESIZE: 1g
+      PHP_INI_XDEBUG__REMOTE_START: 1
+      PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
+      PHP_IDE_CONFIG: 'serverName=$DOCKER_DOMAIN'
+#     Uncomment the 3 lines below to enable the scheduler cron
+#      CRON_USER: root
+#      CRON_SCHEDULE: '* * * * *'
+#      CRON_COMMAND: php artisan schedule:run
+    labels:
+      - traefik.http.routers.$DOCKER_ROUTER.rule=Host(`$DOCKER_DOMAIN`)
+      - traefik.http.routers.$DOCKER_ROUTER.tls=true
+      - traefik.http.routers.$DOCKER_ROUTER.entrypoints=https
+      - traefik.http.services.$DOCKER_ROUTER.loadbalancer.server.port=80
+
+# Uncomment the service below to enable horizon
+#  horizon:
+#    image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-cli-node16
+#    command: php artisan horizon
+#    volumes:
+#      - ./:/usr/src/app/
+#    environment:
+#      XDEBUG_CONFIG: remote_host=host.docker.internal
+#      PHP_EXTENSION_XDEBUG: 1
+#      PHP_EXTENSION_MYSQLI: 1
+#      PHP_INI_MEMORY_LIMIT: 4g
+#      PHP_EXTENSION_GD: 1
+#      PHP_EXTENSION_BZ2: 1
+#      PHP_EXTENSION_IMAGICK: 1
+#      PHP_INI_XDEBUG__REMOTE_START: 1
+#      PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
+#      PHP_IDE_CONFIG: 'serverName=horizon'
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
