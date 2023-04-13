@@ -1,8 +1,5 @@
 import 'vue'
-import type {ComputedRef} from "vue";
-import { Capacitor } from '@capacitor/core'
 import type {Auth} from "@/plugins/auth";
-import type {StorePrototype} from "@/plugins/store";
 import {Axios} from "axios";
 
 declare module 'vue/types/vue' {
