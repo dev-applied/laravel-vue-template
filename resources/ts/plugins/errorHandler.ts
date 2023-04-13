@@ -24,6 +24,7 @@ const errorHandler = (
 function loopErrors(errors: any, internal_key: string | null = null) {
   forEach(errors, (value: string | object, key: string) => {
     const field = internal_key ? `${internal_key}.${key}` : key
+    // eslint-disable-next-line
     console.error(`value: `, value, `key: ${key}`, `Field: ${field}`)
     if (typeof value === 'object') {
       return loopErrors(value, field)
