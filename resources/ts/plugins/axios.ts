@@ -1,9 +1,9 @@
-import Vue from "vue";
+import Vue from 'vue'
 import axios from 'axios'
-import { createRouter } from '@/router'
+import router from '@/router'
 import { useUserStore } from '@/stores/user'
 import type { AxiosResponse as Response } from 'axios'
-const router = createRouter()
+
 export type AxiosResponse<T = object> = Response<T & { errors?: string[] }>
 
 export interface AxiosPaginationResponse<ItemType> extends AxiosResponse {
@@ -24,7 +24,6 @@ export interface AxiosPaginationResponse<ItemType> extends AxiosResponse {
   }
 }
 
-
 Vue.prototype.$http = axios
 
 axios.defaults.headers.common = {
@@ -34,26 +33,26 @@ axios.defaults.headers.common = {
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
 
 axios.interceptors.response.use(
-    function (response) {
-      return response
-    },
-    function ({ response, message }) {
-      if (!response) {
-        return Promise.reject({ status: 500, data: { message } })
-      }
-      if (
-          response.status === 401 ||
-          response.data.message === 'Authentication is required to continue'
-      ) {
-        if (router.currentRoute.path !== '/') {
-          const userStore = useUserStore()
-          userStore.logout().then(() => {
-            router
-                .push({name: 'Login', query: {to: router.currentRoute.fullPath}})
-                .catch((e: Error) => e)
-          })
-        }
-      }
-      return Promise.reject(response)
+  function (response) {
+    return response
+  },
+  function ({ response, message }) {
+    if (!response) {
+      return Promise.reject({ status: 500, data: { message } })
     }
+    if (
+      response.status === 401 ||
+      response.data.message === 'Authentication is required to continue'
+    ) {
+      if (router.currentRoute.path !== '/') {
+        const userStore = useUserStore()
+        userStore.logout().then(() => {
+          router
+            .push({ name: 'Login', query: { to: router.currentRoute.fullPath } })
+            .catch((e: Error) => e)
+        })
+      }
+    }
+    return Promise.reject(response)
+  }
 )

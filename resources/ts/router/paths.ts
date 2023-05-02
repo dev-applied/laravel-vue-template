@@ -1,11 +1,20 @@
-import type {RouteConfig} from "vue-router";
+import RouteDesigner from '@/router/RouteDesigner'
+import Authentication from '@/middleware/Authentication'
+import Authorization from '@/middleware/Authorization'
+import ForceTypes from "@/middleware/ForceTypes";
 
-export type RoutePath = RouteConfig & {page: string, children?: RoutePath[]}
+RouteDesigner.setNotFound('Error404', {layout: 'Empty'})
 
-const paths: RoutePath[] =  [
-    { path: '/', page: 'LoginPage', name: 'Login', meta: { layout: 'Empty'}},
-    { path: '/dashboard', page: 'DashboardPage', meta: { layout: 'Empty'}},
-    { path: '*', page: 'Error404', name: 'Not Found', meta: { layout: 'Empty' } },
-]
+RouteDesigner.group({middleware: [ForceTypes]}, function () {
+    RouteDesigner.group({ layout: 'Empty' }, function() {
+        RouteDesigner.route('/', 'LoginPage', 'Login')
+    })
 
-export default paths
+    RouteDesigner.group({
+        middleware: [Authentication, Authorization],
+        prefix: '/:store_id?',
+        layout: 'Default'
+    }, function() {
+        RouteDesigner.route('/dashboard', 'DashboardPage', 'Dashboard')
+    })
+})

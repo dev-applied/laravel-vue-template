@@ -2,7 +2,7 @@ import type { AuthUser } from '@/types'
 import { useUserStore } from '@/stores/user'
 import type { LoginForm } from '@/stores/user'
 import type { AxiosResponse } from '@/plugins/axios'
-import Vue from "vue";
+import Vue from 'vue'
 
 export interface Auth {
   user: AuthUser | null

@@ -35,6 +35,4 @@ function loopErrors(errors: any, internal_key: string | null = null) {
 
 Vue.prototype.$error = errorHandler
 
-console.log('test')
-
 export default errorHandler

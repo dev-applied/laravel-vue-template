@@ -1,68 +1,30 @@
 import Router from 'vue-router'
-import type {VueRouter, Position, Route, RouteConfig} from "vue-router/types/router";
-import Authentication from '@/middleware/authentication'
-import Authorization from '@/middleware/authorization'
-import { $auth } from '@/plugins/auth'
-import middleware from "@/middleware/middleware";
-import type {RoutePath} from "@/router/paths";
-import paths from "@/router/paths";
-import Vue from "vue";
+import type { Position, Route } from 'vue-router/types/router'
+import '@/router/paths'
+import Vue from 'vue'
+import Meta from 'vue-meta'
+import RouteDesigner from '@/router/RouteDesigner'
+import Pipeline from '@/middleware/Pipeline'
 
-let internalRouter: VueRouter | null = null
-export function createRouter(): VueRouter {
-  if (internalRouter) return internalRouter
+Vue.use(Router)
 
-  Vue.use(Router)
-
-  function route (path: RoutePath): RouteConfig {
-    path.meta = path.meta ? path.meta : {}
-    path.meta.middleware = path.meta.middleware ? path.meta.middleware : []
-    // @ts-ignore
-    path.meta.middleware = [Authentication, Authorization].concat(path.meta.middleware)
-
-    const explainedRoute = {
-      ...path,
-      component: () => import(`@/pages/${path.page}.vue`),
+const router = new Router({
+  mode: 'history',
+  routes: RouteDesigner.compile(),
+  scrollBehavior(to: Route, from: Route, savedPosition: Position | void) {
+    if (savedPosition) {
+      return savedPosition
     }
-
-    if (path.children) {
-      const children: any[] = []
-      path.children.forEach((child: RoutePath) => {
-        children.push(route(child))
-      })
-      explainedRoute.children = children
+    if (to.hash) {
+      return { selector: to.hash }
     }
-
-    // @ts-ignore
-    return explainedRoute
+    return { x: 0, y: 0 }
   }
+})
 
-  const routes: RouteConfig[] = paths.map(path => route(path))
+Vue.use(Meta)
 
-  const router = new Router({
-    mode: 'history',
-    routes: routes,
-    scrollBehavior (to: Route, from: Route, savedPosition: Position | void){
-      if (savedPosition) {
-        return savedPosition
-      }
-      if (to.hash) {
-        return { selector: to.hash }
-      }
-      return { x: 0, y: 0 }
-    },
-  })
+const pipeline = new Pipeline()
+router.beforeEach(pipeline.handle.bind(pipeline))
 
-
-  const context = {
-    router,
-    $auth,
-  }
-
-// @ts-ignore
-  router.beforeEach(middleware(context))
-
-  internalRouter = router
-
-  return internalRouter
-}
+export default router
