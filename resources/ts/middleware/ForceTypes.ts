@@ -1,8 +1,8 @@
-import moment from "moment"
-import { map } from "lodash"
-import type { Middleware, MiddlewareCaller } from "@/types"
-import type { NavigationGuardNext } from "vue-router/types/router"
-import type { Route } from "@/types/vendor/shims-vue-router"
+import moment from 'moment'
+import { forEach } from 'lodash'
+import type { Middleware, MiddlewareCaller } from '@/types'
+import type { NavigationGuardNext } from 'vue-router/types/router'
+import type { Route } from '@/types/vendor/shims-vue-router'
 
 export default class ForceTypes implements Middleware {
   async handle(
@@ -11,18 +11,16 @@ export default class ForceTypes implements Middleware {
     next: MiddlewareCaller,
     cancel: NavigationGuardNext
   ): Promise<void> {
-    to.params = map(to.params, (param: string) => {
+    forEach(to.params, (param: string, key: string) => {
       if (Number.isInteger(param)) {
-        return Number(param)
+        return (to.params[key] = Number(param))
       }
       if (moment(param).isValid()) {
-        return moment(param)
+        return (to.params[key] = moment(param))
       }
-      if (param === "true" || param === "false") {
-        return Boolean(param)
+      if (param === 'true' || param === 'false') {
+        return (to.params[key] = Boolean(param))
       }
-
-      return param
     })
 
     await next(to, from, cancel)
