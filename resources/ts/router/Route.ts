@@ -35,7 +35,7 @@ export default class Route {
     this.uri = uri
     this.page = { default: page }
     this.name = name
-    this.attributes = merge(this.attributes, attributes)
+    this.attributes = merge({}, this.attributes, attributes)
     this.isChild = isChild
   }
 
