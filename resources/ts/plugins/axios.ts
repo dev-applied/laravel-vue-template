@@ -32,6 +32,14 @@ axios.defaults.headers.common = {
 }
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
 
+axios.interceptors.request.use((config) => {
+  if (localStorage.getItem('token')) {
+    config.headers['Authorization'] = 'bearer ' + localStorage.getItem('token')
+  }
+
+  return config
+})
+
 axios.interceptors.response.use(
   function (response) {
     return response

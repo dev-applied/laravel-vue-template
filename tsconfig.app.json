@@ -1,7 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
   "include": ["env.d.ts", "resources/ts/**/*", "resources/ts/**/*.vue"],
-  "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "lib": [
       "es2019",
@@ -10,8 +9,7 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./resources/ts/*"]
-    },
-    "skipLibCheck": true
+      "@/*": ["./resources/ts/*"],
+    }
   },
 }

@@ -11,7 +11,7 @@ export default class Route {
     [key: string]: string | { template: string }
   }
 
-  private name: string
+  private readonly name: string
 
   private attributes: RouteAttributes = {
     middleware: [],
@@ -87,6 +87,7 @@ export default class Route {
     })
 
     return {
+      name: this.name,
       path: this.compileUri(this.uri),
       components,
       // @ts-ignore

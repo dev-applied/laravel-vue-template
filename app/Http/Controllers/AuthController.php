@@ -32,7 +32,7 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         $user->append('all_permissions');
-        return response()->json($user);
+        return response()->json(compact('user'));
     }
 
     /**

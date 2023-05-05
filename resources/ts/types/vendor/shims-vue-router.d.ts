@@ -18,7 +18,7 @@ export interface Route {
 declare module 'vue-router/types/router' {
   export interface Route {
     path: string
-    name?: string | null
+    name?: string | undefined
     hash: string
     query: Dictionary<string | (string | null)[]>
     params: Dictionary<any>

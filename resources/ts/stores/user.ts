@@ -16,15 +16,16 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     async login({ email, password }: LoginForm) {
-      const response: AxiosResponse<{ user: AuthUser }> = await axios
+      const response: AxiosResponse<{ access_token: string }> = await axios
         .post('/auth', {
           email,
           password
         })
         .catch((e) => e)
 
-      if (response.data.user) {
-        this.user = response.data.user
+      if (response.data.access_token) {
+        localStorage.setItem('token', response.data.access_token)
+        await this.loadUser()
       }
 
       return response

@@ -94,7 +94,7 @@ export default class RouteDesigner {
     return {
       prefix: this.formatPrefix(attributes, oldAttributes, prependExistingPrefix),
       where: this.formatWhere(attributes, oldAttributes),
-      middleware: merge([], oldAttributes.middleware ?? [], attributes.middleware ?? []),
+      middleware: union([], oldAttributes.middleware ?? [], attributes.middleware ?? []),
       layout: attributes.layout ?? oldAttributes.layout ?? undefined,
       permissions_all: union(attributes.permissions_all ?? [], oldAttributes.permissions_all ?? []),
       permissions_any: union(attributes.permissions_any ?? [], oldAttributes.permissions_any ?? []),
@@ -166,7 +166,7 @@ export default class RouteDesigner {
   }
 
   private static addWhereClausesToRoute(route: Route) {
-    route.where(merge([], this.patterns, route.getAttributes().where ?? []))
+    route.where(merge({}, this.patterns, route.getAttributes().where ?? {}))
 
     return route
   }

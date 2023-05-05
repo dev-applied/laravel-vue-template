@@ -9,7 +9,7 @@ export interface Auth {
   hasPermission: (permission: string) => boolean
   hasAllPermissions: (permissions: string[] | string[][]) => boolean
   hasAnyPermissions: (permissions: string[] | string[][]) => boolean
-  login: (form: LoginForm) => Promise<AxiosResponse<{ user: AuthUser }>>
+  login: (form: LoginForm) => Promise<AxiosResponse<{ access_token: string }>>
   logout: () => void
   loggedIn: boolean
 }
