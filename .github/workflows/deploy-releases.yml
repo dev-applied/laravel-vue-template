@@ -1,10 +1,10 @@
-name: Deploy Dev
+name: Deploy Releases
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - staging
+      - releases/*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,6 +13,6 @@ concurrency:
 jobs:
   deploy:
     name: Deploy
-    uses: dev-applied/deploy-action/.github/workflows/deploy.yml@main
+    uses: dev-applied/deploy-action/.github/workflows/releases.yml@main
     with:
       ENVIRONMENT: DEV
