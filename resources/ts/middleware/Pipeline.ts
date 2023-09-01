@@ -1,25 +1,17 @@
-import type { MiddlewareCaller, MiddlewareConstructor } from '@/types'
-import type { NavigationGuardNext, Route } from 'vue-router/types/router'
+import type { NavigationGuardNext, Route } from "vue-router/types/router"
 
 export default class Pipeline {
-  protected pipes: MiddlewareConstructor[] = []
-
-  private through(...pipes: MiddlewareConstructor[]) {
-    this.pipes = pipes.flat()
-
-    return this
-  }
+  protected pipes: App.Middleware.Constructor[] = []
 
   public async handle(to: Route, from: Route, next: NavigationGuardNext) {
     this.through(...(to.meta?.middleware ?? []))
-    const final: MiddlewareCaller = async (): Promise<void> => {
+    const final: App.Middleware.Caller = async (): Promise<void> => {
       next()
     }
 
     const pipeline = this.pipes
       .reverse()
       .reduce<(to: Route, from: Route, cancel: NavigationGuardNext) => Promise<void>>(
-        // @ts-ignore
         this.carry(),
         final
       )
@@ -29,10 +21,16 @@ export default class Pipeline {
   }
 
   protected carry() {
-    return (next: MiddlewareCaller, middleware: MiddlewareConstructor) => {
+    return (next: App.Middleware.Caller, middleware: App.Middleware.Constructor) => {
       return async (to: Route, from: Route, cancel: NavigationGuardNext) => {
         await new middleware().handle(to, from, next, cancel)
       }
     }
+  }
+
+  private through(...pipes: App.Middleware.Constructor[]) {
+    this.pipes = pipes.flat()
+
+    return this
   }
 }

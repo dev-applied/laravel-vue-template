@@ -1,1 +1,3 @@
-export type Layout = "Default" | "Login" | "Empty"
+declare namespace App {
+  export type Layout = "Default" | "Empty"
+}

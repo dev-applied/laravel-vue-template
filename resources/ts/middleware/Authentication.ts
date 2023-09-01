@@ -1,12 +1,11 @@
 import { useUserStore } from "@/stores/user"
-import type { Middleware, MiddlewareCaller } from "@/types"
 import type { NavigationGuardNext, Route } from "vue-router/types/router"
 
-export default class Authentication implements Middleware {
+export default class Authentication implements App.Middleware.Instance {
   async handle(
     to: Route,
     from: Route,
-    next: MiddlewareCaller,
+    next: App.Middleware.Caller,
     cancel: NavigationGuardNext
   ): Promise<void> {
     const userStore = useUserStore()

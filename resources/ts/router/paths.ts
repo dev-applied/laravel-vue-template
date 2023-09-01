@@ -1,22 +1,21 @@
-import RouteDesigner from '@/router/RouteDesigner'
-import Authentication from '@/middleware/Authentication'
-import Authorization from '@/middleware/Authorization'
-import ForceTypes from '@/middleware/ForceTypes'
+import RouteDesigner from "@/router/RouteDesigner"
+import Authentication from "@/middleware/Authentication"
+import Authorization from "@/middleware/Authorization"
+import ForceTypes from "@/middleware/ForceTypes"
 
-RouteDesigner.setNotFound('Error404', { layout: 'Empty' })
+RouteDesigner.setNotFound("Error404", { layout: "Empty" })
 
-RouteDesigner.group({ middleware: [ForceTypes] }, function () {
-  RouteDesigner.group({ layout: 'Empty' }, function () {
-    RouteDesigner.route('/', 'LoginPage', 'Login')
+export const ROUTES = {
+  LOGIN: "login",
+  DASHBOARD: "dashboard"
+} as const
+
+RouteDesigner.group({ middleware: [ForceTypes] }, function() {
+  RouteDesigner.group({ layout: "Empty" }, function() {
+    RouteDesigner.route("/", "LoginPage", ROUTES.LOGIN)
   })
 
-  RouteDesigner.group(
-    {
-      middleware: [Authentication, Authorization],
-      layout: 'Default'
-    },
-    function () {
-      RouteDesigner.route('/dashboard', 'DashboardPage', 'Dashboard')
-    }
-  )
+  RouteDesigner.group({ middleware: [Authentication, Authorization], layout: "Default" }, function() {
+    RouteDesigner.route("/dashboard", "DashboardPage", ROUTES.DASHBOARD)
+  })
 })

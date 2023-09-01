@@ -7,6 +7,7 @@
     "repositories": [ { "type": "composer", "url": "https://composer.dev-applied3.com" } ],
     "require": {
         "php": "^8.1",
+        "based/laravel-typescript": "^0.0.4",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.0",
         "laravel/horizon": "^5.14",

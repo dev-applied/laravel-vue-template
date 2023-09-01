@@ -1,11 +1,18 @@
 <template>
   <v-container class="fill-height">
     <v-row>
-      <v-col offset-md="3" md="6">
+      <v-col
+        offset-md="3"
+        md="6"
+      >
         <v-card>
           <v-card-title>Login</v-card-title>
           <v-card-text>
-            <v-alert v-model="notAuthorized" color="error" dismissible>
+            <v-alert
+              v-model="notAuthorized"
+              color="error"
+              dismissible
+            >
               Your credentials are invalid. Please try again.
             </v-alert>
             <v-form ref="form">
@@ -30,7 +37,13 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn color="primary" :loading="loading" @click="login"> Login </v-btn>
+            <v-btn
+              color="primary"
+              :loading="loading"
+              @click="login"
+            >
+              Login
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -39,16 +52,16 @@
 </template>
 
 <script lang="ts">
-import validators from '@/mixins/validators'
-import { defineComponent } from 'vue'
+import validators from "@/mixins/validators"
+import { defineComponent } from "vue"
 
 export default defineComponent({
   mixins: [validators],
   data() {
     return {
       loading: false,
-      email: '',
-      password: '',
+      email: "",
+      password: "",
       remember: false,
       notAuthorized: false
     }
@@ -72,7 +85,7 @@ export default defineComponent({
         this.notAuthorized = true
         return
       }
-      await this.$router.push(this.$route.query.to || '/dashboard')
+      await this.$router.push(this.$route.query.to || "/dashboard")
     }
   }
 })

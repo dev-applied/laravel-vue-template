@@ -23,3 +23,8 @@ Route::group(['prefix' => '/v1'], function () {
     });
     Route::apiResource('dashboard',DashboardController::class);
 });
+
+
+Route::fallback(function () {
+    abort(404, 'Route Not Found: ' . request()->path());
+});

@@ -1,15 +1,27 @@
 {
   "extends": "@vue/tsconfig/tsconfig.web.json",
-  "include": ["env.d.ts", "resources/ts/**/*", "resources/ts/**/*.vue"],
+  "include": [
+    "env.d.ts",
+    "resources/ts"
+  ],
   "compilerOptions": {
     "lib": [
       "es2019",
       "dom"
     ],
+    "noImplicitAny": false,
     "composite": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./resources/ts/*"],
-    }
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/vuetify/types",
+      "./resources/ts/types"
+    ],
+    "types": [
+      "vuetify",
+    ]
   },
 }

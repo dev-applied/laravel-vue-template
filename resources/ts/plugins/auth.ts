@@ -1,25 +1,24 @@
-import type { AuthUser } from '@/types'
-import { useUserStore } from '@/stores/user'
-import type { LoginForm } from '@/stores/user'
-import type { AxiosResponse } from '@/plugins/axios'
-import Vue from 'vue'
+import type { LoginForm } from "@/stores/user"
+import { useUserStore } from "@/stores/user"
+import type { AxiosResponse } from "@/plugins/axios"
+import Vue from "vue"
 
 export interface Auth {
-  user: AuthUser | null
+  user: App.Models.AuthUser | null
   hasPermission: (permission: string) => boolean
   hasAllPermissions: (permissions: string[] | string[][]) => boolean
   hasAnyPermissions: (permissions: string[] | string[][]) => boolean
   login: (form: LoginForm) => Promise<AxiosResponse<{ access_token: string }>>
-  logout: () => void
+  logout: () => Promise<void>
   loggedIn: boolean
 }
 
 export const $auth: Auth = {
-  get user(): AuthUser | null {
+  get user(): App.Models.AuthUser | null {
     const userStore = useUserStore()
     return userStore.user
   },
-  set user(user: AuthUser | null) {
+  set user(user: App.Models.AuthUser | null) {
     const userStore = useUserStore()
     userStore.user = user
   },
@@ -45,7 +44,7 @@ export const $auth: Auth = {
   }
 }
 
-function getPermissionsFromUser(user: AuthUser | null) {
+function getPermissionsFromUser(user: App.Models.AuthUser | null) {
   let permissions: string[] = []
 
   if (!user) {

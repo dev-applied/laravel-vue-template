@@ -1,15 +1,15 @@
-import Router from 'vue-router'
-import type { Position, Route } from 'vue-router/types/router'
-import '@/router/paths'
-import Vue from 'vue'
-import Meta from 'vue-meta'
-import RouteDesigner from '@/router/RouteDesigner'
-import Pipeline from '@/middleware/Pipeline'
+import Router from "vue-router"
+import type { Position, Route } from "vue-router/types/router"
+import "@/router/paths"
+import Vue from "vue"
+import Meta from "vue-meta"
+import RouteDesigner from "@/router/RouteDesigner"
+import Pipeline from "@/middleware/Pipeline"
 
 Vue.use(Router)
 
 const router = new Router({
-  mode: 'history',
+  mode: "history",
   routes: RouteDesigner.compile(),
   scrollBehavior(to: Route, from: Route, savedPosition: Position | void) {
     if (savedPosition) {

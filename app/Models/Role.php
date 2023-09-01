@@ -17,7 +17,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @property string $guard_name
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, \Spatie\Permission\Models\Permission> $permissions
+ * @property-read Collection<int, \App\Models\Permission> $permissions
  * @property-read int|null $permissions_count
  * @property-read Collection<int, \App\Models\User> $users
  * @property-read int|null $users_count

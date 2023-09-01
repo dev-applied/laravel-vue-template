@@ -1,7 +1,7 @@
-import 'vue-router'
-import type { Layout } from '@/types'
-import type { MiddlewareConstructor } from '@/middleware/middleware'
-import type { Dictionary, RouteMeta, RouteRecord } from 'vue-router/types/router'
+import "vue-router"
+import type { Layout } from "@/types"
+import type { MiddlewareConstructor } from "@/middleware/middleware"
+import type { Dictionary, RouteMeta, RouteRecord } from "vue-router/types/router"
 
 export interface Route {
   path: string
@@ -15,7 +15,7 @@ export interface Route {
   meta: RouteMeta
 }
 
-declare module 'vue-router/types/router' {
+declare module "vue-router/types/router" {
   export interface Route {
     path: string
     name?: string | undefined

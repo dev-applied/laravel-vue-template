@@ -1,4 +1,4 @@
-require("@rushstack/eslint-patch/modern-module-resolution");
+require("@rushstack/eslint-patch/modern-module-resolution")
 
 module.exports = {
   root: true,
@@ -23,5 +23,14 @@ module.exports = {
         allowModifiers: true,
       },
     ],
+    "semi": ["error", "never"]
   },
-};
+  overrides: [
+    {
+      files: ['*.ts', '*.vue'],
+      rules: {
+        'no-undef': 'off',
+      },
+    },
+  ]
+}

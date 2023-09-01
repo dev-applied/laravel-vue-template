@@ -1,19 +1,20 @@
 import Vue from "vue"
-import { forEach } from 'lodash'
+import { forEach } from "lodash"
+import { useAppStore } from "@/stores/app"
 
 const errorHandler = (
   status: number,
-  message = 'Unknown Error',
+  message = "Unknown Error",
   errors: boolean | any = false,
   notify = true
 ) => {
   if (status > 204) {
-    if (message === 'canceled') return true
+    if (message === "canceled") return true
     if (notify) {
       if (errors) {
         loopErrors(errors)
       } else {
-        Vue.prototype.$noty.error(message)
+        useAppStore().addError(message)
       }
     }
     return true
@@ -24,12 +25,10 @@ const errorHandler = (
 function loopErrors(errors: any, internal_key: string | null = null) {
   forEach(errors, (value: string | object, key: string) => {
     const field = internal_key ? `${internal_key}.${key}` : key
-    // eslint-disable-next-line
-    console.error(`value: `, value, `key: ${key}`, `Field: ${field}`)
-    if (typeof value === 'object') {
+    if (typeof value === "object") {
       return loopErrors(value, field)
     }
-    Vue.prototype.$noty.error(`${field} - ${value}`)
+    useAppStore().addError(`${field} - ${value}`)
   })
 }
 

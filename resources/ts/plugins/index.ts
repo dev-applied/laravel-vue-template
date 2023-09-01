@@ -1,4 +1,3 @@
-import '@/plugins/auth'
-import '@/plugins/axios'
-import '@/plugins/errorHandler'
-import '@/plugins/notify'
+import type { ModuleNamespace } from "vite/types/hot"
+
+import.meta.glob<true, string, ModuleNamespace>("./*.ts", { eager: true })
