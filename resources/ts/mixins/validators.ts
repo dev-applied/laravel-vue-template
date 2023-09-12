@@ -7,7 +7,7 @@ export default defineComponent({
     rules() {
       return {
         required: [
-          (v: any) => (v !== undefined && v !== null && !Array.isArray(v)) || v === 0 || (Array.isArray(v) && v.length > 0) || 'Field is required'
+          (v: any) => (v !== undefined && v !== null && v !== "" && !Array.isArray(v)) || v === 0 || (Array.isArray(v) && v.length > 0) || 'Field is required'
         ],
         email: [
           (v: any) => !!v || "E-mail is required",
