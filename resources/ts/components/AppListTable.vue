@@ -157,6 +157,10 @@ export default defineComponent({
       type: String,
       default: null
     },
+    itemsPerPage: {
+      type: Number,
+      default: null,
+    }
   },
   data() {
     return {
@@ -210,9 +214,9 @@ export default defineComponent({
     },
     style() {
       if (this.enableSearch || this.enableFilter) {
-        return { height: "calc(100% - 56px)", "overflow-y": "scroll" }
+        return {height: "calc(100% - 56px)", "overflow-y": "scroll"}
       } else {
-        return { height: "100%" }
+        return {height: "100%"}
       }
     }
   },
@@ -253,7 +257,7 @@ export default defineComponent({
       this.loadData()
     },
     async loadData() {
-      if (this.finished || this.error) {
+      if (this.finished || this.error || this.loading) {
         return
       }
       this.internalPagination.page += 1
@@ -266,6 +270,7 @@ export default defineComponent({
           params: {
             search: this.search,
             ...this.internalPagination,
+            ...this.itemsPerPage ? {perPage: this.itemsPerPage} : {},
             // @ts-ignore
             ...this.additionalRequestData
           }
@@ -273,6 +278,7 @@ export default defineComponent({
       } else {
         config = {
           pagination: this.internalPagination,
+          ...this.itemsPerPage ? {perPage: this.itemsPerPage} : {},
           // @ts-ignore
           ...this.additionalRequestData,
           search: this.search
@@ -280,7 +286,7 @@ export default defineComponent({
       }
 
       // @ts-ignore
-      const { data, status } = await this.$http[this.method.toLowerCase()](
+      const {data, status} = await this.$http[this.method.toLowerCase()](
         this.endpoint,
         config
       ).catch((e) => e)
@@ -291,9 +297,10 @@ export default defineComponent({
       }
 
       this.internalItems = this.internalItems.concat(data.data)
+      this.$emit('current-items', this.internalItems)
       this.internalPagination.page = data.current_page
       this.internalPagination.pageStop = data.to ?? 0
-      this.finished = data.last_page === data.current_page
+      this.finished = data.last_page <= data.current_page
     },
     convertToUnit
   }
