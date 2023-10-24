@@ -6,6 +6,8 @@ services:
     volumes:
       - ./:/var/www/html/:delegated
       - ~/.composer/docker-cache/:/root/.composer:cached
+    extra_hosts:
+      - "$DOCKER_DOMAIN:host-gateway"
     environment:
       XDEBUG_CONFIG: remote_host=host.docker.internal
       PHP_EXTENSION_XDEBUG: 1
