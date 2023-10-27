@@ -233,8 +233,10 @@ export default defineComponent({
     this.loadData()
   },
   methods: {
-    reload() {
-      this.pagination.page = 1
+    reload(resetPage = true) {
+      if(resetPage) {
+        this.pagination.page = 1
+      }
       this.loadData()
     },
     async loadData() {

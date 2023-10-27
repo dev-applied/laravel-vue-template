@@ -113,11 +113,11 @@ export default defineComponent({
     },
   },
   methods: {
-    reload() {
+    reload(resetPage = true) {
       if (this.$vuetify.breakpoint.mdAndUp) {
-        return (this.$refs.table as Vuetify.PaginationTable).reload()
+        return (this.$refs.table as Vuetify.PaginationTable).reload(resetPage)
       } else {
-        return (this.$refs.list as Vuetify.ListTable).reload()
+        return (this.$refs.list as Vuetify.ListTable).reload(resetPage)
       }
     }
   },
