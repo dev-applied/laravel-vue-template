@@ -31,6 +31,7 @@ export default defineComponent({
         url: [
           // @ts-ignore
           (v: any) => this.isURL(v) || 'URL is not valid',
+          // @ts-ignore
           (v: any) => !v || (v && v.length > 0 && v.includes('.') && v[v.length - 1] !== '.') || 'URL is not valid'
         ],
         percentage: [
@@ -42,6 +43,15 @@ export default defineComponent({
         ],
         nonWhitespaceString: [
           (v: any) => v && (v.trim().length > 0) || "Invalid value"
+        ],
+        password: [
+          // @ts-ignore
+          (v: any) => this.hasLowercase(v) || 'Password Must Contain a Lowercase Letter',
+          (v: any) => this.hasUppercase(v) || 'Password Must Contain a Uppercase Letter',
+          (v: any) => this.hasNumber(v) || 'Password Must Contain a Number',
+          (v: any) => this.hasSymbol(v) || 'Password Must Contain a Symbol',
+          (v: any) => this.hasNumberOfChars(v) || 'Password Must Contain at Least 8 Characters',
+          (v: any) => this.hasSpace(v) || 'Password Must Not Contain Spaces'
         ]
       }
     }

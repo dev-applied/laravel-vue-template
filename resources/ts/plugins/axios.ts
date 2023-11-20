@@ -4,6 +4,7 @@ import router from "@/router"
 import { useUserStore } from "@/stores/user"
 import type { AxiosResponse as Response } from "axios"
 import errorHandler from "@/plugins/errorHandler"
+import { ROUTES } from "@/router/paths"
 
 export type AxiosResponse<T = object> = Response<T & { errors?: string[] }>
 
@@ -57,7 +58,7 @@ axios.interceptors.response.use(
         const userStore = useUserStore()
         userStore.logout().then(() => {
           router
-            .push({ name: "Login", query: { to: router.currentRoute.fullPath } })
+            .push({ name: ROUTES.LOGIN, query: { to: router.currentRoute.fullPath } })
             .catch((e: Error) => e)
         })
       }

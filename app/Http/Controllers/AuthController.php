@@ -20,7 +20,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login', 'me']]);
     }
 
     /**
@@ -30,8 +30,13 @@ class AuthController extends Controller
      */
     public function me(): JsonResponse
     {
-        $user = Auth::user();
-        $user->append('all_permissions');
+        try {
+            $user = Auth::user();
+            $user->append('all_permissions');
+        } catch (\Exception $exception) {
+            $user = null;
+        }
+
         return response()->json(compact('user'));
     }
 

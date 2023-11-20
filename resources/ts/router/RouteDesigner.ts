@@ -2,7 +2,7 @@ import Route from "@/router/Route"
 import { cloneDeep, forEach, merge, trim, union } from "lodash"
 
 export default class RouteDesigner {
-  private static routes: Route[] = []
+  public static routes: Route[] = []
 
   private static groupStack: Partial<App.Router.RouteAttributes>[] = []
 
@@ -10,13 +10,8 @@ export default class RouteDesigner {
 
   private static notFound?: Route
 
-  public static route(
-    uri: string,
-    page: string | { template: string },
-    name: string,
-    attributes: Partial<App.Router.RouteAttributes> = {}
-  ) {
-    const route = this.createRoute(uri, page, name, attributes)
+  public static route(uri: string, page: string | { template: string }, name?: string) {
+    const route = this.createRoute(uri, page, name)
     this.routes.push(route)
 
     return route
@@ -63,7 +58,7 @@ export default class RouteDesigner {
 
     forEach(attributes, (value, key) => {
       if (key === "prefix") {
-        return oldAttributes.prefix = this.formatPrefix(attributes, oldAttributes)
+        return (oldAttributes.prefix = this.formatPrefix(attributes, oldAttributes))
       }
       if (Array.isArray(value)) {
         oldAttributes[key] = union([], oldAttributes[key] ?? [], value)
@@ -73,25 +68,17 @@ export default class RouteDesigner {
         oldAttributes[key] = value
       }
     })
+
+    return oldAttributes
   }
 
-  private static formatPrefix(
-    newAttributes: Partial<App.Router.RouteAttributes>,
-    oldAttributes: Partial<App.Router.RouteAttributes>
-  ) {
+  private static formatPrefix(newAttributes: Partial<App.Router.RouteAttributes>, oldAttributes: Partial<App.Router.RouteAttributes>) {
     const oldPrefix = oldAttributes.prefix ?? ""
 
-    return newAttributes.prefix
-      ? trim(oldPrefix, "/") + "/" + trim(newAttributes.prefix, "/")
-      : oldPrefix
+    return newAttributes.prefix ? trim(oldPrefix, "/") + "/" + trim(newAttributes.prefix, "/") : oldPrefix
   }
 
-  private static createRoute(
-    uri: string,
-    page: string | { template: string },
-    name: string,
-    attributes: Partial<App.Router.RouteAttributes> = {}
-  ) {
+  private static createRoute(uri: string, page: string | { template: string }, name?: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
     const route = this.newRoute(uri, page, name, attributes)
     if (this.hasGroupStack()) {
       this.mergeGroupAttributesIntoRoute(route)
@@ -112,12 +99,7 @@ export default class RouteDesigner {
     return route
   }
 
-  private static newRoute(
-    uri: string,
-    page: string | { template: string },
-    name: string,
-    attributes: Partial<App.Router.RouteAttributes> = {}
-  ) {
+  private static newRoute(uri: string, page: string | { template: string }, name?: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
     return new Route(uri, page, name, attributes)
   }
 }

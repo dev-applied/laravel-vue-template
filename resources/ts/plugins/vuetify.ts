@@ -17,8 +17,8 @@ export default new Vuetify({
         warning: "#ffa21a",
         application: "#EFEFEF"
       }
-    }
+    },
+    options: { customProperties: true, variations: false }
   },
   iconfont: "mdi",
-  options: { customProperties: true, variations: false }
 })

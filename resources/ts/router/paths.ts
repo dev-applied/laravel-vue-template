@@ -10,12 +10,12 @@ export const ROUTES = {
   DASHBOARD: "dashboard"
 } as const
 
-RouteDesigner.group({ middleware: [ForceTypes] }, function() {
+RouteDesigner.group({ middleware: [ForceTypes, Authentication] }, function() {
   RouteDesigner.group({ layout: "Empty" }, function() {
     RouteDesigner.route("/", "LoginPage", ROUTES.LOGIN)
   })
 
-  RouteDesigner.group({ middleware: [Authentication, Authorization], layout: "Default" }, function() {
+  RouteDesigner.group({ middleware: [Authorization], layout: "Default" }, function() {
     RouteDesigner.route("/dashboard", "DashboardPage", ROUTES.DASHBOARD)
   })
 })

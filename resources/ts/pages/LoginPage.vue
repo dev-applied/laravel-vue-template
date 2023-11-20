@@ -66,6 +66,11 @@ export default defineComponent({
       notAuthorized: false
     }
   },
+  mounted() {
+    if (this.$auth.user) {
+      this.$router.push(this.route(this.ROUTES.DASHBOARD))
+    }
+  },
   methods: {
     async login() {
       if (!this.$refs!.form!.validate()) return

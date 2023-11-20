@@ -13,7 +13,7 @@ class UserCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'create:user {email?} {--password=} {--firstName} {--lastName} {--role}';
+    protected $signature = 'create:user {email?} {--password=} {--firstName=} {--lastName=} {--role=}';
 
     /**
      * The console command description.
@@ -33,12 +33,15 @@ class UserCommand extends Command
         $user->email = $this->argument('email') ?? $faker->email;
         $user->first_name = $this->option('firstName') ?: $faker->firstName;
         $user->last_name = $this->option('lastName') ?: $faker->lastName;
-        $password = $this->option('password') ?: \Str::random('32');
+        $password = $this->option('password') ?: 'Test123!';
         $user->password = $password;
 
         if ($this->option('role')) {
             $user->assignRole($this->option('role'));
         }
+//        else {
+//            $user->assignRole(DEFAULT_ROLE);
+//        }
 
         $user->save();
 
