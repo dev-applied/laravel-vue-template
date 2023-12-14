@@ -1,13 +1,13 @@
 import {fileURLToPath, URL} from 'node:url'
 import eslint from 'vite-plugin-eslint'
-import {defineConfig, loadEnv} from 'vite'
+import { defineConfig, loadEnv } from "vite"
 import vue from '@vitejs/plugin-vue2'
 import Components from 'unplugin-vue-components/vite'
 import laravel from 'laravel-vite-plugin'
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => {
-  process.env = {...process.env, ...loadEnv(mode, process.cwd())};
+  process.env = {...process.env, ...loadEnv(mode, process.cwd())}
   return {
     plugins: [
       laravel({
@@ -21,10 +21,10 @@ export default defineConfig(({mode}) => {
           type: "component",
           resolve: (name) => {
             if (name.match(/^VCurrencyField/)) {
-              return {name, from: "v-currency-field"};
+              return { name, from: "v-currency-field" }
             }
             if (name.match(/^V[A-Z]/)) {
-              return {name, from: "vuetify/lib"};
+              return { name, from: "vuetify/lib" }
             }
           }
         }],
