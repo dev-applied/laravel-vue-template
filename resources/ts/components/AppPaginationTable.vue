@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from "vue"
-import LoadingTableArrow from "@/components/LoadingTableArrow.vue"
+import LoadingTableArrow from "@/components/AppLoadingTableArrow.vue"
 import debounce from "@/mixins/debounce"
 
 export default defineComponent({
@@ -142,6 +142,10 @@ export default defineComponent({
     hideFooter: {
       type: Boolean as PropType<boolean>,
       default: false
+    },
+    itemsPerPage: {
+      type: Number as PropType<number>,
+      default: 10
     }
   },
   data() {
@@ -150,7 +154,7 @@ export default defineComponent({
         sort: null as null | string,
         direction: "DESC",
         page: 1,
-        perPage: 10,
+        perPage: this.itemsPerPage,
         count: 0
       },
       items: [] as any[],
@@ -162,7 +166,8 @@ export default defineComponent({
         15,
         20,
         50,
-        100
+        100,
+        250,
       ],
       formerLoading: false as boolean,
       nextLoading: false as boolean,

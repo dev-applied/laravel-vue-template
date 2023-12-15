@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Mail\ForgotPasswordMail;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Models\Model as BaseModel;
@@ -100,7 +102,10 @@ class User extends BaseModel implements
         'email_verified_at' => 'datetime',
     ];
 
-    public static function booted()
+    /**
+     * @return void
+     */
+    public static function booted(): void
     {
         parent::booted();
         self::creating(function (User $user) {
@@ -110,18 +115,39 @@ class User extends BaseModel implements
         });
     }
 
-    public function getJWTIdentifier()
+    /**
+     * @return mixed
+     */
+    public function getJWTIdentifier(): mixed
     {
         return $this->getKey();
     }
 
+    /**
+     * @return array
+     */
     public function getJWTCustomClaims(): array
     {
         return [];
     }
 
+    /**
+     * @return Attribute
+     */
     public function allPermissions(): Attribute
     {
         return new Attribute(fn(): Collection => $this->getAllPermissions());
+    }
+
+    /**
+     * sendPasswordResetNotification
+     *
+     * @param mixed $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        Mail::to($this)
+            ->send(new ForgotPasswordMail($token, $this));
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ForgotPasswordController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,7 +22,15 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('', [AuthController::class, 'login']);
         Route::delete('', [AuthController::class, 'logout']);
     });
-    Route::apiResource('dashboard',DashboardController::class);
+
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'send']);
+    Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'reset']);
+
+    Route::group(['middleware' => ['auth']], function () {
+
+        Route::apiResource('dashboard', DashboardController::class);
+
+    });
 });
 
 

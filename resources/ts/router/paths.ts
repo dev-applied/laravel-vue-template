@@ -7,12 +7,14 @@ RouteDesigner.setNotFound("Error404", { layout: "Empty" })
 
 export const ROUTES = {
   LOGIN: "login",
-  DASHBOARD: "dashboard"
+  SET_PASSWORD: "set-password",
+  DASHBOARD: "dashboard",
 } as const
 
 RouteDesigner.group({ middleware: [ForceTypes, Authentication] }, function() {
   RouteDesigner.group({ layout: "Empty" }, function() {
     RouteDesigner.route("/", "LoginPage", ROUTES.LOGIN)
+    RouteDesigner.route('set-password/:token', 'SetPassword', ROUTES.SET_PASSWORD).passProps()
   })
 
   RouteDesigner.group({ middleware: [Authorization], layout: "Default" }, function() {

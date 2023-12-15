@@ -65,7 +65,24 @@ export default defineComponent({
       return date.format("h:mm a")
     },
     time_ago(time: string | number): string {
-      return moment.min(moment.utc(time).local(), moment()).fromNow()
+      return moment.min(moment.utc(time).endOf('day'), moment()).fromNow()
+    },
+    time_future(time: string | number): string {
+      const start = moment().utc().startOf('day')
+      const end = moment.utc(time).add(1, 'second').startOf('day')
+
+      if (start.isSame(end)) {
+        return "Today"
+      }
+      return moment.max(start).to(end)
+    },
+    time_calculate(time: string | number): string {
+      const date = moment.utc(time).endOf('day')
+      if(date.isAfter()) {
+        return this.time_future(time)
+      } else {
+        return this.time_ago(time)
+      }
     },
     calendar(time: string | number): string {
       const date = moment.utc(time).local()

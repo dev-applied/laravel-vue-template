@@ -52,7 +52,16 @@ export default defineComponent({
           (v: any) => this.hasSymbol(v) || 'Password Must Contain a Symbol',
           (v: any) => this.hasNumberOfChars(v) || 'Password Must Contain at Least 8 Characters',
           (v: any) => this.hasSpace(v) || 'Password Must Not Contain Spaces'
-        ]
+        ],
+        passwordOptional: [
+          // @ts-ignore
+          (v: any) => !v || this.hasLowercase(v) || 'Password Must Contain a Lowercase Letter',
+          (v: any) => !v || this.hasUppercase(v) || 'Password Must Contain a Uppercase Letter',
+          (v: any) => !v || this.hasNumber(v) || 'Password Must Contain a Number',
+          (v: any) => !v || this.hasSymbol(v) || 'Password Must Contain a Symbol',
+          (v: any) => !v || this.hasNumberOfChars(v) || 'Password Must Contain at Least 8 Characters',
+          (v: any) => !v || this.hasSpace(v) || 'Password Must Not Contain Spaces'
+        ],
       }
     }
   },
@@ -76,6 +85,11 @@ export default defineComponent({
       return [
         () => (val1 === val2) || "Passwords must match",
         (v: any) => !!v || "Confirmation Password is required"
+      ]
+    },
+    confirmPasswordRulesOptional(val1: any, val2: any) {
+      return [
+        () => !val1 || !val2 || (val1 === val2) || 'Passwords must match'
       ]
     },
     hasLowercase(val: string | null) {
