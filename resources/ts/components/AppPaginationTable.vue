@@ -284,7 +284,11 @@ export default defineComponent({
       this.items = data.data
       this.ignorePaginationUpdate = true
       this.pagination.page = data.current_page
-      this.pagination.perPage = Number(data.per_page)
+      if(this.itemsPerPage === -1) {
+        this.pagination.perPage = -1
+      } else {
+        this.pagination.perPage = Number(data.per_page)
+      }
       this.pagination.count = data.total
       this.pagination.pageStart = data.from ?? 0
       this.pagination.pageStop = data.to ?? 0
