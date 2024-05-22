@@ -25,9 +25,9 @@ import { defineComponent } from "vue"
 
 export default defineComponent({
   methods: {
-    logout() {
-      this.$auth.logout()
-      this.$router.push(this.route(this.ROUTES.LOGIN))
+    async logout() {
+      await this.$auth.logout()
+      await this.$router.push(this.route(this.ROUTES.LOGIN))
     }
   }
 })

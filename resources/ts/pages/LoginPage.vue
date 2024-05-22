@@ -157,7 +157,7 @@ export default defineComponent({
         this.notAuthorizedMessage = message
         return
       }
-      await this.$router.push(this.$route.query.to || "/dashboard")
+      await this.$router.push(this.$route.query?.to || "/dashboard")
     },
     async sendResetPassword() {
       this.showForgotPasswordError = false

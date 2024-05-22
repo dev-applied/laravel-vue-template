@@ -56,13 +56,13 @@ class AuthController extends Controller
 
         $user = User::where('email', $credentials['email'])->first();
         if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'User or password incorrect'], 401);
         }
 
         $token = auth()->attempt($credentials);
 
         if (!$token) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'User or password incorrect'], 401);
         }
 
         return $this->respondWithToken($token);
