@@ -1,13 +1,11 @@
-import type Vue from "vue"
-
-declare module "vue/types/options" {
-  interface ComponentOptions<V extends Vue = Vue> {
+declare module '@vue/runtime-core' {
+  interface ComponentCustomOptions {
     backButton?: (() => BackButton.Item) | BackButton.Item
   }
-}
 
-declare module "vue/types/vue" {
-  interface Vue {
+  interface ComponentCustomProperties {
     $breadCrumbs: BackButton.Plugin;
   }
 }
+
+export {}

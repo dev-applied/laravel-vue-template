@@ -1,4 +1,3 @@
-import Vue from "vue"
 import { forEach } from "lodash"
 import { useAppStore } from "@/stores/app"
 
@@ -31,7 +30,5 @@ function loopErrors(errors: any, internal_key: string | null = null) {
     useAppStore().addError(`${field} - ${value}`)
   })
 }
-
-Vue.prototype.$error = errorHandler
 
 export default errorHandler

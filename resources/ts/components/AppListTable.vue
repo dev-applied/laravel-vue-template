@@ -4,7 +4,7 @@
       v-show="enableSearch || enableFilter"
       color="white"
       height="40"
-      :flat="$vuetify.breakpoint.smAndDown"
+      :flat="smAndDown"
       class="list-table__header"
     >
       <v-text-field
@@ -40,15 +40,12 @@
         <v-list
           :three-line="threeLine"
           :two-line="twoLine"
-          :style="style"
+          :style="computedStyle"
           v-bind="$attrs"
           class="py-0"
         >
-          <template v-for="(item, i) in internalItems">
-            <v-list-item
-              :key="i"
-              @click="$emit('click:item', item)"
-            >
+          <template v-for="(item, i) in internalItems" :key="i">
+            <v-list-item @click="$emit('click:item', item)">
               <slot
                 name="item"
                 :item="item"
@@ -75,7 +72,7 @@
       <div v-else>
         <slot name="no-items">
           <div class="list-table__no-items">
-            {{ noDataText || 'No Items' }}
+            {{ noDataText || "No Items" }}
           </div>
         </slot>
       </div>
@@ -83,228 +80,180 @@
   </div>
 </template>
 
-<script lang="ts">
-import debounce from "@/mixins/debounce"
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue"
 import convertToUnit from "@/utils/convertToUnit"
-import { defineComponent } from "vue"
-import type { PropType } from "vue"
-import type { StoreDefinition } from "pinia"
+import { type StoreDefinition } from "pinia"
+import { useDebounceFn } from "@vueuse/core"
+import axios from "@/plugins/axios"
+import errorHandler from "@/plugins/errorHandler"
+import { useDisplay } from "vuetify"
 
 interface Pagination {
-  sort: null
-  direction: "DESC"
-  page: 0
-  perPage: 10
-  count: 0
+  sort: null;
+  direction: "DESC";
+  page: 0;
+  perPage: 10;
+  count: 0;
 }
 
-export default defineComponent({
-  mixins: [debounce],
-  inheritAttrs: false,
-  props: {
-    endpoint: {
-      type: String,
-      required: true
-    },
-    fieldName: {
-      type: String,
-      default: null
-    },
-    additionalRequestData: {
-      type: Object,
-      required: false,
-      default: () => {
-        return {}
-      }
-    },
-    method: {
-      type: String,
-      default: "GET",
-      validator(value: string) {
-        // The value must match one of these strings
-        return ["POST", "GET", "PUT", "PATCH"].includes(value)
-      }
-    },
-    enableSearch: {
-      type: Boolean,
-      default: false
-    },
-    enableFilter: {
-      type: Boolean,
-      default: false
-    },
-    storeModule: {
-      type: Function as PropType<StoreDefinition>,
-      default: null
-    },
-    threeLine: {
-      type: Boolean,
-      default: false
-    },
-    twoLine: {
-      type: Boolean,
-      default: false
-    },
-    scrollable: {
-      type: Boolean,
-      default: false
-    },
-    height: {
-      type: [String, Number],
-      default: "100%"
-    },
-    noDataText: {
-      type: String,
-      default: null
-    },
-    itemsPerPage: {
-      type: Number,
-      default: null,
-    }
-  },
-  data() {
-    return {
-      pagination: {
-        sort: null,
-        direction: "DESC",
-        page: 0,
-        perPage: 10,
-        count: 0
-      },
-      search: '',
-      items: [] as any[],
-      loading: false,
-      error: null as string | null | boolean,
-      finished: false
-    }
-  },
-  computed: {
-    internalItems: {
-      get() {
-        if (this.storeModule) {
-          return this.storeModule()[this.fieldName]
-        }
+export interface Props {
+  endpoint: string;
+  fieldName: string | null;
+  additionalRequestData: Record<string, any>;
+  method: "POST" | "GET" | "PUT" | "PATCH";
+  enableSearch: boolean;
+  enableFilter: boolean;
+  storeModule: StoreDefinition | null;
+  threeLine: boolean;
+  twoLine: boolean;
+  scrollable: boolean;
+  height: string | number;
+  noDataText: string | null;
+  itemsPerPage: number | null;
+}
 
-        return this.items
-      },
-      set(val: any[]) {
-        if (this.storeModule) {
-          // @ts-ignore
-          this.storeModule()[this.fieldName] = val
-        } else {
-          this.items = val
-        }
-      }
-    },
-    internalPagination: {
-      get() {
-        if (this.storeModule) {
-          return this.storeModule().pagination
-        }
+const props = withDefaults(defineProps<Props>(), {
+  fieldName: null,
+  additionalRequestData: () => ({}),
+  method: "GET",
+  enableSearch: false,
+  enableFilter: false,
+  storeModule: null,
+  threeLine: false,
+  twoLine: false,
+  scrollable: true,
+  height: "100%",
+  noDataText: null,
+  itemsPerPage: null
+})
 
-        return this.pagination
-      },
-      set(val: Pagination) {
-        if (this.storeModule) {
-          this.storeModule().pagination = val
-        } else {
-          this.pagination = val
-        }
-      }
-    },
-    style() {
-      if (this.enableSearch || this.enableFilter) {
-        return {height: "calc(100% - 56px)", "overflow-y": "scroll"}
-      } else {
-        return {height: "100%"}
-      }
+const emit = defineEmits(['current-items'])
+
+const search = ref("")
+const items = ref<any[]>([])
+const loading = ref(false)
+const error = ref<string | null | boolean>(null)
+const finished = ref(false)
+const pagination = ref<Pagination>({
+  sort: null,
+  direction: "DESC",
+  page: 0,
+  perPage: 10,
+  count: 0
+})
+const { smAndDown } = useDisplay()
+
+const store = props.storeModule ? props.storeModule() : null
+
+const internalItems = computed({
+  get(): any[] {
+    return store && props.fieldName ? store[props.fieldName] : items.value
+  },
+  set(val: any[]) {
+    if (store && props.fieldName) {
+      store[props.fieldName] = val
+    } else {
+      items.value = val
     }
-  },
-  watch: {
-    search() {
-      this.debouncer(() => {
-        this.reload()
-      })
-    },
-    additionalRequestData: {
-      handler() {
-        this.debouncer(() => {
-          this.reload()
-        })
-      },
-      deep: true
-    }
-  },
-  async mounted() {
-    await this.loadData()
-  },
-  beforeDestroy() {
-    this.internalItems = []
-    this.internalPagination = {
-      sort: null,
-      direction: "DESC",
-      page: 0,
-      perPage: 10,
-      count: 0
-    }
-  },
-  methods: {
-    reload() {
-      this.internalPagination.page = 0
-      this.internalItems = []
-      this.error = false
-      this.finished = false
-      this.loadData()
-    },
-    async loadData() {
-      if (this.finished || this.error || this.loading) {
-        return
-      }
-      this.internalPagination.page += 1
-
-      this.error = false
-      this.loading = true
-      let config
-      if (this.method === "GET") {
-        config = {
-          params: {
-            search: this.search,
-            ...this.internalPagination,
-            ...this.itemsPerPage ? {perPage: this.itemsPerPage} : {},
-            // @ts-ignore
-            ...this.additionalRequestData
-          }
-        }
-      } else {
-        config = {
-          pagination: this.internalPagination,
-          ...this.itemsPerPage ? {perPage: this.itemsPerPage} : {},
-          // @ts-ignore
-          ...this.additionalRequestData,
-          search: this.search
-        }
-      }
-
-      // @ts-ignore
-      const {data, status} = await this.$http[this.method.toLowerCase()](
-        this.endpoint,
-        config
-      ).catch((e) => e)
-      this.loading = false
-      if (this.$error(status, data.message, data.errors)) {
-        this.error = data.message
-        return
-      }
-
-      this.internalItems = this.internalItems.concat(data.data)
-      this.$emit('current-items', this.internalItems)
-      this.internalPagination.page = data.current_page
-      this.internalPagination.pageStop = data.to ?? 0
-      this.finished = data.last_page <= data.current_page
-    },
-    convertToUnit
   }
 })
+
+const internalPagination = computed({
+  get() {
+    return store ? store.pagination : pagination.value
+  },
+  set(val) {
+    if (store) {
+      store.pagination = val
+    } else {
+      pagination.value = val
+    }
+  }
+})
+
+const computedStyle = computed(() => {
+  if (props.enableSearch || props.enableFilter) {
+    return { height: "calc(100% - 56px)", "overflow-y": "scroll" }
+  } else {
+    return { height: "100%" }
+  }
+})
+
+const debounceReload = useDebounceFn(() => {
+  reload()
+}, 1000, { maxWait: 5000 })
+
+watch(search, debounceReload)
+
+watch(props.additionalRequestData, debounceReload, { deep: true })
+
+onMounted(async () => {
+  await loadData()
+})
+
+onBeforeUnmount(() => {
+  internalItems.value = []
+  internalPagination.value = {
+    sort: null,
+    direction: "DESC",
+    page: 0,
+    perPage: 10,
+    count: 0
+  }
+})
+
+async function loadData() {
+  if (finished.value || error.value || loading.value) {
+    return
+  }
+  internalPagination.value.page += 1
+  error.value = false
+  loading.value = true
+
+  let config
+  if (props.method === "GET") {
+    config = {
+      params: {
+        search: search.value,
+        ...internalPagination.value,
+        ...props.itemsPerPage ? { perPage: props.itemsPerPage } : {},
+        ...props.additionalRequestData
+      }
+    }
+  } else {
+    config = {
+      pagination: internalPagination.value,
+      ...props.itemsPerPage ? { perPage: props.itemsPerPage } : {},
+      ...props.additionalRequestData,
+      search: search.value
+    }
+  }
+
+  const { data, status } = await axios[props.method.toLowerCase()](props.endpoint, config).catch((e) => e)
+
+  loading.value = false
+  if (errorHandler(status, data.message, data.errors)) {
+    error.value = data.message
+    return
+  }
+
+  internalItems.value = internalItems.value.concat(data.data)
+  emit("current-items", internalItems.value)
+  internalPagination.value.page = data.current_page
+  internalPagination.value.pageStop = data.to ?? 0
+  finished.value = data.last_page <= data.current_page
+}
+
+function reload(resetPage = true) {
+  if (resetPage) {
+    internalPagination.value.page = 0
+  }
+  internalItems.value = []
+  error.value = false
+  finished.value = false
+  loadData()
+}
 </script>
 
 <style lang="scss">

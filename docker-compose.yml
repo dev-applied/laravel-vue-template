@@ -32,11 +32,11 @@ services:
       - traefik.http.services.$DOCKER_ROUTER.loadbalancer.server.port=80
   frontend:
     image: node:$DOCKER_NODE_VERSION
-    command: npm run dev -- --host
+    command: bash -c "npm install && npm run dev -- --host"
     volumes:
       - ./:/usr/src/app
     working_dir: /usr/src/app
-    restart: unless-stopped
+#    restart: unless-stopped
     labels:
       - traefik.http.routers.${DOCKER_ROUTER}-HMR.rule=Host(`$VITE_HMR_DOMAIN`)
       - traefik.http.routers.${DOCKER_ROUTER}-HMR.entrypoints=https

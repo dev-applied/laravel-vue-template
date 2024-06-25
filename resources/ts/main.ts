@@ -1,16 +1,20 @@
-import Vue from "vue"
-import pinia from "@/plugins/pinia"
+import { createApp } from 'vue'
+import { createPinia } from "pinia"
 import vuetify from "@/plugins/vuetify"
-import "@/layouts/register"
-import "@/plugins"
+import {loadLayouts} from "@/layouts"
+import {usePlugins} from "@/plugins"
 import App from "./App.vue"
 import router from "@/router"
 
-Vue.config.productionTip = false
+const app = createApp(App)
 
-new Vue({
-  vuetify,
-  router,
-  pinia,
-  render: h => h(App)
-}).$mount("#app")
+app.use(createPinia())
+app.use(router)
+app.use(vuetify)
+usePlugins(app)
+loadLayouts(app)
+
+await router.isReady()
+app.mount('#app')
+
+export default app

@@ -35,7 +35,7 @@ export default defineComponent({
   created() {
     backButton.registerInstance(this)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     backButton.unregisterInstance(this)
   },
   methods: {

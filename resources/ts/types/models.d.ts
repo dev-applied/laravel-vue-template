@@ -54,8 +54,6 @@ declare namespace App.Models {
     roles_count?: number | null;
     users_count?: number | null;
     permissions_count?: number | null;
-
-
   }
 
   export interface Model {

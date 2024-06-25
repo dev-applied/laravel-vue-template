@@ -6,10 +6,13 @@ declare namespace Vuetify {
     resetValidation: () => void
   }
 
-  import PaginationTableComponent from "@/components/AppPaginationTable.vue"
+  import PaginationTableComponent from "../../components/AppPaginationTable.vue"
   export type PaginationTable = InstanceType<typeof PaginationTableComponent>
 
-  import AppAutocompleteComponent from "@/components/AppAutoComplete.vue"
+  import ListTableComponent from "../../components/AppListTable.vue"
+  export type ListTable = InstanceType<typeof ListTableComponent>
+
+  import AppAutocompleteComponent from "../../components/AppAutoComplete.vue"
   export type AppAutoComplete = InstanceType<typeof AppAutocompleteComponent>
 
   export type SelectItem = { text: string, value: any } | any

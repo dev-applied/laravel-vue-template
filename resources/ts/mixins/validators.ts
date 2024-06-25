@@ -1,5 +1,4 @@
 // @ts-ignore
-import { validateNumber } from "vuetify/lib/components/VCalendar/util/props"
 import { defineComponent } from "vue"
 
 export default defineComponent({
@@ -26,7 +25,7 @@ export default defineComponent({
           (v: any) => !v || (v && v.replaceAll("-", "").length === 10) || "Phone Number must be 10 digits"
         ],
         validNumber: [
-          (v: any) => validateNumber(v) || "Invalid Number is Required"
+          (v: any) => !Number.isNaN(v) || "Invalid Number is Required"
         ],
         url: [
           // @ts-ignore

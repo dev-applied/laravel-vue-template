@@ -1,3 +1,4 @@
+import {type App} from "vue"
 import createMixin from "@/plugins/breadcrumbs/mixin"
 import BreadCrumbs from "@/plugins/breadcrumbs/BreadCrumbs.vue"
 
@@ -31,12 +32,12 @@ const state: Breadcrumbs.State = {
   vms: []
 }
 
-function install(Vue: any, options?: any): void {
+function install(app: App, options?: any): void {
   options = Object.assign(defaultOptions, options)
-  Vue.prototype[`$${options.keyName}`] = breadCrumbs
-  Vue.component("BreadCrumbs", BreadCrumbs)
-  Vue.mixin(createMixin(breadCrumbs, options))
+  app.config.globalProperties[`$${options.keyName}`] = breadCrumbs
+  app.component("BreadCrumbs", BreadCrumbs)
+  app.mixin(createMixin(breadCrumbs, options))
 }
 
 
-export default install
+export default {install}

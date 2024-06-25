@@ -7,7 +7,7 @@
     offset-y
     transition="scale-transition"
   >
-    <template #activator="{ on, attrs }">
+    <template #activator="{ props }">
       <v-text-field
         :append-icon="noIcon ? undefined : 'mdi-calendar'"
         :label="label"
@@ -16,8 +16,7 @@
         persistent-placeholder
         placeholder="Select Date"
         readonly
-        v-bind="Object.assign({}, globalAttrs, attrs)"
-        v-on="Object.assign({}, on, $listeners)"
+        v-bind="Object.assign({}, globalAttrs, props)"
       >
         <template
           v-if="!noIcon"
@@ -46,14 +45,15 @@
     />
   </v-menu>
 </template>
+
 <script lang="ts">
 import moment from "moment"
-import { defineComponent } from "vue"
+import { defineComponent, type PropType } from "vue"
 
 export default defineComponent({
   inheritAttrs: false,
   props: {
-    value: {
+    modelValue: {
       type: String,
       default: undefined
     },
@@ -70,7 +70,7 @@ export default defineComponent({
       default: undefined
     },
     allowedDates: {
-      type: Function,
+      type: Function as PropType<(date: unknown) => boolean>,
       default: () => true
     },
     min: {

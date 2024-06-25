@@ -1,5 +1,4 @@
-import type Vue from "vue"
-import { defineComponent } from "vue"
+import type { Component } from "vue"
 
 function isFunction(arg: any) {
   return typeof arg === "function"
@@ -29,7 +28,7 @@ function getComponentOption(options: Breadcrumbs.Options, component: {
 
   // collect & aggregate child options if deep = true
   if ($children.length) {
-    $children.forEach((childComponent: Vue) => {
+    $children.forEach((childComponent: Component) => {
       if (!childComponent || !childComponent.$root) {
         return
       }
@@ -49,7 +48,7 @@ function getComponentOption(options: Breadcrumbs.Options, component: {
 export default function createMixin(breadCrumbs: Breadcrumbs.Plugin, options: { rootKey: string; keyName: string }) {
   const updateOnLifecycleHook = ["activated", "deactivated", "beforeMount"]
 
-  return defineComponent({
+  return {
     beforeCreate() {
       // @ts-ignore
       const $root = this[options.rootKey]
@@ -85,5 +84,5 @@ export default function createMixin(breadCrumbs: Breadcrumbs.Plugin, options: { 
         })
       })
     }
-  })
+  }
 }

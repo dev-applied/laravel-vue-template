@@ -1,10 +1,10 @@
 import { useUserStore } from "@/stores/user"
-import type { NavigationGuardNext, Route } from "vue-router/types/router"
+import type { NavigationGuardNext, RouteRecordNormalized } from "vue-router"
 
 export default class Authentication implements App.Middleware.Instance {
   async handle(
-    to: Route,
-    from: Route,
+    to: RouteRecordNormalized,
+    from: RouteRecordNormalized,
     next: App.Middleware.Caller,
     cancel: NavigationGuardNext
   ): Promise<void> {

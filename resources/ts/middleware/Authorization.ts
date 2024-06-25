@@ -1,11 +1,10 @@
 import { $auth } from "@/plugins/auth"
-import type { NavigationGuardNext } from "vue-router/types/router"
-import type { Route } from "@/types/vendor/shims-vue-router"
+import type { NavigationGuardNext, RouteLocationNormalized, RouteLocationNormalizedLoaded } from "vue-router"
 
 export default class Authorization implements App.Middleware.Instance {
   async handle(
-    to: Route,
-    from: Route,
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalizedLoaded,
     next: App.Middleware.Caller,
     cancel: NavigationGuardNext
   ): Promise<void> {

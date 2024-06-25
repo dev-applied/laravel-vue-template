@@ -1,6 +1,7 @@
 import BackButton from "@/plugins/backButton/BackButton.vue"
 import createMixin from "@/plugins/backButton/mixin"
 import type { RawLocation } from "vue-router"
+import type {App} from "vue"
 
 
 const defaultOptions = {
@@ -39,10 +40,10 @@ export const backButton: BackButton.Plugin = {
 }
 
 
-function install(Vue: any, options: any) {
-  Vue.prototype.$backButton = backButton
-  Vue.component("BackButton", BackButton)
-  Vue.mixin(createMixin(backButton, Object.assign(defaultOptions, options)))
+export default {
+  install(app: App, options: typeof defaultOptions | void) {
+    app.config.globalProperties.$backButton = backButton
+    app.component("BackButton", BackButton)
+    app.mixin(createMixin(backButton, Object.assign(defaultOptions, options)))
+  }
 }
-
-export default install

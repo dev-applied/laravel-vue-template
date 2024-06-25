@@ -1,4 +1,3 @@
-import { defineComponent } from "vue"
 import type { DefineComponent } from "vue/types/v3-define-component"
 
 function isFunction({ arg }: { arg: any }) {
@@ -47,7 +46,7 @@ function getComponentOption(options: BackButton.Options, component: DefineCompon
 export default function createMixin(backButton: BackButton.Plugin, options: BackButton.Options) {
   const updateOnLifecycleHook = ["activated", "deactivated", "beforeMount"]
 
-  return defineComponent({
+  return {
     beforeCreate() {
       const $root = this[options.rootKey]
       const $options = this.$options
@@ -82,5 +81,5 @@ export default function createMixin(backButton: BackButton.Plugin, options: Back
         })
       })
     }
-  })
+  }
 }

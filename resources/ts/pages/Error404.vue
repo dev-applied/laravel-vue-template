@@ -37,7 +37,7 @@ export default defineComponent({
   mounted() {
     document.querySelector("body")!.classList.add("not-found")
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.querySelector("body")!.classList.remove("not-found")
   }
 })

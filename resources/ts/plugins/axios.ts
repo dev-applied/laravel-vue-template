@@ -1,10 +1,10 @@
-import Vue from "vue"
 import axios from "axios"
 import router from "@/router"
 import { useUserStore } from "@/stores/user"
 import type { AxiosResponse as Response } from "axios"
 import errorHandler from "@/plugins/errorHandler"
 import { ROUTES } from "@/router/paths"
+import { type App } from "vue"
 
 export type AxiosResponse<T = object> = Response<T & { errors?: string[] }>
 
@@ -26,7 +26,6 @@ export interface AxiosPaginationResponse<ItemType> extends AxiosResponse {
   }
 }
 
-Vue.prototype.$http = axios
 
 axios.defaults.headers.common = {
   Accept: "application/json",
@@ -102,4 +101,10 @@ axios.download = async function <T = any, R = AxiosResponse<T>>(url: string, par
   URL.revokeObjectURL(href)
 
   return response
+}
+
+export default {
+  install(app: App) {
+    app.config.globalProperties.$axios = axios
+  }
 }

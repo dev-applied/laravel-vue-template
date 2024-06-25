@@ -34,5 +34,16 @@ class FullQueryServiceProvider extends ServiceProvider
 
             return str_replace('"', '\'', $sql_with_bindings);
         });
+
+        \Illuminate\Database\Query\Builder::macro('getFullQuery', function(): string {
+            /** @var \Illuminate\Database\Query\Builder $this  */
+            $sql = $this->toSql();
+            $bindings = $this->getBindings();
+            $sql_with_bindings = preg_replace_callback('/\?/', function ($match) use ($sql, &$bindings) {
+                return json_encode(array_shift($bindings));
+            }, $sql);
+
+            return str_replace('"', '\'', $sql_with_bindings);
+        });
     }
 }

@@ -27,7 +27,7 @@ export default defineComponent({
   methods: {
     async logout() {
       await this.$auth.logout()
-      await this.$router.push(this.route(this.ROUTES.LOGIN))
+      await this.$router.push(this.$routeTo(this.ROUTES.LOGIN))
     }
   }
 })

@@ -1,4 +1,6 @@
 // Padding offsets for mobile
+@forward 'vuetify/settings';
+
 :root {
   --v-safe-area-top: env(safe-area-inset-top, 0px);
   --v-safe-area-right: env(safe-area-inset-right, 0px);

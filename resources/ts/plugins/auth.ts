@@ -1,7 +1,7 @@
 import type { LoginForm } from "@/stores/user"
 import { useUserStore } from "@/stores/user"
 import type { AxiosResponse } from "@/plugins/axios"
-import Vue from "vue"
+import type { App } from "vue"
 
 export interface Auth {
   user: App.Models.AuthUser | null
@@ -58,4 +58,8 @@ function getPermissionsFromUser(user: App.Models.AuthUser | null) {
   return permissions
 }
 
-Vue.prototype.$auth = $auth
+export default {
+  install(app: App) {
+    app.config.globalProperties.$auth = $auth
+  }
+}

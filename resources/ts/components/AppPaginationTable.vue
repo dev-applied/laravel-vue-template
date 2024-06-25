@@ -15,24 +15,11 @@
       disable-filtering
       hide-default-footer
       v-bind="$attrs"
-      v-on="$listeners"
       @update:sort-by="updateSortBy"
       @update:sort-desc="updateSortDirection"
     >
-      <template
-        v-for="(_, name) in $slots"
-        :slot="name"
-      >
-        <slot :name="name" />
-      </template>
-      <template
-        v-for="(_, name) in $scopedSlots"
-        #[name]="data"
-      >
-        <slot
-          :name="name"
-          v-bind="data"
-        />
+      <template v-for="(_, name) in $slots" v-slot:[name]="slotData">
+        <slot :name="name" v-bind="slotData" />
       </template>
       <template
         v-if="error"
@@ -51,7 +38,7 @@
       </template>
       <template
         v-if="!$slots.footer && !hideFooter"
-        #footer
+        #tfoot
       >
         <div class="v-data-footer">
           <div class="v-data-footer__select">
@@ -95,6 +82,7 @@ import debounce from "@/mixins/debounce"
 export default defineComponent({
   components: { LoadingTableArrow },
   mixins: [debounce],
+  expose: ["reload"],
   inheritAttrs: false,
   props: {
     endpoint: {
@@ -154,6 +142,8 @@ export default defineComponent({
         sort: null as null | string,
         direction: "DESC",
         page: 1,
+        pageStart: 0,
+        pageStop: 0,
         perPage: this.itemsPerPage,
         count: 0
       },
@@ -178,7 +168,7 @@ export default defineComponent({
   },
   computed: {
     itemsPerPageText(): string {
-      return this.$vuetify.lang.t("$vuetify.dataFooter.itemsPerPageText")
+      return this.$vuetify.locale.t("$vuetify.dataFooter.itemsPerPageText")
     },
     numberOfPages(): number {
       return Math.ceil(this.pagination.count / this.pagination.perPage)

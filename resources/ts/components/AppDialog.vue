@@ -2,7 +2,6 @@
   <component
     :is="($vuetify.breakpoint.smAndDown) ? 'v-bottomSheet' : 'v-dialog'"
     v-bind="$attrs"
-    v-on="$listeners"
   >
     <slot />
   </component>

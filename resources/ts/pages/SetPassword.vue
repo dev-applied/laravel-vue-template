@@ -98,7 +98,7 @@
             <v-btn
               color="secondary"
               outlined
-              @click="$router.push(route(ROUTES.LOGIN))"
+              @click="$router.push($routeTo(ROUTES.LOGIN))"
             >
               Return to Sign In
             </v-btn>
@@ -123,6 +123,7 @@ import validators from "@/mixins/validators"
 import PasswordValidation from '@/components/AppPasswordValidation.vue'
 import {defineComponent} from "vue"
 import {useUserStore} from "@/stores/user"
+import type { VForm } from "vuetify/components"
 
 export default defineComponent({
   components: {
@@ -144,13 +145,13 @@ export default defineComponent({
     token() {
       return this.$route.params.token
     },
-    email() {
-      return this.$route.query.email
+    email(): string {
+      return this.$route.query.email as string
     }
   },
   methods: {
     async setPassword() {
-      if (!this.$refs.form.validate()) return
+      if (!(await (this.$refs.form as VForm).validate())) return
       this.loading = true
       const {data: {message, errors}, status} = await this.$http.post('/forgot-password/reset', {
         email: this.email,
@@ -166,7 +167,7 @@ export default defineComponent({
 
       await useUserStore().login({email: this.email, password: this.password})
 
-      await this.$router.push(this.route(this.ROUTES.DASHBOARD))
+      await this.$router.push(this.$routeTo(this.ROUTES.LOGIN))
     },
   }
 })

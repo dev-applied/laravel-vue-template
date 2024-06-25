@@ -129,7 +129,7 @@ export default defineComponent({
   },
   mounted() {
     if (this.$auth.user) {
-      this.$router.push(this.route(this.ROUTES.DASHBOARD))
+      this.$router.push(this.$routeTo(this.ROUTES.HOME))
     }
   },
   computed: {
@@ -139,7 +139,7 @@ export default defineComponent({
   },
   methods: {
     async login() {
-      if (!this.$refs!.form!.validate()) return
+      if (!await this.$refs!.form!.validate()) return
       this.loading = true
       const {
         data: { message, errors },
@@ -161,7 +161,7 @@ export default defineComponent({
     },
     async sendResetPassword() {
       this.showForgotPasswordError = false
-      if (!this.$refs!.email!.validate()) {
+      if (!await this.$refs!.email!.validate()) {
         this.showForgotPasswordError = true
         return
       }

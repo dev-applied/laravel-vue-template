@@ -1,9 +1,10 @@
 import { Auth } from "@/plugins/auth"
 import { Axios } from "axios"
-import ROUTES from "@/router/paths"
+import { ROUTES } from "@/router/paths"
+import type { LocationQueryRaw, RouteLocationRaw, RouteParamsGeneric } from "vue-router"
 
-declare module "vue/types/vue" {
-  interface Vue {
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
     $auth: Auth
     $error: (
       status: number,
@@ -11,9 +12,11 @@ declare module "vue/types/vue" {
       errors: boolean | any = false,
       notify = true
     ) => boolean
+    $routeTo: (name: string, params?: RouteParamsGeneric, query?: LocationQueryRaw) => RouteLocationRaw
+    ROUTES: typeof ROUTES
+    $fileUrl: (id: number, size: string = "thumbnail") => string
     $http: Axios
-    route: (name: string, params?: Dictionary<any>, query?: Dictionary<any>) => RawLocation
-    ROUTES: ROUTES
-    $file: (id: number, size: string = "thumbnail") => string
   }
 }
+
+export {}

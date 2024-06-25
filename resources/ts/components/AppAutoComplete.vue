@@ -8,31 +8,18 @@
     :items="items"
     :loading="loading"
     :readonly="loading && disabledOnLoading"
-    :search-input.sync="search"
+    v-model:search-input="search"
     v-bind="$attrs"
-    v-on="$listeners"
   >
-    <template
-      v-for="(_, name) in $slots"
-      :slot="name"
-    >
-      <slot :name="name" />
-    </template>
-    <template
-      v-for="(_, name) in $scopedSlots"
-      #[name]="data"
-    >
-      <slot
-        :name="name"
-        v-bind="data"
-      />
+    <template v-for="(_, name) in $slots" v-slot:[name]="slotData">
+      <slot :name="name" v-bind="slotData" />
     </template>
   </v-autocomplete>
 </template>
 
 <script lang="ts">
 import debounce from "lodash.debounce"
-import { defineComponent } from "vue"
+import { defineComponent, PropType } from "vue"
 
 export default defineComponent({
   inheritAttrs: false,
@@ -45,8 +32,8 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
-    // eslint-disable-next-line vue/require-prop-types
     value: {
+      type: [String, Number, Array, Object] as PropType<any>,
       required: true
     },
     mandatory: {

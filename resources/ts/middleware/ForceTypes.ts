@@ -1,13 +1,12 @@
 import moment from "moment"
 import { forEach } from "lodash"
-import type { NavigationGuardNext } from "vue-router/types/router"
-import type { Route } from "@/types/vendor/shims-vue-router"
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, NavigationGuardNext } from "vue-router"
 
-export default class ForceTypes implements App.Middleware.Middleware {
+export default class ForceTypes implements App.Middleware.Instance {
   async handle(
-    to: Route,
-    from: Route,
-    next: App.Middleware.MiddlewareCaller,
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalizedLoaded,
+    next: App.Middleware.Caller,
     cancel: NavigationGuardNext
   ): Promise<void> {
     forEach(to.params, (param: string, key: string) => {

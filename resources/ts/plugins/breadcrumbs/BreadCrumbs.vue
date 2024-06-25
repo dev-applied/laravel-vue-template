@@ -36,7 +36,7 @@ export default defineComponent({
   created() {
     breadCrumbs.registerInstance(this)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     breadCrumbs.unregisterInstance(this)
   }
 })
