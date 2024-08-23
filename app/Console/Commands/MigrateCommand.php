@@ -32,7 +32,7 @@ class MigrateCommand extends BaseMigrateCommand
             return $response;
         }
         if (app()->environment('local')) {
-            $this->call(ModelsCommand::class, ['--write' => true, '--smart-reset' => true]);
+            $this->call(ModelsCommand::class, ['-W' => true, '-r' => true, '-p' => true]);
             $this->call(TypeScriptGenerateCommand::class);
         }
 

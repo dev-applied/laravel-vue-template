@@ -6,13 +6,7 @@ use App\Traits\WhoDidIt;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
-use Imagine\Imagick\Imagine;
-use Imagine\Image\Box;
-use Imagine\Image\Point;
-use Illuminate\Http\UploadedFile;
-use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
 
 /**
  * App\Models\File

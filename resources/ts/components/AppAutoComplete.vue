@@ -1,159 +1,186 @@
 <template>
+  <v-text-field
+    :loading="true"
+    readonly
+    v-if="initialLoading"
+    v-bind="mergeProps(bindings, {modelValue: ''})"
+  />
   <v-autocomplete
-    v-if="!hideIfNoData || items.length > 0"
+    v-else
     ref="standard_ac"
-    v-model="internal_value"
-    :cache-items="cacheItems"
-    :disabled="disabled"
+    v-bind="bindings"
     :items="items"
-    :loading="loading"
-    :readonly="loading && disabledOnLoading"
-    v-model:search-input="search"
-    v-bind="$attrs"
+    hide-selected
+    v-model="model"
+    no-filter
+    eager
+    v-model:search="state.search"
   >
-    <template v-for="(_, name) in $slots" v-slot:[name]="slotData">
-      <slot :name="name" v-bind="slotData" />
+    <template #append-item>
+      <slot name="append-item" />
+      <div
+        class="d-flex justify-center"
+        v-intersect="handleLoad"
+        v-if="!state.finished"
+      >
+        <v-progress-circular
+          indeterminate
+          color="primary"
+        />
+      </div>
+    </template>
+    <template
+      #append-inner
+      v-if="!$slots['append-inner']"
+    >
+      <v-progress-circular
+        indeterminate
+        size="12"
+        width="2"
+        color="primary"
+        v-if="loading"
+      />
+    </template>
+    <template
+      #no-data
+      v-if="loading || $slots['no-data']"
+    >
+      <slot
+        name="no-data"
+        v-if="!loading"
+      />
+    </template>
+    <template
+      #selection="{item}"
+      v-if="!$slots['selection']"
+    >
+      {{ item }}
+    </template>
+    <template
+      v-for="(_, name) in $slots"
+      #[name]="slotData"
+    >
+      <slot
+        v-if="name !== 'append-item'"
+        :name="name"
+        v-bind="slotData"
+      />
     </template>
   </v-autocomplete>
 </template>
 
-<script lang="ts">
-import debounce from "lodash.debounce"
-import { defineComponent, PropType } from "vue"
+<script setup lang="ts">
+import {computed, mergeProps, onMounted, reactive, ref, useAttrs, watch} from "vue"
+import {VAutocomplete} from "vuetify/components/VAutocomplete"
+import usePaginationData from "@/composables/usePaginationData"
 
-export default defineComponent({
-  inheritAttrs: false,
-  props: {
-    additionalItems: {
-      type: Array,
-      default: () => []
-    },
-    cacheItems: {
-      type: Boolean,
-      default: true
-    },
-    value: {
-      type: [String, Number, Array, Object] as PropType<any>,
-      required: true
-    },
-    mandatory: {
-      type: Boolean,
-      default: false
-    },
-    disabledOnLoading: {
-      type: Boolean,
-      default: true
-    },
-    endpoint: {
-      type: String,
-      required: true
-    },
-    fieldName: {
-      type: String,
-      required: true
-    },
-    static: {
-      type: Boolean,
-      default: false
-    },
-    hideIfNoData: {
-      type: Boolean,
-      default: false
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    }
-  },
-  data() {
-    return {
-      items: [],
-      loading: false,
-      search: "",
-      selected: []
-    }
-  },
-  computed: {
-    internal_value: {
-      get() {
-        return this.value
-      },
-      set(val) {
-        this.$emit("input", val)
-      }
-    }
-  },
-  watch: {
-    search(val) {
-      if (!this.static) this.debouncer(async () => this.searchItems(val))
-    },
-    "$refs.standard_ac.selectedItems": {
-      handler() {
-        this.selected = this.$refs.standard_ac.selectedItems
-      }
-    },
-    endpoint() {
-      this.searchItems(this.search)
-    },
-    disabled() {
-      if (!this.disabled) {
-        this.searchItems(this.search)
-      }
-    }
-  },
-  mounted() {
-    this.searchItems(this.search)
-    if (this.$refs.standard_ac) {
-      this.$watch(
-        () => {
-          return this.$refs.standard_ac.selectedItems
-        },
-        (val) => {
-          this.selected = val
-        }
-      )
-    }
-  },
-  methods: {
-    async searchItems(search) {
-      if (this.disabled) return
-      this.loading = true
-      const params = {
-        search: search
-      }
+defineOptions({inheritAttrs: false})
 
-      if (this.internal_value) {
-        let value = Array.isArray(this.internal_value) ? this.internal_value : [this.internal_value]
-        let key = "id"
-        if (this.$attrs["item-value"]) {
-          key = this.$attrs["item-value"]
-        }
+export type AppAutoCompleteProps = {
+  prependItems?: any[]
+  appendItems?: any[]
+  mandatory?: boolean
+  endpoint: string
+  static?: boolean
+  itemsPerPage?: number
+  itemValue?: string
+  filters?: Record<string, any>
+} & /* @vue-ignore */ Omit<InstanceType<
+  typeof VAutocomplete>['$props'],
+  "loading" | "items" | "ref" | "readonly" | "search" | "modelValue" | "no-filter" | "itemValue" | "noFilter"
+>
 
-        params.key = key
+type VAutocompleteSlots = InstanceType<typeof VAutocomplete>['$slots']
 
-        params.selected = value.map(item => {
-          if (typeof item === "object") {
-            return item[key]
-          }
-          return item
-        })
-      }
+defineSlots<VAutocompleteSlots>()
 
-      let { data, status } = await this.$http.get(this.endpoint, {
-        params
-      }).catch(e => e)
-      this.loading = false
-      if (this.$error(status, data.message, data.errors)) return
-      this.items = this.additionalItems.concat(data[this.fieldName])
-    },
-    debouncer: debounce(function(callback) {
-      callback()
-    }, 500),
-    clear() {
-      this.$refs.standard_ac.clearableCallback()
-    }
-  }
+const props = withDefaults(defineProps<AppAutoCompleteProps>(), {
+  appendItems: () => [],
+  prependItems: () => [],
+  itemsPerPage: 10,
+  itemValue: "id",
+  filters: () => ({}),
 })
+
+
+const model = defineModel<any[] | any>()
+const objectModel = defineModel<any[] | any>('object')
+
+const state = reactive({
+  search: "",
+  selected: [] as any[],
+  finished: false,
+  searching: false
+})
+
+const filters = computed(() => {
+  const filters: { search?: string | null, key: string, selected?: any[] } = {
+    search: state.search,
+    key: props.itemValue as string || "id"
+  }
+
+  if (props.filters) {
+    Object.assign(filters, props.filters)
+  }
+
+  if (model.value !== undefined) {
+    let value = Array.isArray(model.value) ? model.value : [model.value]
+    filters.selected = value.map(item => {
+      if (!props.returnObject) return item
+      return item[filters.key]
+    })
+  }
+
+  return filters
+})
+
+const attrs = useAttrs()
+const bindings = computed(() => {
+  return mergeProps(props, attrs)
+})
+
+function done(type: "empty" | "error" | "ok") {
+  if (model.value !== undefined) {
+    objectModel.value = items.value.find(item => item[props.itemValue] == model.value)
+  }
+  switch (type) {
+    case "empty":
+      state.finished = true
+      break
+    case "error":
+      state.finished = true
+      break
+    case "ok":
+      state.finished = false
+      break
+  }
+}
+
+const {loading, loadData, currentPage, reload, items} = usePaginationData(props.endpoint, filters, 'GET', true, done)
+
+
+watch(() => props.disabled, () => {
+  if (!props.disabled) {
+    state.finished = false
+    reload(true, done)
+  }
+}, {immediate: true})
+
+async function handleLoad(isIntersecting: boolean, entries) {
+  if (entries[0].intersectionRatio <= 0) return
+  if (state.finished) return
+  const page = currentPage.value + 1
+  await loadData({page, itemsPerPage: props.itemsPerPage, done})
+}
+
+
+const initialLoading = ref(true)
+onMounted(async () => {
+  await reload(true, done)
+  initialLoading.value = false
+})
+
+
 </script>
 
 <style scoped>

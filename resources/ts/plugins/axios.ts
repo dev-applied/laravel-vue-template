@@ -53,11 +53,11 @@ axios.interceptors.response.use(
       response.status === 401 ||
       response.data.message === "Authentication is required to continue"
     ) {
-      if (router.currentRoute.path !== "/") {
+      if (router.currentRoute.value.path !== ROUTES.LOGIN) {
         const userStore = useUserStore()
         userStore.logout().then(() => {
           router
-            .push({ name: ROUTES.LOGIN, query: { to: router.currentRoute.fullPath } })
+            .push({ name: ROUTES.LOGIN, query: { to: router.currentRoute.value.fullPath } })
             .catch((e: Error) => e)
         })
       }
