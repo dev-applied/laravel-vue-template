@@ -1,5 +1,5 @@
 import { VDataTableServer } from "vuetify/components/VDataTable"
-import type { ComponentProps, ComponentSlots } from 'vue-component-type-helpers'
+import type { ComponentProps } from 'vue-component-type-helpers'
 type ButtonTypes = ComponentProps<typeof VDataTableServer>
 
 

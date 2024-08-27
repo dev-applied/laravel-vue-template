@@ -16,5 +16,5 @@ const checker = createChecker(
   checkerOptions,
 )
 const componentPath = path.join(__dirname, '../components/AppTable.vue')
-const meta = checker.getComponentMeta(componentPath)
-console.log(JSON.stringify(meta.props, null,  1))
+const _meta = checker.getComponentMeta(componentPath)
+// console.log(JSON.stringify(meta.props, null,  1))

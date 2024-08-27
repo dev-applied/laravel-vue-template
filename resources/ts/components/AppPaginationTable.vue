@@ -115,15 +115,10 @@ defineExpose({
   reload
 })
 
-watchEffect(() => {
-  console.log("items updated", items.value)
-})
-
 async function onChange(options: { itemsPerPage: number, page: number, sortBy: Record<string, any> }) {
   setPagination(options)
   loading.value = true
   const { data, status, error } = await loadData()
-  console.log(data)
   loading.value = false
   if (status === "canceled") {
     return
