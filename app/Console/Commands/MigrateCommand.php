@@ -7,6 +7,7 @@ use Based\TypeScript\Commands\TypeScriptGenerateCommand;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Console\Migrations\MigrateCommand as BaseMigrateCommand;
+use Throwable;
 
 class MigrateCommand extends BaseMigrateCommand
 {
@@ -24,18 +25,19 @@ class MigrateCommand extends BaseMigrateCommand
      * Execute the console command.
      *
      * @return int
+     * @throws Throwable
      */
     public function handle(): int
     {
         $response = parent::handle();
-        if ($response !== Command::SUCCESS) {
+        if ($response !== self::SUCCESS) {
             return $response;
         }
         if (app()->environment('local')) {
-            $this->call(ModelsCommand::class, ['-W' => true, '-r' => true, '-p' => true]);
+            $this->call(ModelsCommand::class, ['-W' => true, '-R' => true, '-p' => true]);
             $this->call(TypeScriptGenerateCommand::class);
         }
 
-        return Command::SUCCESS;
+        return self::SUCCESS;
     }
 }

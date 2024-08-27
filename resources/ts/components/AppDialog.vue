@@ -1,6 +1,6 @@
 <template>
   <component
-    :is="($vuetify.breakpoint.smAndDown) ? 'v-bottomSheet' : 'v-dialog'"
+    :is="($vuetify.display.smAndDown) ? 'v-bottomSheet' : 'v-dialog'"
     v-bind="$attrs"
   >
     <slot />
@@ -9,8 +9,11 @@
 
 <script lang="ts">
 import { defineComponent } from "vue"
+import {VBottomSheet} from "vuetify/components/VBottomSheet"
+import {VDialog} from "vuetify/components/VDialog"
 
 export default defineComponent({
+  components: {VDialog, VBottomSheet},
   inheritAttrs: false
 })
 </script>

@@ -10,12 +10,12 @@
             <h3>
               {{ title }}
             </h3>
-<!--            <v-spacer />-->
-<!--            <v-img-->
-<!--              contain-->
-<!--              :style="{ 'max-width': $vuetify.breakpoint.mdAndUp ? '160px' : '115px' }"-->
-<!--              src="/images/logo.png"-->
-<!--            />-->
+            <!--            <v-spacer />-->
+            <!--            <v-img-->
+            <!--              contain-->
+            <!--              :style="{ 'max-width': $vuetify.breakpoint.mdAndUp ? '160px' : '115px' }"-->
+            <!--              src="/images/logo.png"-->
+            <!--            />-->
           </v-card-title>
           <v-card-text>
             <template v-if="showLogin">
@@ -63,7 +63,11 @@
                 </v-text-field>
 
                 <div>
-                  <span class="primary--text" role="button" @click="sendResetPassword">Forgot password?</span>
+                  <span
+                    class="primary--text"
+                    role="button"
+                    @click="sendResetPassword"
+                  >Forgot password?</span>
                 </div>
 
                 <v-messages
@@ -157,7 +161,8 @@ export default defineComponent({
         this.notAuthorizedMessage = message
         return
       }
-      await this.$router.push(this.$route.query?.to || "/dashboard")
+      // @ts-ignore
+      await this.$router.push(this.$route.query?.to || this.ROUTES.HOME)
     },
     async sendResetPassword() {
       this.showForgotPasswordError = false

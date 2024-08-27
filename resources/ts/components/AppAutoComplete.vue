@@ -9,7 +9,7 @@
     v-else
     ref="standard_ac"
     v-bind="bindings"
-    :items="items"
+    :items="computedItems"
     hide-selected
     v-model="model"
     no-filter
@@ -51,12 +51,6 @@
       />
     </template>
     <template
-      #selection="{item}"
-      v-if="!$slots['selection']"
-    >
-      {{ item }}
-    </template>
-    <template
       v-for="(_, name) in $slots"
       #[name]="slotData"
     >
@@ -83,12 +77,11 @@ export type AppAutoCompleteProps = {
   endpoint: string
   static?: boolean
   itemsPerPage?: number
-  itemValue?: string
+  itemValue?: string,
+  multiple?: boolean,
   filters?: Record<string, any>
-} & /* @vue-ignore */ Omit<InstanceType<
-  typeof VAutocomplete>['$props'],
-  "loading" | "items" | "ref" | "readonly" | "search" | "modelValue" | "no-filter" | "itemValue" | "noFilter"
->
+} & /* @vue-ignore */ Omit<InstanceType<typeof VAutocomplete>['$props'],
+  "loading" | "items" | "ref" | "readonly" | "search" | "modelValue" | "itemValue" | "noFilter" | "multiple" | "returnObject">
 
 type VAutocompleteSlots = InstanceType<typeof VAutocomplete>['$slots']
 
@@ -105,12 +98,13 @@ const props = withDefaults(defineProps<AppAutoCompleteProps>(), {
 
 const model = defineModel<any[] | any>()
 const objectModel = defineModel<any[] | any>('object')
+const items = ref<any[]>([])
+const loading = ref<boolean>(false)
 
 const state = reactive({
   search: "",
   selected: [] as any[],
   finished: false,
-  searching: false
 })
 
 const filters = computed(() => {
@@ -124,59 +118,62 @@ const filters = computed(() => {
   }
 
   if (model.value !== undefined) {
-    let value = Array.isArray(model.value) ? model.value : [model.value]
-    filters.selected = value.map(item => {
-      if (!props.returnObject) return item
-      return item[filters.key]
-    })
+    filters.selected = Array.isArray(model.value) ? model.value : [model.value]
   }
 
   return filters
 })
 
-const attrs = useAttrs()
 const bindings = computed(() => {
-  return mergeProps(props, attrs)
+  return mergeProps(props, useAttrs())
 })
 
-function done(type: "empty" | "error" | "ok") {
-  if (model.value !== undefined) {
-    objectModel.value = items.value.find(item => item[props.itemValue] == model.value)
-  }
-  switch (type) {
-    case "empty":
-      state.finished = true
-      break
-    case "error":
-      state.finished = true
-      break
-    case "ok":
-      state.finished = false
-      break
-  }
-}
+const computedItems = computed(() => {
+  return [...props.prependItems, ...items.value, ...props.appendItems]
+})
 
-const {loading, loadData, currentPage, reload, items} = usePaginationData(props.endpoint, filters, 'GET', true, done)
-
+const {loadData, reload, pagination, setPagination} = usePaginationData(props.endpoint, filters)
 
 watch(() => props.disabled, () => {
   if (!props.disabled) {
     state.finished = false
-    reload(true, done)
+    reload()
   }
 }, {immediate: true})
 
-async function handleLoad(isIntersecting: boolean, entries) {
+watch(() => items.value, () => {
+  if (model.value === undefined) {
+    return
+  }
+  if (props.multiple) {
+    objectModel.value = items.value.filter(item => model.value.includes(item[props.itemValue]))
+  } else {
+    objectModel.value = items.value.find(item => item[props.itemValue] == model.value)
+  }
+}, {immediate: true})
+
+watch(() => filters.value, () => {
+  state.finished = false
+}, {deep: true})
+
+async function handleLoad(_isIntersecting: boolean, entries: IntersectionObserverEntry[]) {
   if (entries[0].intersectionRatio <= 0) return
   if (state.finished) return
-  const page = currentPage.value + 1
-  await loadData({page, itemsPerPage: props.itemsPerPage, done})
-}
 
+  loading.value = true
+  const {data, status} = await loadData()
+  loading.value = false
+  setPagination({page: pagination.value.page + 1})
+  if (status === "error" || status === 'empty') {
+    state.finished = true
+    return
+  }
+  items.value.concat(data)
+}
 
 const initialLoading = ref(true)
 onMounted(async () => {
-  await reload(true, done)
+  await reload()
   initialLoading.value = false
 })
 

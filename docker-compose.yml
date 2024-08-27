@@ -1,47 +1,59 @@
-version: '3.3'
 services:
+    webserver:
+        image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-apache
+        volumes:
+            - ./:/var/www/html/:delegated
+            - ~/.composer/docker-cache/:/root/.composer:cached
+        extra_hosts:
+            - "$DOCKER_DOMAIN:host-gateway"
+        environment:
+            XDEBUG_CONFIG: remote_host=host.docker.internal
+            PHP_EXTENSION_XDEBUG: 1
+            PHP_EXTENSION_MYSQLI: 1
+            PHP_INI_MEMORY_LIMIT: 4g
+            PHP_EXTENSION_GD: 1
+            APACHE_DOCUMENT_ROOT: public/
+            PHP_EXTENSION_BZ2: 1
+            PHP_EXTENSION_IMAGICK: 1
+            PHP_INI_UPLOAD_MAX_FILESIZE: 1g
+            PHP_INI_XDEBUG__REMOTE_START: 1
+            PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
+            PHP_IDE_CONFIG: 'serverName=$DOCKER_DOMAIN'
+        #     Uncomment the 3 lines below to enable the scheduler cron
+        #      CRON_USER: root
+        #      CRON_SCHEDULE: '* * * * *'
+        #      CRON_COMMAND: php artisan schedule:run
+        labels:
+            - traefik.http.routers.$DOCKER_ROUTER.rule=Host(`$DOCKER_DOMAIN`)
+            - traefik.http.routers.$DOCKER_ROUTER.tls=true
+            - traefik.http.routers.$DOCKER_ROUTER.entrypoints=https
+            - traefik.http.services.$DOCKER_ROUTER.loadbalancer.server.port=80
+    frontend:
+        image: node:$DOCKER_NODE_VERSION
+        command: bash -c "npm install && npm run dev -- --host"
+        volumes:
+            - ./:/usr/src/app
+        working_dir: /usr/src/app
+        #    restart: unless-stopped
+        labels:
+            - traefik.http.routers.${DOCKER_ROUTER}-HMR.rule=Host(`$VITE_HMR_DOMAIN`)
+            - traefik.http.routers.${DOCKER_ROUTER}-HMR.entrypoints=https
+            - traefik.http.routers.${DOCKER_ROUTER}-HMR.tls=true
+            - traefik.http.services.${DOCKER_ROUTER}-HMR.loadbalancer.server.port=8080
 
-  webserver:
-    image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-apache
-    volumes:
-      - ./:/var/www/html/:delegated
-      - ~/.composer/docker-cache/:/root/.composer:cached
-    extra_hosts:
-      - "$DOCKER_DOMAIN:host-gateway"
-    environment:
-      XDEBUG_CONFIG: remote_host=host.docker.internal
-      PHP_EXTENSION_XDEBUG: 1
-      PHP_EXTENSION_MYSQLI: 1
-      PHP_INI_MEMORY_LIMIT: 4g
-      PHP_EXTENSION_GD: 1
-      APACHE_DOCUMENT_ROOT: public/
-      PHP_EXTENSION_BZ2: 1
-      PHP_EXTENSION_IMAGICK: 1
-      PHP_INI_UPLOAD_MAX_FILESIZE: 1g
-      PHP_INI_XDEBUG__REMOTE_START: 1
-      PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
-      PHP_IDE_CONFIG: 'serverName=$DOCKER_DOMAIN'
-#     Uncomment the 3 lines below to enable the scheduler cron
-#      CRON_USER: root
-#      CRON_SCHEDULE: '* * * * *'
-#      CRON_COMMAND: php artisan schedule:run
-    labels:
-      - traefik.http.routers.$DOCKER_ROUTER.rule=Host(`$DOCKER_DOMAIN`)
-      - traefik.http.routers.$DOCKER_ROUTER.tls=true
-      - traefik.http.routers.$DOCKER_ROUTER.entrypoints=https
-      - traefik.http.services.$DOCKER_ROUTER.loadbalancer.server.port=80
-  frontend:
-    image: node:$DOCKER_NODE_VERSION
-    command: bash -c "npm install && npm run dev -- --host"
-    volumes:
-      - ./:/usr/src/app
-    working_dir: /usr/src/app
-#    restart: unless-stopped
-    labels:
-      - traefik.http.routers.${DOCKER_ROUTER}-HMR.rule=Host(`$VITE_HMR_DOMAIN`)
-      - traefik.http.routers.${DOCKER_ROUTER}-HMR.entrypoints=https
-      - traefik.http.routers.${DOCKER_ROUTER}-HMR.tls=true
-      - traefik.http.services.${DOCKER_ROUTER}-HMR.loadbalancer.server.port=8080
+
+    storybook:
+        image: node:$DOCKER_NODE_VERSION-alpine
+        command: npm run storybook -- --host=0.0.0.0 --no-open
+        volumes:
+            - ./:/usr/src/app
+        working_dir: /usr/src/app
+        #    restart: unless-stopped
+        labels:
+            - traefik.http.routers.${DOCKER_ROUTER}-story-book.rule=Host(`$STORY_BOOK_DOMAIN`)
+            - traefik.http.routers.${DOCKER_ROUTER}-story-book.entrypoints=https
+            - traefik.http.routers.${DOCKER_ROUTER}-story-book.tls=true
+            - traefik.http.services.${DOCKER_ROUTER}-story-book.loadbalancer.server.port=6006
 
 # Uncomment the service below to enable horizon
 #  horizon:
@@ -62,6 +74,6 @@ services:
 #      PHP_IDE_CONFIG: 'serverName=horizon'
 
 networks:
-  default:
-    external:
-      name: nginx-proxy
+    default:
+        external:
+            name: nginx-proxy

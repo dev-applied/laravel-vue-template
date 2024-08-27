@@ -13,18 +13,16 @@ use Illuminate\Support\Facades\Storage;
  *
  * @property int $id
  * @property string $name
- * @property string $url
+ * @property-read string $url
  * @property string $type
- * @property int|null $size
+ * @property int $size
  * @property int|null $created_by_id
  * @property int|null $updated_by_id
+ * @property int|null $deleted_by_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Client> $client
- * @property-read int|null $client_count
  * @property-read \App\Models\User|null $created_by
  * @property-read \App\Models\User|null $deleted_by
- * @property-read \App\Models\FileReport|null $report
  * @property-read array $responsive_images
  * @property-read \App\Models\User|null $updated_by
  * @method static \Illuminate\Database\Eloquent\Builder|File newModelQuery()
@@ -32,6 +30,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder|File query()
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedById($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File whereDeletedById($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereSize($value)

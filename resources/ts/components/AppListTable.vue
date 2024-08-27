@@ -1,17 +1,16 @@
 <template>
   <div class="list-table">
     <v-toolbar
-      v-show="enableSearch || enableFilter"
+      v-show="showSearchBar || showFilterBar"
       color="white"
       height="40"
       :flat="smAndDown"
       class="list-table__header"
     >
       <v-text-field
-        v-if="enableSearch"
+        v-if="showSearchBar"
         v-model="search"
         dense
-        outlined
         hide-details
         class="list-table__header__search"
         placeholder="Search..."
@@ -19,241 +18,164 @@
         label="Search..."
       />
       <v-btn
-        v-if="enableFilter"
+        v-if="showFilterBar"
         icon
         @click="$emit('showFilter')"
       >
         <v-icon>mdi-filter</v-icon>
       </v-btn>
     </v-toolbar>
-    <div
-      class="list-table__content"
-      :style="{ height: convertToUnit(height), 'overflow-y': scrollable ? 'scroll' : 'auto' }"
+    <v-infinite-scroll
+      :height="height"
+      :items="items"
+      :on-load="handleLoad"
+      :empty-text="noDataText"
     >
-      <v-alert
-        v-if="error"
-        type="error"
+      <v-list
+        :style="computedStyle"
+        v-bind="pass"
+        class="py-0"
       >
-        {{ error }}
-      </v-alert>
-      <div v-else-if="loading || internalItems.length">
-        <v-list
-          :three-line="threeLine"
-          :two-line="twoLine"
-          :style="computedStyle"
-          v-bind="$attrs"
-          class="py-0"
+        <template
+          v-for="(item, i) in items"
+          :key="i"
         >
-          <template v-for="(item, i) in internalItems" :key="i">
-            <v-list-item @click="$emit('click:item', item)">
-              <slot
-                name="item"
-                :item="item"
-              />
-            </v-list-item>
-            <v-divider
-              v-if="i !== items.length - 1"
-              :key="i + '-divider'"
-              class="my-0"
+          <v-list-item @click="$emit('click:item', item)">
+            <slot
+              name="item"
+              :item="item"
             />
-          </template>
-        </v-list>
-        <v-card
-          v-if="!finished"
-          v-intersect="loadData"
-        />
-        <div class="d-flex justify-center mt-2">
-          <v-progress-circular
-            v-if="loading"
-            indeterminate
+          </v-list-item>
+          <v-divider
+            v-if="i !== items.length - 1"
+            :key="i + '-divider'"
+            class="my-0"
           />
-        </div>
-      </div>
-      <div v-else>
-        <slot name="no-items">
-          <div class="list-table__no-items">
-            {{ noDataText || "No Items" }}
+        </template>
+      </v-list>
+      <template #error="{ props: passingProps }">
+        <v-alert type="error">
+          <div class="d-flex justify-space-between align-center">
+            {{ errorMsg }}
+            <v-btn
+              color="white"
+              size="small"
+              variant="outlined"
+              v-bind="passingProps"
+            >
+              Retry
+            </v-btn>
           </div>
+        </v-alert>
+      </template>
+      <template #empty="{ props: passingProps }">
+        <slot
+          name="no-items"
+          v-bind="passingProps"
+        >
+          <v-alert type="warning">
+            No more items!
+          </v-alert>
         </slot>
-      </div>
-    </div>
+      </template>
+    </v-infinite-scroll>
   </div>
 </template>
 
+<script lang="ts">
+import type { PropType } from "vue"
+
+export const AppListTableProps = {
+  endpoint: {
+    type: String,
+    required: true,
+    default: ''
+  },
+  noDataText: {
+    type: String,
+    default: "No items found"
+  },
+  filters: {
+    type: Object as PropType<Record<string, any>>,
+    default: () => ({})
+  },
+  method: {
+    type: String as PropType<"POST" | "GET" | "PUT" | "PATCH">,
+    default: "GET"
+  },
+  itemPerPage: {
+    type: Number,
+    default: 10
+  },
+  showSearchBar: {
+    type: Boolean,
+    default: false
+  },
+  showFilterBar: {
+    type: Boolean,
+    default: false
+  },
+  threeLine: {
+    type: Boolean,
+    default: false
+  },
+  twoLine: {
+    type: Boolean,
+    default: false
+  },
+  scrollable: {
+    type: Boolean,
+    default: false
+  },
+  height: {
+    type: [String, Number],
+    default: '100%'
+  },
+}
+</script>
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue"
-import convertToUnit from "@/utils/convertToUnit"
-import { type StoreDefinition } from "pinia"
-import { useDebounceFn } from "@vueuse/core"
-import axios from "@/plugins/axios"
-import errorHandler from "@/plugins/errorHandler"
+import { ref, computed, useAttrs } from "vue"
 import { useDisplay } from "vuetify"
+import usePaginationData from "@/composables/usePaginationData"
 
-interface Pagination {
-  sort: null;
-  direction: "DESC";
-  page: 0;
-  perPage: 10;
-  count: 0;
-}
+const props = defineProps(AppListTableProps)
 
-export interface Props {
-  endpoint: string;
-  fieldName: string | null;
-  additionalRequestData: Record<string, any>;
-  method: "POST" | "GET" | "PUT" | "PATCH";
-  enableSearch: boolean;
-  enableFilter: boolean;
-  storeModule: StoreDefinition | null;
-  threeLine: boolean;
-  twoLine: boolean;
-  scrollable: boolean;
-  height: string | number;
-  noDataText: string | null;
-  itemsPerPage: number | null;
-}
+const pass = {...props, ...useAttrs()}
 
-const props = withDefaults(defineProps<Props>(), {
-  fieldName: null,
-  additionalRequestData: () => ({}),
-  method: "GET",
-  enableSearch: false,
-  enableFilter: false,
-  storeModule: null,
-  threeLine: false,
-  twoLine: false,
-  scrollable: true,
-  height: "100%",
-  noDataText: null,
-  itemsPerPage: null
-})
-
-const emit = defineEmits(['current-items'])
+defineEmits(['showFilter', 'click:item'])
 
 const search = ref("")
 const items = ref<any[]>([])
-const loading = ref(false)
-const error = ref<string | null | boolean>(null)
-const finished = ref(false)
-const pagination = ref<Pagination>({
-  sort: null,
-  direction: "DESC",
-  page: 0,
-  perPage: 10,
-  count: 0
-})
+const errorMsg = ref<undefined | string>(undefined)
+const loading = ref<boolean>(false)
+
+const { pagination, loadData, reload, setPagination } = usePaginationData(props.endpoint, {...props.filters, search: search.value}, props?.method)
+
 const { smAndDown } = useDisplay()
 
-const store = props.storeModule ? props.storeModule() : null
-
-const internalItems = computed({
-  get(): any[] {
-    return store && props.fieldName ? store[props.fieldName] : items.value
-  },
-  set(val: any[]) {
-    if (store && props.fieldName) {
-      store[props.fieldName] = val
-    } else {
-      items.value = val
-    }
-  }
-})
-
-const internalPagination = computed({
-  get() {
-    return store ? store.pagination : pagination.value
-  },
-  set(val) {
-    if (store) {
-      store.pagination = val
-    } else {
-      pagination.value = val
-    }
-  }
+defineExpose({
+  reload
 })
 
 const computedStyle = computed(() => {
-  if (props.enableSearch || props.enableFilter) {
+  if (props.showSearchBar || props.showFilterBar) {
     return { height: "calc(100% - 56px)", "overflow-y": "scroll" }
   } else {
     return { height: "100%" }
   }
 })
 
-const debounceReload = useDebounceFn(() => {
-  reload()
-}, 1000, { maxWait: 5000 })
-
-watch(search, debounceReload)
-
-watch(props.additionalRequestData, debounceReload, { deep: true })
-
-onMounted(async () => {
-  await loadData()
-})
-
-onBeforeUnmount(() => {
-  internalItems.value = []
-  internalPagination.value = {
-    sort: null,
-    direction: "DESC",
-    page: 0,
-    perPage: 10,
-    count: 0
-  }
-})
-
-async function loadData() {
-  if (finished.value || error.value || loading.value) {
-    return
-  }
-  internalPagination.value.page += 1
-  error.value = false
+async function handleLoad({done}) {
+  setPagination({ page: pagination.value.page + 1})
   loading.value = true
-
-  let config
-  if (props.method === "GET") {
-    config = {
-      params: {
-        search: search.value,
-        ...internalPagination.value,
-        ...props.itemsPerPage ? { perPage: props.itemsPerPage } : {},
-        ...props.additionalRequestData
-      }
-    }
-  } else {
-    config = {
-      pagination: internalPagination.value,
-      ...props.itemsPerPage ? { perPage: props.itemsPerPage } : {},
-      ...props.additionalRequestData,
-      search: search.value
-    }
-  }
-
-  const { data, status } = await axios[props.method.toLowerCase()](props.endpoint, config).catch((e) => e)
-
+  const {data, status, error} = await loadData()
   loading.value = false
-  if (errorHandler(status, data.message, data.errors)) {
-    error.value = data.message
-    return
-  }
-
-  internalItems.value = internalItems.value.concat(data.data)
-  emit("current-items", internalItems.value)
-  internalPagination.value.page = data.current_page
-  internalPagination.value.pageStop = data.to ?? 0
-  finished.value = data.last_page <= data.current_page
+  errorMsg.value = error
+  items.value.concat(data)
+  done(status)
 }
 
-function reload(resetPage = true) {
-  if (resetPage) {
-    internalPagination.value.page = 0
-  }
-  internalItems.value = []
-  error.value = false
-  finished.value = false
-  loadData()
-}
+
 </script>
 
 <style lang="scss">
@@ -262,7 +184,7 @@ function reload(resetPage = true) {
   position: relative;
 
   &__header {
-    @media #{map-get($display-breakpoints, 'sm-and-down')} {
+    @media #{map-get(settings.$display-breakpoints, 'sm-and-down')} {
       position: sticky;
       top: 80px;
 

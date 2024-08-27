@@ -1,7 +1,8 @@
 <template>
   <v-container class="fill-height justify-center align-center">
-    <app-table endpoint="users">
-    </app-table>
+    <app-table
+      endpoint="/users"
+    />
   </v-container>
 </template>
 

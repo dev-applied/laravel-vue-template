@@ -62,7 +62,7 @@ export default defineComponent({
     padding: 2px 10px;
   }
 
-  ::v-deep {
+  :deep() {
     .password-condition {
       .v-badge__badge {
         background: linear-gradient(168.24deg, #FD5F76 51.64%, #FE805A 100%) !important;

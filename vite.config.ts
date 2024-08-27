@@ -29,7 +29,9 @@ export default defineConfig(({mode}) => {
           configFile: 'resources/scss/settings.scss'
         }
       }),
-      eslint(),
+      eslint({
+        exclude: [/virtual:/, /node_modules/, /stories/]
+      }),
       ViteFonts({
         google: {
           families: [{
@@ -41,6 +43,7 @@ export default defineConfig(({mode}) => {
     ],
     resolve: {
       alias: {
+        '@/scss': fileURLToPath(new URL('./resources/scss', import.meta.url)),
         '@': fileURLToPath(new URL('./resources/ts', import.meta.url)),
       }
     },
