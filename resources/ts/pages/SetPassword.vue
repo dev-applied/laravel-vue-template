@@ -12,12 +12,12 @@
             <h3 class="set-password__title">
               Set a Password
             </h3>
-<!--            <v-spacer />-->
-<!--            <v-img-->
-<!--              contain-->
-<!--              :style="{ 'max-width': $vuetify.breakpoint.mdAndUp ? '160px' : '115px' }"-->
-<!--              src="/images/logo.png"-->
-<!--            />-->
+            <!--            <v-spacer />-->
+            <!--            <v-img-->
+            <!--              contain-->
+            <!--              :style="{ 'max-width': $vuetify.breakpoint.mdAndUp ? '160px' : '115px' }"-->
+            <!--              src="/images/logo.png"-->
+            <!--            />-->
           </v-card-title>
           <v-card-text class="mt-3">
             <v-alert
