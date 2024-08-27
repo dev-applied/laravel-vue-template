@@ -1,5 +1,5 @@
 <template>
-  <pagination-table
+  <app-pagination-table
     v-if="$vuetify.breakpoint.mdAndUp"
     v-bind="{...$attrs, ...$props}"
     ref="table"
@@ -20,7 +20,7 @@
         v-bind="data"
       />
     </template>
-  </pagination-table>
+  </app-pagination-table>
   <list-table
     v-else
     ref="list"
@@ -33,6 +33,12 @@
         :item="item"
       />
     </template>
+    <template #list-item="{ item }">
+      <slot
+        name="list-item"
+        :item="item"
+      />
+    </template>
     <template #no-items>
       <slot name="no-items" />
     </template>
@@ -42,16 +48,16 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue"
 import type { StoreDefinition } from "pinia"
-import PaginationTable from "@/components/AppPaginationTable.vue"
+import AppPaginationTable from "@/components/AppPaginationTable.vue"
 import ListTable from "@/components/AppListTable.vue"
 
 export default defineComponent({
-  components: { ListTable, PaginationTable },
+  components: { ListTable, AppPaginationTable },
   inheritAttrs: false,
   props: {
     endpoint: {
       type: String,
-      required: true
+      default: ''
     },
     method: {
       type: String,

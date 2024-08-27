@@ -9,7 +9,7 @@
       ref="table"
       :class="{'striped': striped, 'table--styled': styled}"
       :disable-sort="!sortable"
-      :items="items"
+      :items="internalItems"
       :items-per-page="pagination.perPage"
       :loading="isLoading"
       disable-filtering
@@ -19,6 +19,20 @@
       @update:sort-by="updateSortBy"
       @update:sort-desc="updateSortDirection"
     >
+      <template #header.data-table-select="{}">
+        <v-simple-checkbox
+          :indeterminate="selectAll === 'partial' || (selectAll === 'all' && excludedRecords.length > 0)"
+          :value="selectAll === 'all'"
+          @click.prevent.stop="handleToggle"
+        />
+      </template>
+      <template #item.data-table-select="{item}">
+        <v-checkbox
+          :input-value="isItemSelected(item)"
+          :true-value="true"
+          @change="handleSelectItem(item)"
+        />
+      </template>
       <template
         v-for="(_, name) in $slots"
         :slot="name"
@@ -97,9 +111,23 @@ export default defineComponent({
   mixins: [debounce],
   inheritAttrs: false,
   props: {
+    value: {
+      type: Object as PropType<{ method: 'none' | 'partial' | 'all', selected: any[], excluded: [], count: 0 }>,
+      default: () => {
+        return {
+          method: 'none',
+          selected: [],
+          excluded: []
+        }
+      }
+    },
+    itemKey: {
+      type: String,
+      default: 'id',
+    },
     endpoint: {
       type: String,
-      required: true
+      default: ''
     },
     additionalRequestData: {
       type: Object as PropType<Record<string, unknown>>,
@@ -146,18 +174,24 @@ export default defineComponent({
     itemsPerPage: {
       type: Number as PropType<number>,
       default: 10
+    },
+    items: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
     return {
       pagination: {
         sort: null as null | string,
-        direction: "DESC",
+        direction: "asc",
         page: 1,
         perPage: this.itemsPerPage,
-        count: 0
+        count: 0,
+        pageStart: 0,
+        pageStop: 0,
       },
-      items: [] as any[],
+      loadedItems: [] as any[],
       initialLoad: true as boolean,
       loading: false as boolean,
       itemsPerPageOptions: [
@@ -173,7 +207,10 @@ export default defineComponent({
       nextLoading: false as boolean,
       ignorePaginationUpdate: false as boolean,
       error: false as false | string,
-      abortController: null as null | AbortController
+      abortController: null as null | AbortController,
+      selectAll: 'none' as 'none' | 'partial' | 'all',
+      selectedRecords: [] as any[],
+      excludedRecords: [] as any[],
     }
   },
   computed: {
@@ -196,6 +233,20 @@ export default defineComponent({
         return this.loadingOverride
       } else {
         return this.loading
+      }
+    },
+    internalItems() {
+      return this.endpoint ? this.loadedItems : this.items
+    },
+    selectedRecordCount() {
+      switch (this.selectAll) {
+        case 'none':
+        case 'partial':
+          return this.selectedRecords.length
+        case 'all':
+          return this.pagination.count - this.excludedRecords.length
+        default:
+          throw new Error('Invalid selectAll value')
       }
     }
   },
@@ -236,15 +287,25 @@ export default defineComponent({
   },
   mounted() {
     this.loadData()
+    if (!this.endpoint) {
+      this.initialLoad = false
+    }
   },
   methods: {
     reload(resetPage = true) {
       if(resetPage) {
+        this.selectAll = 'none'
+        this.selectedRecords = []
+        this.excludedRecords = []
+        this.$emit('input', {method: this.selectAll, selected: this.selectedRecords, excluded: this.excludedRecords, count: this.selectedRecordCount})
         this.pagination.page = 1
       }
       this.loadData()
     },
     async loadData() {
+      if (!this.endpoint) {
+        return
+      }
       this.error = false
       if (this.abortController) {
         this.abortController.abort("canceled")
@@ -281,7 +342,7 @@ export default defineComponent({
       }
       this.loading = false
       this.initialLoad = false
-      this.items = data.data
+      this.loadedItems = data.data
       this.ignorePaginationUpdate = true
       this.pagination.page = data.current_page
       if(this.itemsPerPage === -1) {
@@ -295,7 +356,8 @@ export default defineComponent({
       this.$nextTick(() => {
         this.ignorePaginationUpdate = false
       })
-      this.$emit("loaded", this.pagination.count)
+      this.$emit("loaded", this.pagination)
+      this.$emit('items', this.loadedItems)
     },
     nextPage() {
       if (this.loading || this.pagination.page >= this.numberOfPages) {
@@ -320,6 +382,54 @@ export default defineComponent({
     updateSortDirection(direction: boolean) {
       this.pagination.direction = direction ? "desc" : "asc"
       this.$emit("sortUpdate", this.pagination.sort ? this.pagination.sort + " " + this.pagination.direction : undefined)
+    },
+    handleToggle() {
+      switch (this.selectAll) {
+        case 'none':
+          this.selectAll = 'partial'
+          this.selectedRecords = this.internalItems.map(i => i[this.itemKey])
+          this.excludedRecords = []
+          break
+        case 'partial':
+          this.selectAll = 'all'
+          this.selectedRecords = []
+          this.excludedRecords = []
+          break
+        case 'all':
+          if (this.excludedRecords.length) {
+            this.excludedRecords = []
+          } else {
+            this.selectAll = 'none'
+            this.selectedRecords = []
+            this.excludedRecords = []
+          }
+          break
+        default:
+          throw new Error('Invalid selectAll value')
+      }
+      this.$emit('input', {method: this.selectAll, selected: this.selectedRecords, excluded: this.excludedRecords, count: this.selectedRecordCount})
+    },
+    handleSelectItem(item) {
+      if (this.selectAll === 'all') {
+        if (this.excludedRecords.includes(item[this.itemKey])) {
+          this.excludedRecords.splice(this.excludedRecords.findIndex((i) => i[this.itemKey] === item[this.itemKey]), 1)
+        } else {
+          this.excludedRecords.push(item[this.itemKey])
+        }
+      } else {
+        if (this.selectedRecords.includes(item[this.itemKey])) {
+          this.selectedRecords.splice(this.selectedRecords.findIndex(item[this.itemKey]), 1)
+        } else {
+          this.selectedRecords.push(item[this.itemKey])
+        }
+      }
+      this.$emit('input', {method: this.selectAll, selected: this.selectedRecords, excluded: this.excludedRecords, count: this.selectedRecordCount})
+    },
+    isItemSelected(item: any) {
+      if (this.selectAll === 'all' && !this.excludedRecords.includes(item[this.itemKey])) {
+        return true
+      }
+      return this.selectedRecords.includes(item[this.itemKey])
     }
   }
 })

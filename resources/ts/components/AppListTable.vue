@@ -45,15 +45,20 @@
           class="py-0"
         >
           <template v-for="(item, i) in internalItems">
-            <v-list-item
-              :key="i"
-              @click="$emit('click:item', item)"
+            <slot
+              name="list-item"
+              :item="item"
             >
-              <slot
-                name="item"
-                :item="item"
-              />
-            </v-list-item>
+              <v-list-item
+                :key="i"
+                @click="$emit('click:item', item)"
+              >
+                <slot
+                  name="item"
+                  :item="item"
+                />
+              </v-list-item>
+            </slot>
             <v-divider
               v-if="i !== items.length - 1"
               :key="i + '-divider'"
@@ -62,8 +67,9 @@
           </template>
         </v-list>
         <v-card
-          v-if="!finished"
-          v-intersect="loadData"
+          v-if="!finished && !loading"
+          id="intersect-observer"
+          v-intersect="handleIntersect"
         />
         <div class="d-flex justify-center mt-2">
           <v-progress-circular
@@ -104,7 +110,7 @@ export default defineComponent({
   props: {
     endpoint: {
       type: String,
-      required: true
+      default: ''
     },
     fieldName: {
       type: String,
@@ -160,6 +166,10 @@ export default defineComponent({
     itemsPerPage: {
       type: Number,
       default: null,
+    },
+    items: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -172,7 +182,7 @@ export default defineComponent({
         count: 0
       },
       search: '',
-      items: [] as any[],
+      loadedItems: [] as any[],
       loading: false,
       error: null as string | null | boolean,
       finished: false
@@ -185,14 +195,14 @@ export default defineComponent({
           return this.storeModule()[this.fieldName]
         }
 
-        return this.items
+        return this.items.length ? this.items : this.loadedItems
       },
       set(val: any[]) {
         if (this.storeModule) {
           // @ts-ignore
           this.storeModule()[this.fieldName] = val
         } else {
-          this.items = val
+          this.loadedItems = val
         }
       }
     },
@@ -257,7 +267,7 @@ export default defineComponent({
       this.loadData()
     },
     async loadData() {
-      if (this.finished || this.error || this.loading) {
+      if (this.finished || this.error || this.loading || !this.endpoint) {
         return
       }
       this.internalPagination.page += 1
@@ -300,10 +310,17 @@ export default defineComponent({
       this.$emit('current-items', this.internalItems)
       this.internalPagination.page = data.current_page
       this.internalPagination.pageStop = data.to ?? 0
+      this.internalPagination.count = data.total
       this.finished = data.last_page <= data.current_page
+      this.$emit("loaded", this.pagination)
     },
-    convertToUnit
-  }
+    convertToUnit,
+    handleIntersect(entries) {
+      if (entries[0].isIntersecting) {
+        this.loadData()
+      }
+    }
+  },
 })
 </script>
 
