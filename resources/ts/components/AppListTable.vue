@@ -307,7 +307,7 @@ export default defineComponent({
       }
 
       this.internalItems = this.internalItems.concat(data.data)
-      this.$emit('current-items', this.internalItems)
+      this.$emit('items', this.internalItems)
       this.internalPagination.page = data.current_page
       this.internalPagination.pageStop = data.to ?? 0
       this.internalPagination.count = data.total
