@@ -11,7 +11,8 @@
     v-bind="bindings"
     :items="computedItems"
     hide-selected
-    v-model="model"
+    return-object
+    v-model="objectModel"
     no-filter
     eager
     v-model:search="state.search"
@@ -64,9 +65,11 @@
 </template>
 
 <script setup lang="ts">
-import {computed, mergeProps, onMounted, reactive, ref, useAttrs, watch} from "vue"
+import {computed, mergeProps, onMounted, reactive, ref, toValue, useAttrs, watch} from "vue"
 import {VAutocomplete} from "vuetify/components/VAutocomplete"
 import usePaginationData from "@/composables/usePaginationData"
+import {cloneDeep, isEqual} from "lodash"
+import {useDebounceFn} from "@vueuse/core"
 
 defineOptions({inheritAttrs: false})
 
@@ -95,7 +98,6 @@ const props = withDefaults(defineProps<AppAutoCompleteProps>(), {
   filters: () => ({}),
 })
 
-
 const model = defineModel<any[] | any>()
 const objectModel = defineModel<any[] | any>('object')
 const items = ref<any[]>([])
@@ -110,7 +112,7 @@ const state = reactive({
 const filters = computed(() => {
   const filters: { search?: string | null, key: string, selected?: any[] } = {
     search: state.search,
-    key: props.itemValue as string || "id"
+    key: props.itemValue as string || "id",
   }
 
   if (props.filters) {
@@ -119,6 +121,8 @@ const filters = computed(() => {
 
   if (model.value !== undefined) {
     filters.selected = Array.isArray(model.value) ? model.value : [model.value]
+  } else if (objectModel.value !== undefined) {
+    filters.selected = Array.isArray(objectModel.value) ? objectModel.value.map(i => i[props.itemValue]) : [objectModel.value?.[props.itemValue]]
   }
 
   return filters
@@ -132,48 +136,100 @@ const computedItems = computed(() => {
   return [...props.prependItems, ...items.value, ...props.appendItems]
 })
 
-const {loadData, reload, pagination, setPagination} = usePaginationData(props.endpoint, filters)
+const {loadData, pagination, setPagination} = usePaginationData(props.endpoint, filters)
+
+async function reload() {
+  state.finished = false
+  setPagination({page: 1})
+  const {data, status} = await loadData()
+  if (status === "error" || status === 'empty') {
+    state.finished = true
+    return
+  }
+  items.value = data
+}
 
 watch(() => props.disabled, () => {
   if (!props.disabled) {
-    state.finished = false
     reload()
   }
 }, {immediate: true})
 
-watch(() => items.value, () => {
-  if (model.value === undefined) {
+const debounceReload = useDebounceFn(() => {
+  reload().then()
+}, 1000)
+
+let oldFilters = cloneDeep(toValue(filters))
+watch(() => filters, (newValue: any) => {
+  newValue = toValue(newValue)
+
+  if (JSON.stringify(newValue) === JSON.stringify(oldFilters)) {
     return
   }
-  if (props.multiple) {
-    objectModel.value = items.value.filter(item => model.value.includes(item[props.itemValue]))
+  state.finished = false
+  if (newValue?.search !== oldFilters?.search) {
+    debounceReload().then()
   } else {
-    objectModel.value = items.value.find(item => item[props.itemValue] == model.value)
+    reload().then()
   }
+  oldFilters = cloneDeep(newValue)
+}, { deep: true })
+
+watch(() => props.endpoint, () => {
+  reload()
+})
+
+watch(() => props.itemsPerPage, () => {
+  setPagination({itemsPerPage: props.itemsPerPage})
 }, {immediate: true})
 
-watch(() => filters.value, () => {
-  state.finished = false
-}, {deep: true})
+watch(() => model.value, setObjectModel)
+
+watch(() => objectModel.value, setModel)
 
 async function handleLoad(_isIntersecting: boolean, entries: IntersectionObserverEntry[]) {
   if (entries[0].intersectionRatio <= 0) return
   if (state.finished) return
 
   loading.value = true
+  setPagination({page: pagination.value.page + 1})
   const {data, status} = await loadData()
   loading.value = false
-  setPagination({page: pagination.value.page + 1})
   if (status === "error" || status === 'empty') {
     state.finished = true
     return
   }
-  items.value.concat(data)
+  items.value = items.value.concat(data)
+}
+
+function setObjectModel() {
+  if (model.value === undefined) {
+    return
+  }
+  const value = props.multiple ? items.value.filter(item => model.value.includes(item[props.itemValue])) : items.value.find(item => item[props.itemValue] == model.value)
+  if (isEqual(value, objectModel.value)) {
+    return
+  }
+  objectModel.value = value
+}
+
+function setModel() {
+  if (objectModel.value === undefined) {
+    return
+  }
+
+  const value = props.multiple ? objectModel.value.map((item: any) => item[props.itemValue]) : objectModel.value?.[props.itemValue]
+  if (isEqual(value, model.value)) {
+    return
+  }
+  model.value = value
 }
 
 const initialLoading = ref(true)
 onMounted(async () => {
   await reload()
+  setObjectModel()
+  setModel()
   initialLoading.value = false
 })
 

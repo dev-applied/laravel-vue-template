@@ -85,8 +85,10 @@ export const AppPaginationTableProps = {
 }
 </script>
 <script setup lang="ts">
-import { ref, watchEffect } from "vue"
+import {ref, toValue, watch, watchEffect} from "vue"
 import usePaginationData from "@/composables/usePaginationData"
+import {cloneDeep} from "lodash"
+import {useDebounceFn} from "@vueuse/core"
 
 defineOptions({
   inheritAttrs: false
@@ -97,7 +99,7 @@ const items = ref<any[]>([])
 const errorMsg = ref<string | undefined>(undefined)
 const loading = ref<boolean>(false)
 
-const { pagination, loadData, reload, setPagination } = usePaginationData(props.endpoint, props?.filters, props?.method)
+const { pagination, loadData, setPagination } = usePaginationData(props.endpoint, props?.filters, props?.method)
 
 watchEffect(() => {
   if (props.static) {
@@ -110,6 +112,37 @@ watchEffect(() => {
     })
   }
 })
+
+const debounceReload = useDebounceFn(() => {
+  reload().then()
+}, 1000)
+
+let oldFilters = cloneDeep(toValue(props?.filters))
+watch(() => props?.filters, (newValue: any) => {
+  newValue = toValue(newValue)
+
+  if (JSON.stringify(newValue) === JSON.stringify(oldFilters)) {
+    return
+  }
+  if (newValue?.search !== oldFilters?.search) {
+    debounceReload().then()
+  } else {
+    reload().then()
+  }
+  oldFilters = cloneDeep(newValue)
+}, { deep: true })
+
+async function reload() {
+  setPagination({page: 1})
+  loading.value = true
+  const {data, status, error} = await loadData()
+  loading.value = false
+  if (status === "canceled") {
+    return
+  }
+  errorMsg.value = error
+  items.value = data
+}
 
 defineExpose({
   reload

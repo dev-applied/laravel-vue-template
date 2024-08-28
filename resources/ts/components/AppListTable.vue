@@ -134,9 +134,11 @@ export const AppListTableProps = {
 }
 </script>
 <script setup lang="ts">
-import { ref, computed, useAttrs } from "vue"
+import {ref, computed, useAttrs, toValue, watch} from "vue"
 import { useDisplay } from "vuetify"
 import usePaginationData from "@/composables/usePaginationData"
+import {useDebounceFn} from "@vueuse/core"
+import {cloneDeep} from "lodash"
 
 const props = defineProps(AppListTableProps)
 
@@ -149,7 +151,7 @@ const items = ref<any[]>([])
 const errorMsg = ref<undefined | string>(undefined)
 const loading = ref<boolean>(false)
 
-const { pagination, loadData, reload, setPagination } = usePaginationData(props.endpoint, {...props.filters, search: search.value}, props?.method)
+const { pagination, loadData, setPagination } = usePaginationData(props.endpoint, {...props.filters, search: search.value}, props?.method)
 
 const { smAndDown } = useDisplay()
 
@@ -164,6 +166,37 @@ const computedStyle = computed(() => {
     return { height: "100%" }
   }
 })
+
+const debounceReload = useDebounceFn(() => {
+  reload().then()
+}, 1000)
+
+let oldFilters = cloneDeep(toValue(props?.filters))
+watch(() => props?.filters, (newValue: any) => {
+  newValue = toValue(newValue)
+
+  if (JSON.stringify(newValue) === JSON.stringify(oldFilters)) {
+    return
+  }
+  if (newValue?.search !== oldFilters?.search) {
+    debounceReload().then()
+  } else {
+    reload().then()
+  }
+  oldFilters = cloneDeep(newValue)
+}, { deep: true })
+
+async function reload() {
+  setPagination({page: 1})
+  loading.value = true
+  const {data, status, error} = await loadData()
+  loading.value = false
+  if (status === "canceled") {
+    return
+  }
+  errorMsg.value = error
+  items.value = data
+}
 
 async function handleLoad({done}) {
   setPagination({ page: pagination.value.page + 1})

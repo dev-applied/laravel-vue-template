@@ -1,8 +1,6 @@
-import { ref, toValue, type MaybeRef, watch } from "vue"
+import { ref, toValue, type MaybeRef } from "vue"
 import axios from "axios"
 import errorHandler from "@/plugins/errorHandler"
-import { useDebounceFn } from "@vueuse/core"
-import { cloneDeep } from "lodash"
 
 export type Methods = "GET" | "POST" | "PUT" | "PATCH"
 export type InfiniteScrollStatus = "ok" | "empty" | "error" | "canceled"
@@ -71,39 +69,9 @@ export default function usePaginationData<T = any>(
     return { status: statusMsg, data: data.data }
   }
 
-  async function reload(resetPage = true) {
-    pagination.value.lastPage = 0
-    pagination.value.page = resetPage ? 1 : pagination.value.page
-    return await loadData()
-  }
-
-  const debounceReload = useDebounceFn(() => {
-    reload().then()
-  }, 1000)
-
-  let oldFilters = cloneDeep(toValue(filters))
-  watch(() => filters, (newValue) => {
-    newValue = toValue(newValue)
-
-    if (JSON.stringify(newValue) === JSON.stringify(oldFilters)) {
-      return
-    }
-    if (newValue?.search !== oldFilters?.search) {
-      debounceReload().then()
-    } else {
-      reload().then()
-    }
-    oldFilters = cloneDeep(newValue)
-  }, { deep: true })
-
-  watch(() => toValue(endpoint), () => {
-    reload().then()
-  })
-
   return {
     pagination,
     setPagination,
     loadData,
-    reload
   }
 }

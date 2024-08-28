@@ -24,7 +24,7 @@ declare namespace App.Models {
         unread_notifications_count?: number | null;
         roles_count?: number | null;
         permissions_count?: number | null;
-        
+
         readonly all_permissions?: any;
     }
 
@@ -38,8 +38,8 @@ declare namespace App.Models {
         users?: Array<App.Models.User> | null;
         permissions_count?: number | null;
         users_count?: number | null;
-        
-        
+
+
     }
 
     export interface File {
@@ -56,7 +56,7 @@ declare namespace App.Models {
         created_by?: App.Models.User | null;
         updated_by?: App.Models.User | null;
         deleted_by?: App.Models.User | null;
-        
+
         readonly responsive_images?: any;
     }
 
@@ -72,8 +72,11 @@ declare namespace App.Models {
         roles_count?: number | null;
         users_count?: number | null;
         permissions_count?: number | null;
-        
-        
+
+
     }
 
 }
+
+
+
