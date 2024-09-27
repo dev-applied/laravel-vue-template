@@ -9,6 +9,7 @@ export interface Auth {
   hasAllPermissions: (permissions: string[] | string[][]) => boolean
   hasAnyPermissions: (permissions: string[] | string[][]) => boolean
   login: (form: LoginForm) => Promise<AxiosResponse<{ access_token: string }>>
+  loadUser: (force?: boolean) => Promise<void>
   logout: () => Promise<void>
   loggedIn: boolean
 }
@@ -34,6 +35,10 @@ export const $auth: Auth = {
   async login(form: LoginForm) {
     const userStore = useUserStore()
     return await userStore.login(form)
+  },
+  async loadUser(force: boolean = false) {
+    const userStore = useUserStore()
+    return await userStore.loadUser(force)
   },
   logout() {
     const userStore = useUserStore()

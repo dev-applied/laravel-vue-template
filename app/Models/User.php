@@ -112,8 +112,8 @@ class User extends Model implements
     public static function booted(): void
     {
         parent::booted();
-        self::creating(function (User $user) {
-            if ($user->password) {
+        self::saving(function (User $user) {
+            if ($user->password && Hash::needsRehash($user->password)) {
                 $user->password = Hash::make($user->password);
             }
         });

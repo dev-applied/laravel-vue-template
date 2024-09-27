@@ -60,7 +60,7 @@ class AuthController extends Controller
             return response()->json(['message' =>  'You may try again in ' . CarbonInterval::seconds($seconds)->cascade()->forHumans()], 401);
         }
 
-        $user = User::where('email', $credentials['username'])->first();
+        $user = User::where('email', $credentials['email'])->first();
         if (!$user) {
             RateLimiter::hit('login:'.$request->ip(), 60 * 5);
             return response()->json(['message' => 'User or password incorrect'], 401);

@@ -24,7 +24,6 @@ export default defineComponent({
     themeName: {
       immediate: true,
       handler(themeName) {
-        console.log('change theme', themeName)
         this.theme.global.name.value = themeName
       },
     },

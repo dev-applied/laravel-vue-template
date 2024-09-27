@@ -25,10 +25,12 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
-import validators from '@/mixins/validators'
+import useValidators from "@/composables/useValidators"
 
 export default defineComponent({
-  mixins: [validators],
+  setup() {
+    return useValidators()
+  },
   props: {
     password: {
       type: String as PropType<string | null>,
@@ -38,12 +40,12 @@ export default defineComponent({
   computed: {
     conditions() {
       return [
-        { text: '8+ characters', data: this.hasNumberOfChars(this.password) },
-        { text: 'at least 1 capital letter', data: this.hasUppercase(this.password) },
-        { text: 'at least 1 lowercase letter', data: this.hasLowercase(this.password) },
-        { text: 'at least 1 number', data: this.hasNumber(this.password) },
-        { text: 'a special character such as #,!,@,$,%,^,&,*,(,),-,+,=.', data: this.hasSymbol(this.password) },
-        { text: 'no spaces', data: this.hasSpace(this.password) }
+        { text: '8+ characters', data: this.rules.hasNumberOfChars(this.password) },
+        { text: 'at least 1 capital letter', data: this.rules.hasUppercase(this.password) },
+        { text: 'at least 1 lowercase letter', data: this.rules.hasLowercase(this.password) },
+        { text: 'at least 1 number', data: this.rules.hasNumber(this.password) },
+        { text: 'a special character such as #,!,@,$,%,^,&,*,(,),-,+,=.', data: this.rules.hasSymbol(this.password) },
+        { text: 'no spaces', data: this.rules.hasSpace(this.password) }
       ]
     },
   }

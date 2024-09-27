@@ -1,8 +1,8 @@
-import type { LocationQueryRaw, RouteLocationRaw, RouteParamsGeneric } from "vue-router"
-import {useRouter} from "vue-router"
+import type { LocationQueryRaw, RouteLocationRaw } from "vue-router"
+import router from "@/router"
 
-export default function route(name: string, params: RouteParamsGeneric = {}, query: LocationQueryRaw = {}): RouteLocationRaw {
-  const routes = useRouter().options!.routes!.map((route) => [route, ...route.children || []]).flat()
+export default function route(name: string, params: {[p: string]: string | string[] | number | number[] } = {}, query: LocationQueryRaw = {}): RouteLocationRaw {
+  const routes = router.options!.routes!.map((route) => [route, ...route.children || []]).flat()
   const route = routes.find((route) => route.name === name)
   if (!route) throw new Error(`Route ${name} not found`)
   return { name, params, query }

@@ -34,8 +34,8 @@ export const useUserStore = defineStore("user", {
       this.user = null
       localStorage.removeItem('token')
     },
-    async loadUser() {
-      if (this.user) {
+    async loadUser(force: boolean = false) {
+      if (this.user && !force) {
         return
       }
       const {

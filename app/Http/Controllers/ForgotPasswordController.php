@@ -57,7 +57,7 @@ class ForgotPasswordController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password),
+                    'password' => $password,
                 ]);
 
                 $user->save();
@@ -76,6 +76,6 @@ class ForgotPasswordController extends Controller
 
         $user = User::where('email', $request->input('email'))->firstOrFail();
 
-        return response()->json(['success' => true, 'user' => $user]);
+        return response()->json(compact('user'));
     }
 }
