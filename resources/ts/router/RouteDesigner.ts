@@ -26,7 +26,7 @@ export default class RouteDesigner {
   }
 
   public static setNotFound(page: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
-    this.notFound = this.newRoute("*", page, "NotFound", attributes)
+    this.notFound = this.newRoute("/:pathMatch(.*)*", page, "NotFound", attributes)
   }
 
   public static pattern(key: string, pattern: string) {

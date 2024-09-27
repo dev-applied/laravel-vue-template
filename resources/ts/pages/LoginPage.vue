@@ -32,7 +32,6 @@
                   v-model="email"
                   outlined
                   prepend-inner-icon="mdi-account"
-                  :rules="rules.email"
                   placeholder="Email"
                   @keydown.enter="login"
                 />
@@ -40,7 +39,6 @@
                   v-model="password"
                   outlined
                   placeholder="Password"
-                  :rules="rules.required"
                   prepend-inner-icon="mdi-lock"
                   :type="showPassword ? 'text' : 'password'"
                   @keydown.enter="login"

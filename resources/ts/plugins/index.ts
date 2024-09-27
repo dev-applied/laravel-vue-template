@@ -20,7 +20,7 @@ export function usePlugins(app: App) {
   app.use(BreadCrumbs)
   app.use(createHead())
 
-  app.config.globalProperties.$errorHandler = errorHandler
+  app.config.globalProperties.$error = errorHandler
   app.config.globalProperties.$routeTo = route
   app.config.globalProperties.$fileUrl = file
   app.config.globalProperties.ROUTES = ROUTES

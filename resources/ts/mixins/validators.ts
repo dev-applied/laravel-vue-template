@@ -3,6 +3,9 @@ import useValidators from "@/composables/useValidators"
 
 export default defineComponent({
   setup() {
-    return useValidators()
+    const {rules} = useValidators()
+    return {
+      rules
+    }
   }
 })

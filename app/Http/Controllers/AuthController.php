@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Builder;
+use Carbon\CarbonInterval;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
+use RateLimiter;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -20,7 +20,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'me']]);
+        $this->middleware('auth:api', ['except' => ['login', 'me', 'logout']]);
     }
 
     /**
@@ -33,7 +33,7 @@ class AuthController extends Controller
         try {
             $user = Auth::user();
             $user->append('all_permissions');
-        } catch (\Exception $exception) {
+        } catch (Throwable $exception) {
             $user = null;
         }
 
@@ -54,14 +54,22 @@ class AuthController extends Controller
             'password' => 'required|string'
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
+        if (RateLimiter::tooManyAttempts('login:'.$request->ip(), 5)) {
+            $seconds = RateLimiter::availableIn('login:'.$request->ip());
+
+            return response()->json(['message' =>  'You may try again in ' . CarbonInterval::seconds($seconds)->cascade()->forHumans()], 401);
+        }
+
+        $user = User::where('email', $credentials['username'])->first();
         if (!$user) {
+            RateLimiter::hit('login:'.$request->ip(), 60 * 5);
             return response()->json(['message' => 'User or password incorrect'], 401);
         }
 
-        $token = auth()->attempt($credentials);
+        $token = Auth::attempt($credentials);
 
         if (!$token) {
+            RateLimiter::hit('login:'.$request->ip(), 5 * 60);
             return response()->json(['message' => 'User or password incorrect'], 401);
         }
 
@@ -75,7 +83,7 @@ class AuthController extends Controller
      */
     public function logout(): JsonResponse
     {
-        auth()->logout();
+        Auth::logout();
 
         return response()->json(['message' => 'Successfully logged out']);
     }
@@ -91,11 +99,13 @@ class AuthController extends Controller
     protected function respondWithToken(string $token): JsonResponse
     {
         preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
-        return response()->json([
+        $response =  response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
-        ])->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $matches[1]));
+        ]);
+//        $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $matches[1]))
+        return $response;
     }
 
 }

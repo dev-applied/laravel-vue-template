@@ -53,7 +53,7 @@ axios.interceptors.response.use(
       response.status === 401 ||
       response.data.message === "Authentication is required to continue"
     ) {
-      if (router.currentRoute.value.path !== ROUTES.LOGIN) {
+      if (router.currentRoute.value.name !== ROUTES.LOGIN) {
         const userStore = useUserStore()
         userStore.logout().then(() => {
           router
@@ -105,6 +105,6 @@ axios.download = async function <T = any, R = AxiosResponse<T>>(url: string, par
 
 export default {
   install(app: App) {
-    app.config.globalProperties.$axios = axios
+    app.config.globalProperties.$http = axios
   }
 }
