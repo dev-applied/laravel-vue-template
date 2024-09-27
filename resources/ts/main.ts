@@ -14,7 +14,10 @@ app.use(vuetify)
 usePlugins(app)
 loadLayouts(app)
 
-await router.isReady()
+
+router.isReady().then(() => {
+  app.mount('#app')
+})
 app.mount('#app')
 
 export default app

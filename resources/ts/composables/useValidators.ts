@@ -123,7 +123,15 @@ export default function useValidators() {
         (v: any) => !v || hasSpace(v) || 'Password Must Not Contain Spaces'
       ],
       confirmPasswordRules,
-      confirmPasswordRulesOptional
+      confirmPasswordRulesOptional,
+      isURL,
+      hasLowercase,
+      hasUppercase,
+      hasNumber,
+      hasSymbol,
+      hasNumberOfChars,
+      hasSpace,
+      inCharacterRange,
     }
   })
 

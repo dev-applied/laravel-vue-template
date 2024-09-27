@@ -4,7 +4,7 @@ import RouteDesigner from "@/router/RouteDesigner"
 import Pipeline from "@/middleware/Pipeline"
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: RouteDesigner.compile(),
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
