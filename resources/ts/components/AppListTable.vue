@@ -28,7 +28,7 @@
     <v-infinite-scroll
       :height="height"
       :items="items"
-      :on-load="handleLoad"
+      @load="handleLoad"
       :empty-text="noDataText"
     >
       <v-list
