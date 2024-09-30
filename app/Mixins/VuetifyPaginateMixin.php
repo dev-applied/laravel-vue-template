@@ -19,16 +19,25 @@ class VuetifyPaginateMixin
     {
         return function (): LengthAwarePaginator {
             $query = $this
-                ->when(request()->input('sort'), function (Builder $query, string $sort) {
-                    if (Schema::hasColumn($this->getModel()->getTable(), $sort)) {
-                        $this->orderBy($sort, request()->input('direction'));
+                ->when(request()->input('sortBy'), function (Builder $query, array $sortBy) {
+                    foreach ($sortBy as $sort) {
+                        $table = $this->getModel()->getTable();
+                        if (Schema::hasColumn($table, $sort['key'])) {
+                            $this->orderBy($sort['key'], $sort['order']);
+                        }
+                        if ($sort['key'] === 'full_name') {
+                            $this->orderBy('first_name', $sort['order']);
+                            $this->orderBy('middle_name', $sort['order']);
+                            $this->orderBy('last_name', $sort['order']);
+                        }
                     }
+
                 })
                 ->when(in_array(WithSelected::class, class_uses_recursive($this->getModel())), function (Builder $query) {
                     $query->withSelected(request('selected'));
                 });
 
-            if (request()->input('perPage') === "-1") {
+            if (request()->input('itemsPerPage') === "-1") {
                 $items = $query->get();
                 return new LengthAwarePaginator($items, $items->count(), ($items->count() > 0 ? $items->count() : 1), 1) ;
             } else {
