@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Client;
 use App\Models\File;
-use App\Models\Report;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;

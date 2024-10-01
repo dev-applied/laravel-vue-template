@@ -75,15 +75,17 @@ export default function useValidators() {
         (v: any) => (v && v.length <= 254) || "Email must be less than 254 characters"
       ],
       emailNotRequired: [
-        (v: any) => new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(v) || "E-mail must be valid",
+        (v: any) => !v || new RegExp(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(v) || "E-mail must be valid",
         (v: any) => !v || (v && v.length <= 254) || "Email must be less than 254 characters"
       ],
       phone: [
         (v: any) => !!v || "Phone Number is required",
-        (v: any) => (v && v.replaceAll("-", "").length === 10) || "Phone Number must be 10 digits"
+        (v: any) => (v && v.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", "").length === 10) || "Phone Number must be 10 digits",
+        (v: any) => (v && new RegExp(/^[0-9-() ]*$/).test(v)) || "Phone Number can only contain digits, hyphens, spaces, and parentheses",
+        (v: any) => (v && new RegExp(/^\d{10}$/).test(v.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", ""))) || "Phone Number must only contain 10 digits"
       ],
       phoneNotRequired: [
-        (v: any) => !v || (v && v.replaceAll("-", "").length === 10) || "Phone Number must be 10 digits"
+        (v: any) => !v || (v && v.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", "").length === 10) || "Phone Number must be 10 digits"
       ],
       validNumber: [
         (v: any) => !Number.isNaN(v) || "Invalid Number is Required"
@@ -121,6 +123,10 @@ export default function useValidators() {
         (v: any) => !v || hasSymbol(v) || 'Password Must Contain a Symbol',
         (v: any) => !v || hasNumberOfChars(v) || 'Password Must Contain at Least 8 Characters',
         (v: any) => !v || hasSpace(v) || 'Password Must Not Contain Spaces'
+      ],
+      optionalIntegerNumber: [
+        (v: any) => !v || (v && new RegExp(/^\d+$/).test(v)) || "Please enter a number without decimals",
+        (v: any) => !v || (v && v > 0) || "Number must be greater than 0"
       ],
       confirmPasswordRules,
       confirmPasswordRulesOptional,
