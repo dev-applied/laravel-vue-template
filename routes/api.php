@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ForgotPasswordController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,13 @@ Route::group(['prefix' => '/v1'], function () {
     Route::group(['middleware' => ['auth']], function () {
 
 
+        Route::group(['prefix' => '/files'], function () {
+            Route::get('/download/{id}/{size?}', [FileController::class, 'download']);
+            Route::post('/upload', [FileController::class, 'upload']);
+            Route::post('/upload-multiple', [FileController::class, 'uploadMultiple']);
+            Route::get('/view/{id}', [FileController::class, 'view']);
+            Route::delete('/{file}', [FileController::class, 'destroy']);
+        });
     });
 });
 
