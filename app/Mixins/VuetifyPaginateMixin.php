@@ -41,7 +41,7 @@ class VuetifyPaginateMixin
                 $items = $query->get();
                 return new LengthAwarePaginator($items, $items->count(), ($items->count() > 0 ? $items->count() : 1), 1) ;
             } else {
-                return $query->paginate(request()->input('perPage', 10), ['*']);
+                return $query->paginate(request()->input('itemsPerPage', 10), ['*']);
             }
         };
     }
