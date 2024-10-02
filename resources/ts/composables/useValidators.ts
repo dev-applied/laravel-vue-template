@@ -88,7 +88,7 @@ export default function useValidators() {
         (v: any) => !v || (v && v.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", "").length === 10) || "Phone Number must be 10 digits"
       ],
       validNumber: [
-        (v: any) => !Number.isNaN(v) || "Invalid Number is Required"
+        (v: any) => !v || !isNaN(parseFloat(v)) && isFinite(v) || "Invalid Number"
       ],
       url: [
         // @ts-ignore
