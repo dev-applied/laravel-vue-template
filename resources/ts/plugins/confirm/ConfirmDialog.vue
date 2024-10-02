@@ -137,3 +137,8 @@ export default {
   }
 }
 </script>
+<style scoped lang="scss">
+.v-dialog .v-toolbar-title {
+  min-width: calc(100% - 160px);
+}
+</style>
