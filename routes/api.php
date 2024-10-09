@@ -29,7 +29,8 @@ Route::group(['prefix' => '/v1'], function () {
     Route::apiResource('users', UserController::class);
 
     Route::group(['middleware' => ['auth']], function () {
-
+        Route::post('/auth/impersonate', [AuthController::class, 'impersonate']);
+        Route::delete('/auth/stop-impersonating', [AuthController::class, 'stopImpersonating']);
 
         Route::group(['prefix' => '/files'], function () {
             Route::get('/download/{id}/{size?}', [FileController::class, 'download']);
