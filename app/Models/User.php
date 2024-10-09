@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Permissions;
 use App\Mail\ForgotPasswordMail;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
@@ -20,6 +21,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Rickycezar\Impersonate\Models\Impersonate;
+use Rickycezar\Impersonate\Services\ImpersonateManager;
 
 /**
  * App\Models\User
@@ -73,7 +76,8 @@ class User extends Model implements
         Authorizable,
         CanResetPassword,
         MustVerifyEmail,
-        HasRoles;
+        HasRoles,
+        Impersonate;
 
     /**
      * The attributes that are mass assignable.
@@ -153,5 +157,22 @@ class User extends Model implements
     {
         Mail::to($this)
             ->send(new ForgotPasswordMail($token, $this));
+    }
+
+    public function canImpersonate(): bool
+    {
+        return $this->hasPermissionTo(Permissions::IMPERSONATE_USER);
+    }
+
+    public function canBeImpersonated(): bool
+    {
+        return !$this->canImpersonate();
+    }
+
+    public function isImpersonated(): Attribute
+    {
+        return Attribute::get(function (): bool {
+            return app(ImpersonateManager::class)->isImpersonating();
+        });
     }
 }

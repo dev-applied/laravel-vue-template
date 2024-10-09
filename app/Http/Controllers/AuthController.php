@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AppException;
 use Carbon\CarbonInterval;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ class AuthController extends Controller
         try {
             $user = Auth::user();
             $user->append('all_permissions');
+            $user->append('is_impersonated');
         } catch (Throwable $exception) {
             $user = null;
         }
@@ -88,6 +90,32 @@ class AuthController extends Controller
         return response()->json(['message' => 'Successfully logged out']);
     }
 
+    /**
+     * @throws ValidationException
+     */
+    public function impersonate(Request $request): JsonResponse
+    {
+        $data = $this->validate($request, [
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        /** @var User $user */
+        $user = User::findOrFail($data['user_id']);
+
+        $token = Auth::user()->impersonate($user);
+
+        return $this->respondWithToken($token);
+    }
+
+    /**
+     * @throws AppException
+     */
+    public function stopImpersonating(): JsonResponse
+    {
+        $token = Auth::user()->leaveImpersonation();
+
+        return $this->respondWithToken($token);
+    }
 
     /**
      * Get the token array structure.
@@ -98,12 +126,12 @@ class AuthController extends Controller
      */
     protected function respondWithToken(string $token): JsonResponse
     {
-        preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
-        $response =  response()->json([
+        $response = response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
+//        preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
 //        $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $matches[1]))
         return $response;
     }
