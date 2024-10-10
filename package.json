@@ -67,5 +67,9 @@
     },
     "pre-commit": [
         "lint"
-    ]
+    ],
+    "dependencies": {
+        "@sentry/vite-plugin": "^2.22.5",
+        "@sentry/vue": "^8.34.0-internal.0"
+    }
 }

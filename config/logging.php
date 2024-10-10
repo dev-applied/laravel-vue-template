@@ -3,6 +3,7 @@
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
+use Monolog\Level;
 use Monolog\Processor\PsrLogMessageProcessor;
 
 return [
@@ -54,7 +55,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['single', 'sentry'],
             'ignore_exceptions' => false,
         ],
 
@@ -126,6 +127,11 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        'sentry' => [
+            'driver' => 'sentry',
+            'level' => Level::Error,
+        ]
     ],
 
 ];

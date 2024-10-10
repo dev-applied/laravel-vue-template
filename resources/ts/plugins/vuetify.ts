@@ -26,6 +26,21 @@ export default createVuetify({
       lightTheme
     }
   },
+  defaults: {
+    VTextField: {
+      counter: 255,
+      rules: [
+        (value: string) => (String(value) ? String(value).length : 0) <= 255 || 'Max 255 characters'
+      ]
+    },
+  },
+  date: {
+    formats: {
+      date: "MM/DD/YYYY",
+      datetime: "MM/DD/YYYY HH:mm",
+      time: "HH:mm",
+    },
+  },
   icons: {
     defaultSet: "mdi",
   }

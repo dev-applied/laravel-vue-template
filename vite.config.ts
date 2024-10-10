@@ -7,11 +7,15 @@ import laravel from 'laravel-vite-plugin'
 import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import ViteFonts from 'unplugin-fonts/vite'
 import UnheadVite from '@unhead/addons/vite'
+import {sentryVitePlugin} from "@sentry/vite-plugin"
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => {
   process.env = {...process.env, ...loadEnv(mode, process.cwd())}
   return {
+    build: {
+      sourcemap: true,
+    },
     plugins: [
       laravel({
         input: ['resources/scss/main.scss', 'resources/ts/main.ts'],
@@ -38,6 +42,18 @@ export default defineConfig(({mode}) => {
             name: 'Roboto',
             styles: 'wght@100;300;400;500;700;900',
           }],
+        },
+      }),
+      sentryVitePlugin({
+        bundleSizeOptimizations: {
+          excludeDebugStatements: true,
+          excludeReplayIframe: true,
+        },
+        _experiments: {
+          injectBuildInformation: true,
+        },
+        release: {
+          create: false,
         },
       }),
     ],
