@@ -38,6 +38,10 @@ axios.interceptors.request.use((config) => {
     config.headers["Authorization"] = "bearer " + localStorage.getItem("token")
   }
 
+  if (config.data instanceof FormData) {
+    config.headers['Content-Type'] = 'multipart/form-data'
+  }
+
   return config
 })
 
