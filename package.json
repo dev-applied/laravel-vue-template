@@ -63,7 +63,8 @@
         "vue-tsc": "^2.0.22",
         "vue-use-places-autocomplete": "^0.2.3",
         "vuetify": "^3.6.10",
-        "vuetify-use-dialog": "^0.6.11"
+        "vuetify-use-dialog": "^0.6.11",
+        "vue-currency-input": "^3.1.0"
     },
     "pre-commit": [
         "lint"
