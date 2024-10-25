@@ -60,6 +60,10 @@ trait WithSelected {
             ->orderBy('sequence')
             ->tap(function ($query) use ($orderBy) {
                 foreach ($orderBy as $order) {
+                    if(isset($order['type']) && $order['type'] === 'Raw') {
+                        $query->orderByRaw($order['sql']);
+                        continue;
+                    }
                     $query->orderBy(last(explode('.',$order['column'])), $order['direction']);
                 }
             });
