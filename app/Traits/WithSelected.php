@@ -22,18 +22,47 @@ trait WithSelected {
             return $query;
         }
 
+        $table = $this->getTable();
+        $key = $this->getKeyName();
+
+        $orderBy = $query->getQuery()->orders ?: [];
+        $query->getQuery()->orders = [];
+        $query->getQuery()->bindings['order'] = [];
+
         $originalQuery = $query->clone();
 
         $query->getQuery()->wheres = [];
         $query->getQuery()->bindings['where'] = [];
+
+        if (!$query->getQuery()->columns) {
+            $query->select($table . '.*');
+        }
+
+        if (!$originalQuery->getQuery()->columns) {
+            $originalQuery->select($table . '.*');
+        }
+
+        $case = 'CASE';
+        foreach ($selected as $select) {
+            $case .= " WHEN $table.$key = '$select' THEN 1";
+        }
+        $case .= ' ELSE 2 END as sequence';
+        $query->selectRaw($case);
+        $originalQuery->selectRaw($case);
 
 
         if(in_array(SoftDeletes::class, class_uses_recursive(self::class))) {
             $query->withTrashed();
         }
         $query
-            ->whereIn($this->getTable(). '.id', $selected)
-            ->union($originalQuery);
+            ->whereIn("$table.$key", $selected)
+            ->union($originalQuery)
+            ->orderBy('sequence')
+            ->tap(function ($query) use ($orderBy) {
+                foreach ($orderBy as $order) {
+                    $query->orderBy(last(explode('.',$order['column'])), $order['direction']);
+                }
+            });
 
         return $query;
     }
