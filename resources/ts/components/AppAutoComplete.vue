@@ -190,7 +190,7 @@ watch(() => objectModel.value, setModel)
 async function handleLoad(_isIntersecting: boolean, entries: IntersectionObserverEntry[]) {
   if (entries[0].intersectionRatio <= 0) return
   if (state.finished) return
-  if (pagination.value.page >= pagination.value.lastPage) {
+  if (pagination.value.page * pagination.value.itemsPerPage >= pagination.value.total) {
     state.finished = true
     return
   }
