@@ -34,7 +34,7 @@ class VuetifyPaginateMixin
 
                 })
                 ->when(in_array(WithSelected::class, class_uses_recursive($this->getModel())), function (Builder $query) {
-                    $query->withSelected(request('selected'));
+                    $query->withSelected(request('selected'), request('key'));
                 });
 
             if (request()->input('itemsPerPage') === "-1") {

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 trait WithSelected {
 
-    public function scopeWithSelected(Builder $query, $selected): Builder
+    public function scopeWithSelected(Builder $query, $selected, $key): Builder
     {
         if (!is_array($selected)) {
             $selected = [$selected];
@@ -23,7 +23,6 @@ trait WithSelected {
         }
 
         $table = $this->getTable();
-        $key = $this->getKeyName();
 
         $orderBy = $query->getQuery()->orders ?: [];
         $query->getQuery()->orders = [];
