@@ -78,17 +78,6 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
-    /**
-     * Log the user out (Invalidate the token).
-     *
-     * @return JsonResponse
-     */
-    public function logout(): JsonResponse
-    {
-        Auth::logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
-    }
 
     /**
      * @throws ValidationException
@@ -118,6 +107,24 @@ class AuthController extends Controller
     }
 
     /**
+     * Log the user out (Invalidate the token).
+     *
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
+    {
+        auth()->logout();
+
+        return response()->json(['message' => 'Successfully logged out'])->withoutCookie('token', null, $this->getRootDomain());
+    }
+
+    private function getRootDomain(): string
+    {
+        preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
+        return $matches[1];
+    }
+
+    /**
      * Get the token array structure.
      *
      * @param string $token
@@ -131,8 +138,7 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
-//        preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
-//        $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $matches[1]))
+        $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $this->getRootDomain()));
         return $response;
     }
 
