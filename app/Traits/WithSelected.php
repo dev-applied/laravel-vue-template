@@ -43,11 +43,11 @@ trait WithSelected {
 
         $case = 'CASE';
         foreach ($selected as $select) {
-            $case .= " WHEN $table.$key = '$select' THEN 1";
+            $case .= " WHEN $table.$key = ? THEN 1";
         }
         $case .= ' ELSE 2 END as sequence';
-        $query->selectRaw($case);
-        $originalQuery->selectRaw($case);
+        $query->selectRaw($case, $selected->toArray());
+        $originalQuery->selectRaw($case, $selected->toArray());
 
 
         if(in_array(SoftDeletes::class, class_uses_recursive(self::class))) {
