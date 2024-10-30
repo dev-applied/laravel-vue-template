@@ -14,7 +14,10 @@ declare module '@vue/runtime-core' {
     ) => boolean
     $routeTo: (name: string, params?: RouteParamsGeneric, query?: LocationQueryRaw) => RouteLocationRaw
     ROUTES: typeof ROUTES
-    $fileUrl: (id: number, size: string = "thumbnail") => string
+    $file: {
+      url: (id: number, size: string = "thumbnail") => string,
+      download: (id: number, size: string = "thumbnail") => Promise<any>
+    }
     $http: Axios & { download: (url: string, params = {}, method = "get") => void }
     $confirm: (message: string, title = "Confirm", options = {}) => Promise<boolean>
   }
