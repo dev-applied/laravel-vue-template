@@ -1,6 +1,6 @@
 import {type App} from "vue"
 import route from "@/plugins/route"
-import file from "@/plugins/file"
+import {downloadFile, fileUrl} from "@/plugins/file"
 import errorHandler from "@/plugins/errorHandler"
 import BackButton from "@/plugins/backButton/index"
 import BreadCrumbs from "@/plugins/breadcrumbs/index"
@@ -24,6 +24,9 @@ export function usePlugins(app: App) {
 
   app.config.globalProperties.$error = errorHandler
   app.config.globalProperties.$routeTo = route
-  app.config.globalProperties.$fileUrl = file
+  app.config.globalProperties.$file = {
+    url: fileUrl,
+    download: downloadFile
+  }
   app.config.globalProperties.ROUTES = ROUTES
 }
