@@ -3,7 +3,7 @@ import { Axios } from "axios"
 import { ROUTES } from "@/router/paths"
 import type { LocationQueryRaw, RouteLocationRaw, RouteParamsGeneric } from "vue-router"
 
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties {
     $auth: Auth
     $error: (

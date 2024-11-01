@@ -2,7 +2,6 @@ declare namespace Breadcrumbs {
   import type { RawLocation } from "vue-router"
 
   export interface Options {
-    rootKey: string
     keyName: string
   }
 
@@ -10,7 +9,7 @@ declare namespace Breadcrumbs {
     icon?: string,
     text?: string,
     disabled?: boolean,
-    to?: RawLocation
+    to?: RawLocation | string
   }
 
   export interface State {
