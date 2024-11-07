@@ -9,13 +9,14 @@
     :maxlength="$attrs.maxlength || 16"
     :suffix="$attrs.suffix"
     :prefix="$attrs.prefix"
+    @input="handleInput"
   />
 </template>
 
 
 <script setup lang="ts">
 import {CurrencyDisplay, useCurrencyInput} from 'vue-currency-input'
-import {type PropType, useAttrs, watch} from 'vue'
+import {nextTick, type PropType, useAttrs, watch} from 'vue'
 import {VTextField} from "vuetify/components"
 
 const model = defineModel({
@@ -49,6 +50,13 @@ const { inputRef, formattedValue, setValue } = useCurrencyInput({
 const clear = () => {
   setValue(null)
   model.value = null
+}
+
+
+const handleInput = (e) => {
+  nextTick(() => {
+    e.target.value = formattedValue.value
+  })
 }
 
 function onlyNumbers(value: string | number | null): number | null {
