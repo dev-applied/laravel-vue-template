@@ -52,11 +52,27 @@
       />
     </template>
     <template
+      #item="itemProps"
+    >
+      <v-divider v-if="'divider' in itemProps.item.raw" />
+      <v-list-subheader
+        v-else-if="'header' in itemProps.item.raw"
+        :title="itemProps.item.raw.header"
+      />
+      <slot
+        name="item"
+        v-bind="itemProps"
+        v-else
+      >
+        <v-list-item v-bind="itemProps.props" />
+      </slot>
+    </template>
+    <template
       v-for="(_, name) in $slots"
       #[name]="slotData"
     >
       <slot
-        v-if="name !== 'append-item'"
+        v-if="name !== 'append-item' || name !== 'item'"
         :name="name"
         v-bind="slotData"
       />
@@ -65,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, mergeProps, onMounted, reactive, ref, toValue, useAttrs, watch} from "vue"
+import {computed, mergeProps, nextTick, onMounted, reactive, ref, toValue, useAttrs, watch} from "vue"
 import {VAutocomplete} from "vuetify/components/VAutocomplete"
 import usePaginationData from "@/composables/usePaginationData"
 import {cloneDeep, isEqual} from "lodash"
@@ -82,7 +98,9 @@ export type AppAutoCompleteProps = {
   itemsPerPage?: number
   itemValue?: string,
   multiple?: boolean,
+  itemTitle?: string,
   filters?: Record<string, any>
+  groupBy?: string | ((item: any) => string)
 } & /* @vue-ignore */ Omit<InstanceType<typeof VAutocomplete>['$props'],
   "loading" | "items" | "ref" | "readonly" | "search" | "modelValue" | "itemValue" | "noFilter" | "multiple" | "returnObject">
 
@@ -95,7 +113,9 @@ const props = withDefaults(defineProps<AppAutoCompleteProps>(), {
   prependItems: () => [],
   itemsPerPage: 10,
   itemValue: "id",
+  itemTitle: undefined,
   filters: () => ({}),
+  groupBy: undefined
 })
 
 const model = defineModel<any[] | any>()
@@ -115,9 +135,8 @@ const getSearch = () => {
     if (objectModel.value?.[props.itemTitle] === state.search) {
       return ""
     }
-
-    return state.search
   }
+  return state.search
 }
 
 const filters = computed(() => {
@@ -144,20 +163,47 @@ const bindings = computed(() => {
 })
 
 const computedItems = computed(() => {
-  return [...props.prependItems, ...items.value, ...props.appendItems]
+  let computedItems = [...props.prependItems, ...items.value, ...props.appendItems]
+
+  if (props.groupBy) {
+    computedItems.forEach(item => {
+      item._app_autocomplete_grouping = typeof props.groupBy === 'function' ? props.groupBy(item) : item[props.groupBy]
+    })
+
+    computedItems = computedItems.reduce((acc, item) => {
+      if (!acc.length || acc[acc.length - 1]._app_autocomplete_grouping !== item._app_autocomplete_grouping) {
+        acc.push({header: item._app_autocomplete_grouping, _app_autocomplete_grouping: item._app_autocomplete_grouping})
+      }
+      acc.push(item)
+      return acc
+    }, [])
+  }
+
+  return computedItems
 })
 
 const {loadData, pagination, setPagination} = usePaginationData(props.endpoint, filters)
 
 async function reload() {
-  state.finished = false
   setPagination({page: 1})
   const {data, status} = await loadData()
-  if (status === "error" || status === 'empty') {
-    state.finished = true
-    return
+
+  switch (status) {
+    case "canceled":
+      return
+    case "empty":
+    case "error":
+      items.value = data
+      await nextTick(() => {
+        state.finished = true
+      })
+      break
+    default:
+      items.value = data
+      await nextTick(() => {
+        state.finished = false
+      })
   }
-  items.value = data
 }
 
 watch(() => props.disabled, () => {
@@ -177,7 +223,6 @@ watch(() => filters, (newValue: any) => {
   if (JSON.stringify(newValue) === JSON.stringify(oldFilters)) {
     return
   }
-  state.finished = false
   if (newValue?.search !== oldFilters?.search) {
     debounceReload().then()
   } else {
@@ -206,9 +251,15 @@ async function handleLoad(_isIntersecting: boolean, entries: IntersectionObserve
   setPagination({page: pagination.value.page + 1})
   const {data, status} = await loadData()
   loading.value = false
-  if (status === "error" || status === 'empty') {
-    state.finished = true
-    return
+  switch (status) {
+    case "canceled":
+      return
+    case "empty":
+    case "error":
+      state.finished = true
+      break
+    default:
+      break
   }
   items.value = items.value.concat(data)
 }
@@ -239,12 +290,12 @@ function setModel() {
 const initialLoading = ref(true)
 onMounted(async () => {
   await reload()
-  setObjectModel()
-  setModel()
-  initialLoading.value = false
+  await nextTick(() => {
+    setObjectModel()
+    setModel()
+    initialLoading.value = false
+  })
 })
-
-
 </script>
 
 <style scoped>
