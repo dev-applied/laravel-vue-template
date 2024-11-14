@@ -1,4 +1,4 @@
-import type { Component } from "vue"
+import { defineComponent, type VNode } from "vue"
 
 function isFunction(arg: any) {
   return typeof arg === "function"
@@ -9,32 +9,21 @@ function triggerUpdate(options: any, $root: any, breadCrumbs: Breadcrumbs.Plugin
   breadCrumbs.setItems(state)
 }
 
-function getComponentOption(options: Breadcrumbs.Options, component: {
-  _inactive?: any;
-  $breadCrumbsComputed?: any;
-  $options?: any;
-  $children?: any
-}, result: Breadcrumbs.Item[] = []): Breadcrumbs.Item[] {
-  if (component._inactive) {
-    return result
-  }
+function getComponentOption(options: Breadcrumbs.Options, vnode: VNode, result: Breadcrumbs.Item[] = []): Breadcrumbs.Item[] {
+  if (!vnode) return result
 
-  const { keyName } = options
-  const { $breadCrumbsComputed, $options, $children } = component
-
-  if ($options[keyName] && ((typeof $options[keyName] === "function" && $breadCrumbsComputed) || (typeof $options[keyName] !== "function"))) {
-    result = $breadCrumbsComputed || $options[keyName]
-  }
-
-  // collect & aggregate child options if deep = true
-  if ($children.length) {
-    $children.forEach((childComponent: Component) => {
-      if (!childComponent || !childComponent.$root) {
-        return
+  if (vnode.component) {
+    if (vnode.component.proxy) {
+      if (vnode.component?.proxy.$breadCrumbsComputed.length) {
+        result = vnode.component?.proxy.$breadCrumbsComputed
       }
-
-      result = getComponentOption(options, childComponent, result)
-    })
+    }
+    result = getComponentOption(options, vnode.component.subTree, result)
+  } else if (vnode.shapeFlag & 16) {
+    const vnodes = vnode.children
+    for (let i = 0; i < vnodes.length; i++) {
+      result = getComponentOption(options, vnodes[i], result)
+    }
   }
 
   return result
@@ -45,44 +34,37 @@ function getComponentOption(options: Breadcrumbs.Options, component: {
  * @param breadCrumbs
  * @param options
  */
-export default function createMixin(breadCrumbs: Breadcrumbs.Plugin, options: { rootKey: string; keyName: string }) {
-  const updateOnLifecycleHook = ["activated", "deactivated", "beforeMount"]
-
-  return {
-    beforeCreate() {
-      // @ts-ignore
-      const $root = this[options.rootKey]
-      const $options = this.$options
-      // @ts-ignore
-      const $keyName = $options[options.keyName]
-
-      if (typeof $keyName === "undefined" || $keyName === null) {
-        return
+export default function createMixin(breadCrumbs: Breadcrumbs.Plugin, options: { keyName: string }) {
+  return defineComponent({
+    computed: {
+      $breadCrumbsComputed(): Breadcrumbs.Item[] {
+          const $keyName = this.$options[options.keyName]
+          if (!$keyName) return []
+          if (isFunction($keyName)) {
+            return $keyName.call(this)
+          }
+          return $keyName ?? []
+        },
+    },
+    watch: {
+      $breadCrumbsComputed: {
+        handler() {
+          triggerUpdate(options, this.$root?.$.vnode, breadCrumbs)
+        },
+        immediate: true
       }
-
-      if (isFunction($keyName)) {
-        $options.computed = $options.computed || {}
-        $options.computed.$breadCrumbsComputed = $keyName
-
-
-        this.$on("hook:created", () => {
-          this.$watch("$breadCrumbsComputed", function() {
-            triggerUpdate(options, $root, breadCrumbs)
-          })
-        })
-      }
-
-      this.$on("hook:destroyed", () => {
-        this.$nextTick(() => {
-          triggerUpdate(options, this.$root, breadCrumbs)
-        })
-      })
-
-      updateOnLifecycleHook.forEach((lifecycleHook) => {
-        this.$on(`hook:${lifecycleHook}`, function() {
-          triggerUpdate(options, $root, breadCrumbs)
-        })
-      })
-    }
-  }
+    },
+    beforeUnmount() {
+      triggerUpdate(options, this.$root?.$.vnode, breadCrumbs)
+    },
+    beforeMount() {
+      triggerUpdate(options, this.$root?.$.vnode, breadCrumbs)
+    },
+    activated() {
+      triggerUpdate(options, this.$root?.$.vnode, breadCrumbs)
+    },
+    deactivated() {
+      triggerUpdate(options, this.$root?.$.vnode, breadCrumbs)
+    },
+  })
 }

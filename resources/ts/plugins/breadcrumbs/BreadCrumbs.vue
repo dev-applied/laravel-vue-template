@@ -1,13 +1,11 @@
 <template>
-  <v-breadcrumbs
-    :items="items"
-  >
+  <v-breadcrumbs>
     <v-breadcrumbs-item
       v-for="(item, i) in items"
       :key="i"
       :disabled="item.disabled"
       :to="typeof item.to === 'string' ? { name: item.to } : item.to"
-      exact-path
+      exact
     >
       <template v-if="item.icon">
         <v-icon>{{ item.icon }}</v-icon>
@@ -15,7 +13,7 @@
       {{ item.text }}
 
       <template v-if="i < items.length - 1">
-        <div class="ml-3 black--text">
+        <div class="ml-3 text-black">
           >
         </div>
       </template>
@@ -30,7 +28,7 @@ import { breadCrumbs } from "@/plugins/breadcrumbs/index"
 export default defineComponent({
   data() {
     return {
-      items: [] as { icon?: string, text?: string, disabled?: boolean, to?: string }[]
+      items: [] as Breadcrumbs.Item[]
     }
   },
   created() {

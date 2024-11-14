@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'throttle:api',
             ]
         );
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->dontReportDuplicates();

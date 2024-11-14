@@ -73,6 +73,14 @@ services:
 #      PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
 #      PHP_IDE_CONFIG: 'serverName=horizon'
 
+# Uncomment the service below to enable stripe webhook listener
+#    stripe-cli:
+#        image: stripe/stripe-cli
+#        container_name: stripe-cli
+#        command: "listen --api-key ${STRIPE_SECRET} --forward-to webserver:80 -a"
+#        env_file:
+#            - .env
+
 networks:
     default:
         external:

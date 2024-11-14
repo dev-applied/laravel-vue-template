@@ -72,7 +72,7 @@
       #[name]="slotData"
     >
       <slot
-        v-if="name !== 'append-item' && name !== 'item'"
+        v-if="name !== 'append-item' || name !== 'item'"
         :name="name"
         v-bind="slotData"
       />
@@ -98,6 +98,7 @@ export type AppAutoCompleteProps = {
   itemsPerPage?: number
   itemValue?: string,
   multiple?: boolean,
+  itemTitle?: string,
   filters?: Record<string, any>
   groupBy?: string | ((item: any) => string)
 } & /* @vue-ignore */ Omit<InstanceType<typeof VAutocomplete>['$props'],
@@ -112,6 +113,7 @@ const props = withDefaults(defineProps<AppAutoCompleteProps>(), {
   prependItems: () => [],
   itemsPerPage: 10,
   itemValue: "id",
+  itemTitle: undefined,
   filters: () => ({}),
   groupBy: undefined
 })
@@ -127,9 +129,19 @@ const state = reactive({
   finished: false,
 })
 
+
+const getSearch = () => {
+  if (props.itemTitle) {
+    if (objectModel.value?.[props.itemTitle] === state.search) {
+      return ""
+    }
+  }
+  return state.search
+}
+
 const filters = computed(() => {
   const filters: { search?: string | null, key: string, selected?: any[] } = {
-    search: state.search,
+    search: getSearch(),
     key: props.itemValue as string || "id",
   }
 
