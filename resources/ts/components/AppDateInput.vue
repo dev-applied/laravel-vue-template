@@ -62,6 +62,7 @@ export default {
         this.maskedDate = this.format(value)
         this.menu = false
         this.mask?.updateControl()
+        this.$emit('update:modelValue', this.parse(this.maskedDate))
       }
     }
   },
@@ -99,6 +100,7 @@ export default {
       this.isFocused = false
       await this.$nextTick()
       this.dateError = '' // Clear previous errors
+      if(!this.maskedDate) return
       const [month, day, year] = this.maskedDate.split('/')
 
       // Check if the date parts are valid
