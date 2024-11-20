@@ -10,6 +10,7 @@ services:
             XDEBUG_CONFIG: remote_host=host.docker.internal
             PHP_EXTENSION_XDEBUG: 1
             PHP_EXTENSION_MYSQLI: 1
+            PHP_EXTENSION_MATH: 1
             PHP_INI_MEMORY_LIMIT: 4g
             PHP_EXTENSION_GD: 1
             APACHE_DOCUMENT_ROOT: public/
