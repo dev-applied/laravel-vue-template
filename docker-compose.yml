@@ -42,18 +42,18 @@ services:
             - traefik.http.services.${DOCKER_ROUTER}-HMR.loadbalancer.server.port=8080
 
 
-    storybook:
-        image: node:$DOCKER_NODE_VERSION-alpine
-        command: npm run storybook -- --host=0.0.0.0 --no-open
-        volumes:
-            - ./:/usr/src/app
-        working_dir: /usr/src/app
-        #    restart: unless-stopped
-        labels:
-            - traefik.http.routers.${DOCKER_ROUTER}-story-book.rule=Host(`$STORY_BOOK_DOMAIN`)
-            - traefik.http.routers.${DOCKER_ROUTER}-story-book.entrypoints=https
-            - traefik.http.routers.${DOCKER_ROUTER}-story-book.tls=true
-            - traefik.http.services.${DOCKER_ROUTER}-story-book.loadbalancer.server.port=6006
+#    storybook:
+#        image: node:$DOCKER_NODE_VERSION-alpine
+#        command: npm run storybook -- --host=0.0.0.0 --no-open
+#        volumes:
+#            - ./:/usr/src/app
+#        working_dir: /usr/src/app
+#        #    restart: unless-stopped
+#        labels:
+#            - traefik.http.routers.${DOCKER_ROUTER}-story-book.rule=Host(`$STORY_BOOK_DOMAIN`)
+#            - traefik.http.routers.${DOCKER_ROUTER}-story-book.entrypoints=https
+#            - traefik.http.routers.${DOCKER_ROUTER}-story-book.tls=true
+#            - traefik.http.services.${DOCKER_ROUTER}-story-book.loadbalancer.server.port=6006
 
 # Uncomment the service below to enable horizon
 #  horizon:
