@@ -4,5 +4,5 @@
     <x-mail::button :url="url('set-password', $token).'?email='.urlencode($user['email'])" color="primary">
         Set Password
     </x-mail::button>
-    <p>Thanks you</p>
+    <p>Thank you</p>
 </x-mail::message>

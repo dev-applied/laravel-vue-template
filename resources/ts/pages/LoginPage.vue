@@ -133,6 +133,10 @@ export default defineComponent({
     if (this.$auth.user) {
       this.$router.push(this.$routeTo(this.ROUTES.HOME))
     }
+    this.email = localStorage.getItem('remember') || ''
+    if (this.email) {
+      this.remember = true
+    }
   },
   computed: {
     title() {
@@ -159,6 +163,13 @@ export default defineComponent({
         this.notAuthorizedMessage = message
         return
       }
+
+      if (this.remember) {
+        localStorage.setItem('remember', this.email)
+      } else {
+        localStorage.removeItem('remember')
+      }
+
       // @ts-ignore
       await this.$router.push(this.$route.query?.to || this.ROUTES.HOME)
     },
