@@ -11,26 +11,22 @@
         color="#02d9c1"
         dot
         inline
-        left
+      />
+      <span
+        class="ml-2 text-body"
       >
-        <span
-          class="ml-2 text-body"
-        >
-          {{ conditions[index].text }}
-        </span>
-      </v-badge>
+        {{ conditions[index].text }}
+      </span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
-import useValidators from "@/composables/useValidators"
+import validators from "@/mixins/validators"
 
 export default defineComponent({
-  setup() {
-    return useValidators()
-  },
+  mixins: [validators],
   props: {
     password: {
       type: String as PropType<string | null>,
