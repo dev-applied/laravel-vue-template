@@ -268,7 +268,7 @@ function setObjectModel() {
   if (model.value === undefined) {
     return
   }
-  const value = props.multiple ? items.value.filter(item => model.value.includes(item[props.itemValue])) : items.value.find(item => item[props.itemValue] == model.value)
+  const value = props.multiple ? items.value.filter(item => model.value.includes(item[props.itemValue])) : (items.value.find(item => item[props.itemValue] == model.value) || null)
   if (isEqual(value, objectModel.value)) {
     return
   }
@@ -280,10 +280,11 @@ function setModel() {
     return
   }
 
-  const value = props.multiple ? objectModel.value.map((item: any) => item[props.itemValue]) : objectModel.value?.[props.itemValue]
+  const value = props.multiple ? objectModel.value.map((item: any) => (item[props.itemValue] || null)) : (objectModel.value?.[props.itemValue] || null)
   if (isEqual(value, model.value)) {
     return
   }
+
   model.value = value
 }
 
