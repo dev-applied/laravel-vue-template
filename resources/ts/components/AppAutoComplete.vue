@@ -284,6 +284,7 @@ function setModel() {
   if (isEqual(value, model.value)) {
     return
   }
+
   model.value = value
 }
 

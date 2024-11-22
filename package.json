@@ -3,6 +3,7 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
+        "build-dev": "vite build --mode development",
         "lint": "NODE_ENV=production eslint resources/ts/ --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
         "fix": "NODE_ENV=production eslint resources/ts/ --fix --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
         "storybook": "storybook dev -p 6006",
@@ -13,6 +14,8 @@
         "@chromatic-com/storybook": "^1.7.0",
         "@mdi/font": "^7.4.47",
         "@rushstack/eslint-patch": "^1.8.0",
+        "@sentry/vite-plugin": "^2.22.5",
+        "@sentry/vue": "^8.34.0-internal.0",
         "@storybook/addon-essentials": "^8.2.9",
         "@storybook/addon-interactions": "^8.2.9",
         "@storybook/addon-links": "^8.2.9",
@@ -58,19 +61,16 @@
         "vite-plugin-vuetify": "^2.0.3",
         "vitest": "^0.29.8",
         "vue": "^3.4.30",
+        "vue-currency-input": "^3.1.0",
+        "vue-imask": "^7.6.1",
         "vue-meta": "^3.0.0-alpha.2",
         "vue-router": "^4.4.0",
         "vue-tsc": "^2.0.22",
         "vue-use-places-autocomplete": "^0.2.3",
         "vuetify": "^3.6.10",
-        "vuetify-use-dialog": "^0.6.11",
-        "vue-currency-input": "^3.1.0"
+        "vuetify-use-dialog": "^0.6.11"
     },
     "pre-commit": [
         "lint"
-    ],
-    "dependencies": {
-        "@sentry/vite-plugin": "^2.22.5",
-        "@sentry/vue": "^8.34.0-internal.0"
-    }
+    ]
 }
