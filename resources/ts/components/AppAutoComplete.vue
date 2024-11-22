@@ -98,7 +98,7 @@ export type AppAutoCompleteProps = {
   itemsPerPage?: number
   itemValue?: string,
   multiple?: boolean,
-  itemTitle?: string,
+  itemTitle?: string | ((item: any) => string),
   filters?: Record<string, any>
   groupBy?: string | ((item: any) => string)
 } & /* @vue-ignore */ Omit<InstanceType<typeof VAutocomplete>['$props'],
@@ -268,7 +268,7 @@ function setObjectModel() {
   if (model.value === undefined) {
     return
   }
-  const value = props.multiple ? items.value.filter(item => model.value.includes(item[props.itemValue])) : items.value.find(item => item[props.itemValue] == model.value)
+  const value = props.multiple ? items.value.filter(item => model.value.includes(item[props.itemValue])) : (items.value.find(item => item[props.itemValue] == model.value) || null)
   if (isEqual(value, objectModel.value)) {
     return
   }
@@ -280,7 +280,7 @@ function setModel() {
     return
   }
 
-  const value = props.multiple ? objectModel.value.map((item: any) => item[props.itemValue]) : objectModel.value?.[props.itemValue]
+  const value = props.multiple ? objectModel.value.map((item: any) => (item[props.itemValue] || null)) : (objectModel.value?.[props.itemValue] || null)
   if (isEqual(value, model.value)) {
     return
   }
@@ -292,12 +292,10 @@ onMounted(async () => {
   await reload()
   await nextTick(() => {
     setObjectModel()
-    setModel()
+    nextTick(() => {
+      setModel()
+    })
     initialLoading.value = false
   })
 })
 </script>
-
-<style scoped>
-
-</style>
