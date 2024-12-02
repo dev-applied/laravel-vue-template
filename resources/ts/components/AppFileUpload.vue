@@ -27,10 +27,19 @@
       class="mx-auto mb-1"
       color="error"
     />
-    <span
+    <div
       v-if="internalFile && internalFile.name"
-      class="ml-3 align-center font-weight-bold"
+      class="align-center font-weight-bold d-flex"
     >
+      <v-img
+        v-if="fileId && isImage"
+        :src="$file.url(fileId, 'thumbnail')"
+        :style="`max-width: ${props.width}px;`"
+        :width="props.width"
+        class="mr-4"
+        contain
+        :rounded="props.previewCircle ? 'circle' : undefined"
+      />
       <a
         v-if="!isImage"
         :href="$file.url(internalFile.id)"
@@ -38,7 +47,6 @@
         title="View File"
         class="primary--text text-decoration-none"
       >
-
         File: {{ internalFile.name }} ({{ size(internalFile) }})
       </a>
       <span v-else>
@@ -58,19 +66,7 @@
           mdi-close
         </v-icon>
       </v-btn>
-    </span>
-    <v-row
-      v-if="fileId && isImage"
-      no-gutters
-    >
-      <v-img
-        :src="$file.url(fileId, 'medium_large')"
-        :style="`max-width: ${props.width}px;`"
-        :width="props.width"
-        class="mt-3 mb-7"
-        contain
-      />
-    </v-row>
+    </div>
   </div>
 </template>
 
@@ -108,11 +104,11 @@ const props = defineProps({
   },
   width: {
     type: Number,
-    default: 150
+    default: 60
   },
   height: {
     type: Number,
-    default: 150
+    default: 60
   },
   maxSize: {
     type: Number,
@@ -125,6 +121,10 @@ const props = defineProps({
   errorMessages: {
     type: Array as PropType<string[]>,
     default: () => []
+  },
+  previewCircle: {
+    type: Boolean,
+    default: false
   }
 })
 const internalErrorMessages = ref<string[]>([])
