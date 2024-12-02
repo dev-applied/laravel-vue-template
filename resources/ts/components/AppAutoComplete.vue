@@ -7,7 +7,7 @@
   />
   <v-autocomplete
     v-else
-    ref="standard_ac"
+    ref="autoComplete"
     v-bind="bindings"
     :items="computedItems"
     hide-selected
@@ -17,6 +17,20 @@
     eager
     v-model:search="state.search"
   >
+    <template #prepend-item>
+      <slot
+        name="prepend-item"
+        v-if="!loading && !props.allowCustomItems"
+      />
+      <v-list-item
+        v-else-if="props.allowCustomItems && canSearch && searchItemDoesNotExist && items.length > 0"
+        @click="addCustomItem"
+      >
+        <v-list-item-title>
+          No results matching for "<strong>{{ state.search }}</strong>". <kbd>Click</kbd> to create a new one
+        </v-list-item-title>
+      </v-list-item>
+    </template>
     <template #append-item>
       <slot name="append-item" />
       <div
@@ -44,12 +58,35 @@
     </template>
     <template
       #no-data
-      v-if="loading || $slots['no-data']"
     >
-      <slot
-        name="no-data"
-        v-if="!loading"
-      />
+      <span v-if="!loading">
+        <slot
+          name="no-data"
+          v-if="$slots['no-data']"
+        />
+        <v-list-item
+          v-else-if="props.allowCustomItems && canSearch"
+          @click="addCustomItem"
+        >
+          <v-list-item-title>
+            No results matching for "<strong>{{ state.search }}</strong>". <kbd>Click</kbd> to create a new one
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item
+          v-else-if="!canSearch"
+        >
+          <v-list-item-title>
+            Type at least <strong>{{ props.minSearchChars }}</strong> characters to search {{ props.allowCustomItems ? 'or create a new one' : '' }}
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item
+          v-else
+        >
+          <v-list-item-title>
+            No results found
+          </v-list-item-title>
+        </v-list-item>
+      </span>
     </template>
     <template
       #item="itemProps"
@@ -86,6 +123,8 @@ import {VAutocomplete} from "vuetify/components/VAutocomplete"
 import usePaginationData from "@/composables/usePaginationData"
 import {cloneDeep, isEqual} from "lodash"
 import {useDebounceFn} from "@vueuse/core"
+import axios from "axios"
+import errorHandler from "@/plugins/errorHandler"
 
 defineOptions({inheritAttrs: false})
 
@@ -101,6 +140,8 @@ export type AppAutoCompleteProps = {
   itemTitle?: string | ((item: any) => string),
   filters?: Record<string, any>
   groupBy?: string | ((item: any) => string)
+  allowCustomItems?: boolean
+  minSearchChars?: number
 } & /* @vue-ignore */ Omit<InstanceType<typeof VAutocomplete>['$props'],
   "loading" | "items" | "ref" | "readonly" | "search" | "modelValue" | "itemValue" | "noFilter" | "multiple" | "returnObject">
 
@@ -115,13 +156,18 @@ const props = withDefaults(defineProps<AppAutoCompleteProps>(), {
   itemValue: "id",
   itemTitle: undefined,
   filters: () => ({}),
-  groupBy: undefined
+  groupBy: undefined,
+  allowCustomItems: false,
+  minSearchChars: 0,
 })
 
 const model = defineModel<any[] | any>()
 const objectModel = defineModel<any[] | any>('object')
 const items = ref<any[]>([])
 const loading = ref<boolean>(false)
+const searchItemDoesNotExist = computed(() => {
+  return !items.value.some(item => item[props.itemTitle] === state.search)
+})
 
 const state = reactive({
   search: "",
@@ -139,9 +185,14 @@ const getSearch = () => {
   return state.search
 }
 
+const canSearch = computed(() => {
+  return state.search.length >= props.minSearchChars || model.value
+})
+
 const filters = computed(() => {
+  const search = getSearch()
   const filters: { search?: string | null, key: string, selected?: any[] } = {
-    search: getSearch(),
+    search: canSearch.value ? search : null,
     key: props.itemValue as string || "id",
   }
 
@@ -186,6 +237,12 @@ const {loadData, pagination, setPagination} = usePaginationData(props.endpoint, 
 
 async function reload() {
   setPagination({page: 1})
+  if(!canSearch.value) {
+    items.value = []
+    loading.value = false
+    return
+  }
+
   const {data, status} = await loadData()
 
   switch (status) {
@@ -204,6 +261,7 @@ async function reload() {
         state.finished = false
       })
   }
+  loading.value = false
 }
 
 watch(() => props.disabled, () => {
@@ -224,6 +282,7 @@ watch(() => filters, (newValue: any) => {
     return
   }
   if (newValue?.search !== oldFilters?.search) {
+    loading.value = true
     debounceReload().then()
   } else {
     reload().then()
@@ -245,6 +304,12 @@ watch(() => objectModel.value, setModel)
 
 async function handleLoad(_isIntersecting: boolean, entries: IntersectionObserverEntry[]) {
   if (entries[0].intersectionRatio <= 0) return
+  if(!canSearch.value) {
+    state.finished = true
+    items.value = []
+    loading.value = false
+    return
+  }
   if (state.finished) return
 
   loading.value = true
@@ -284,19 +349,39 @@ function setModel() {
   if (isEqual(value, model.value)) {
     return
   }
-
   model.value = value
 }
 
 const initialLoading = ref(true)
 onMounted(async () => {
-  await reload()
-  await nextTick(() => {
-    setObjectModel()
-    nextTick(() => {
-      setModel()
+  if (canSearch.value) {
+    await reload()
+    await nextTick(() => {
+      setObjectModel()
+      nextTick(() => {
+        setModel()
+      })
+      initialLoading.value = false
     })
+  } else {
+    loading.value = false
     initialLoading.value = false
-  })
+    return
+  }
 })
+
+const autoComplete = ref<InstanceType<typeof VAutocomplete>>()
+async function addCustomItem() {
+  const {data: {newItem, message, errors}, status} = await axios.post(props.endpoint, { name: state.search }).catch((e: any) => e)
+  if (errorHandler(status, message, errors)) return
+  items.value.push(newItem)
+  if(props.multiple) {
+    objectModel.value.push(newItem)
+  } else {
+    objectModel.value = newItem
+  }
+  if(autoComplete.value) {
+    autoComplete.value.$el?.getElementsByTagName('input')?.[0].blur()
+  }
+}
 </script>
