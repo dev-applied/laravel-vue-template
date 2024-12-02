@@ -1,7 +1,7 @@
 <template>
   <div class="mb-3">
     <v-row no-gutters>
-      <div class="font-weight-bold mb-1 mediumgray--text">
+      <div class="font-weight-bold mb-2 mediumgray--text">
         {{ props.label }}
       </div>
     </v-row>
@@ -15,6 +15,12 @@
       <span v-if="!internalFile || !internalFile.name">Upload {{ props.buttonTitle }}</span>
       <span v-else>Change {{ props.buttonTitle }}</span>
     </v-btn>
+    <span
+      v-if="props.extraInfo"
+      class="ml-3 align-center mt-2 red--text"
+    >
+      {{ props.extraInfo }}
+    </span>
     <v-messages
       :active="errorMessages.length > 0"
       :messages="errorMessages"
@@ -53,19 +59,12 @@
         </v-icon>
       </v-btn>
     </span>
-    <span
-      v-if="props.extraInfo && !isImage"
-      class="ml-3 align-center mt-2 red--text"
-    >
-      {{ props.extraInfo }}
-    </span>
-
     <v-row
       v-if="fileId && isImage"
       no-gutters
     >
       <v-img
-        :src="$fileUrl(fileId, 'medium_large')"
+        :src="$file.url(fileId, 'medium_large')"
         :style="`max-width: ${props.width}px;`"
         :width="props.width"
         class="mt-3 mb-7"
@@ -101,7 +100,7 @@ const props = defineProps({
   },
   extraInfo: {
     type: String,
-    default: '(Select a .png, .jpg less than 5mb)'
+    default: '(Select an image less than 10mb)'
   },
   accept: {
     type: String,
@@ -117,7 +116,7 @@ const props = defineProps({
   },
   maxSize: {
     type: Number,
-    default: 5242880
+    default: 10242880
   },
   btnAttributes: {
     type: Object,
@@ -145,7 +144,7 @@ const removeFile = () => {
 }
 
 const getFile = async (id: number) => {
-  const { data: { file, message, errors }, status } = await axios.get(`/files/${id}`, {}).catch(e => e)
+  const { data: { file, message, errors }, status } = await axios.get(`/files/view/${id}`, {}).catch(e => e)
   if (errorHandler(status, message, errors)) {
     return
   }
@@ -181,7 +180,7 @@ onChange(async (files) => {
 
 
   loading.value = true
-  const { data: { file, message, errors }, status } = await axios.post<{file: App.Models.File}>('/files', formData, {
+  const { data: { file, message, errors }, status } = await axios.post<{file: App.Models.File}>('/files/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
