@@ -33,7 +33,7 @@
     >
       <a
         v-if="!isImage"
-        :href="$fileUrl(internalFile.id)"
+        :href="$file.url(internalFile.id)"
         target="_blank"
         title="View File"
         class="primary--text text-decoration-none"
