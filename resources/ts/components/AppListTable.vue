@@ -19,7 +19,7 @@
       />
       <v-btn
         v-if="showFilterBar"
-        icon
+        :icon="true"
         @click="$emit('showFilter')"
       >
         <v-icon>mdi-filter</v-icon>
@@ -30,6 +30,7 @@
       :items="items"
       @load="handleLoad"
       :empty-text="noDataText"
+      class="py-1"
     >
       <v-list
         :style="computedStyle"
@@ -199,12 +200,12 @@ async function reload() {
 }
 
 async function handleLoad({done}) {
-  setPagination({ page: pagination.value.page + 1})
   loading.value = true
   const {data, status, error} = await loadData()
   loading.value = false
   errorMsg.value = error
-  items.value.concat(data)
+  items.value = items.value.concat(data)
+  setPagination({ page: pagination.value.page + 1})
   done(status)
 }
 
