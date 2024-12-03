@@ -23,10 +23,14 @@ const errorHandler = (
 
 function loopErrors(errors: any, internal_key: string | null = null) {
   forEach(errors, (value: string | object, key: string) => {
-    const field = internal_key ? `${internal_key}.${key}` : key
+    let field = internal_key ? `${internal_key}.${key}` : key
     if (typeof value === "object") {
       return loopErrors(value, field)
     }
+    if (Array.isArray(value)) {
+      value = value.join(", ")
+    }
+    field = field.split(".")[0]
     useAppStore().addError(`${field} - ${value}`)
   })
 }
