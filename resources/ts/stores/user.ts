@@ -42,6 +42,32 @@ export const useUserStore = defineStore("user", {
         data: { user }
       }: AxiosResponse<{ user: App.Models.AuthUser }> = await axios.get("/auth").catch((e) => e)
       this.user = user
-    }
+    },
+    async impersonate(userId: number) {
+      const response: AxiosResponse<{ access_token: string }> = await axios
+        .post("/auth/impersonate", {
+          user_id: userId
+        })
+        .catch((e) => e)
+
+      if (response.data.access_token) {
+        localStorage.setItem("token", response.data.access_token)
+        await this.loadUser(true)
+      }
+
+      return response
+    },
+    async stopImpersonating() {
+      const response: AxiosResponse<{ access_token: string }> = await axios
+        .delete("/auth/stop-impersonating")
+        .catch((e) => e)
+
+      if (response.data.access_token) {
+        localStorage.setItem("token", response.data.access_token)
+        await this.loadUser(true)
+      }
+
+      return response
+    },
   }
 })

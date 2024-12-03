@@ -29,7 +29,7 @@
     />
     <div
       v-if="internalFile && internalFile.name"
-      class="align-center font-weight-bold d-flex"
+      class="align-center font-weight-bold d-flex mb-6"
     >
       <v-img
         v-if="fileId && isImage"

@@ -1,20 +1,22 @@
 <template>
-  <v-row
+  <div
     v-if="messages && messages.length > 0"
     class="app-error-messages"
   >
-    <v-col>
+    <v-row
+      v-for="(message, index) in messages"
+      :key="index + '-message'"
+      no-gutters
+    >
       <v-alert
-        v-for="(message, index) in messages"
-        :key="index + '-message'"
-        class="mb-2"
         :type="message.type.toLowerCase()"
         closable
+        class="mb-1"
       >
         {{ message.message }}
       </v-alert>
-    </v-col>
-  </v-row>
+    </v-row>
+  </div>
 </template>
 
 <script lang="ts">

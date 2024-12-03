@@ -11,6 +11,8 @@ export interface Auth {
   login: (form: LoginForm) => Promise<AxiosResponse<{ access_token: string }>>
   loadUser: (force?: boolean) => Promise<void>
   logout: () => Promise<void>
+  impersonate: (userId: number) => Promise<AxiosResponse<{ access_token: string }>>
+  stopImpersonating: () => Promise<AxiosResponse<{ access_token: string }>>
   loggedIn: boolean
 }
 
@@ -46,7 +48,15 @@ export const $auth: Auth = {
   },
   get loggedIn() {
     return !!this.user
-  }
+  },
+  async impersonate(userId: number) {
+    const userStore = useUserStore()
+    return await userStore.impersonate(userId)
+  },
+  async stopImpersonating() {
+    const userStore = useUserStore()
+    return await userStore.stopImpersonating()
+  },
 }
 
 function getPermissionsFromUser(user: App.Models.AuthUser | null) {
