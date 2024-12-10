@@ -7,6 +7,7 @@
     :focused="menu || isFocused"
     :error-messages="dateError"
     @focus="isFocused = true"
+    @click:clear="$emit('update:modelValue', null)"
     @blur="validateDate"
     :prepend-inner-icon="prependInnerIcon"
     @click:prepend-inner="menu = !menu"
@@ -56,7 +57,7 @@ export default {
   computed: {
     datePickerModel: {
       get() {
-        return new Date(this.maskedDate)
+        return this.maskedDate ? new Date(this.maskedDate) : null
       },
       set(value) {
         this.maskedDate = this.format(value)

@@ -4,8 +4,8 @@
         "dev": "vite",
         "build": "vite build",
         "build-dev": "vite build --mode development",
-        "lint": "NODE_ENV=production eslint resources/ts/ --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
-        "fix": "NODE_ENV=production eslint resources/ts/ --fix --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+        "lint": "cross-env NODE_ENV=production eslint resources/ts/ --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
+        "fix": "cross-env NODE_ENV=production eslint resources/ts/ --fix --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
     },
@@ -72,5 +72,8 @@
     },
     "pre-commit": [
         "lint"
-    ]
+    ],
+    "dependencies": {
+        "cross-env": "^7.0.3"
+    }
 }
