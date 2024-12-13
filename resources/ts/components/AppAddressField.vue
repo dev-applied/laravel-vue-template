@@ -29,18 +29,16 @@ type Suggestion = {
   types: string[];
 }
 
-const model = defineModel<null | string>({
+const model = defineModel<null | undefined | string>({
   required: true,
 })
-const latitude = defineModel<null | number>('latitude')
-const longitude = defineModel<null | number>('longitude')
-const parts = defineModel<{
-  address_line_1: string;
-  city: string;
-  state: string;
-  country: string;
-  zipcode: string;
-}>('parts')
+const street = defineModel<null | undefined | string>('street')
+const city = defineModel<null | undefined | string>('city')
+const state = defineModel<null | undefined | string>('state')
+const zipcode = defineModel<null | undefined | string>('zipcode')
+const country = defineModel<null | undefined | string>('country')
+const latitude = defineModel<null | undefined | number>('latitude')
+const longitude = defineModel<null | undefined | number>('longitude')
 
 const query = ref<string>('')
 query.value = model.value || ''
@@ -60,35 +58,37 @@ const findByType = (type: string, result: any) => {
 const setPlace = async (suggestion: Suggestion | null) => {
   if (!suggestion) {
     model.value = null
+    street.value = null
+    city.value = null
+    state.value = null
+    zipcode.value = null
+    country.value = null
     latitude.value = null
     longitude.value = null
     return
   }
   const results = await geocodeByPlaceId(suggestion.place_id)
   const result = results[0]
-  const {lat, lng} = await getLatLng(result)
   model.value = suggestion.description
+  street.value = findByType('street_number', result)?.long_name + ' ' + findByType('route', result)?.long_name
+  city.value = findByType('locality', result)?.long_name
+  state.value = findByType('administrative_area_level_1', result)?.short_name
+  zipcode.value = findByType('postal_code', result)?.long_name
+  country.value = findByType('country', result)?.short_name
+  const {lat, lng} = await getLatLng(result)
   latitude.value = lat
   longitude.value = lng
-  parts.value = {
-    address_line_1: findByType('street_number', result).long_name + ' ' + findByType('route', result).long_name,
-    city: findByType('locality', result).long_name,
-    state: findByType('administrative_area_level_1', result).long_name,
-    country: findByType('country', result).long_name,
-    zipcode: findByType('postal_code', result).long_name,
-  }
 }
-
-
 </script>
 
 <template>
   <v-autocomplete
     v-bind="$attrs"
     v-model:search="query"
-    v-model="query"
+    :model-value="query"
     @update:model-value="setPlace"
     return-object
+    auto-complete="off"
     :items="suggestions"
     item-title="description"
     item-value="description"
