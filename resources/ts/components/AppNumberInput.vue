@@ -2,7 +2,7 @@
   <v-text-field
     ref="inputRef"
     :model-value="formattedValue"
-    v-bind="textFieldProps"
+    v-bind="attrs"
     :class="$attrs.class"
     @click:clear="clear"
     validate-on="blur"
@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import {CurrencyDisplay, useCurrencyInput} from 'vue-currency-input'
-import {nextTick, type PropType, useAttrs, watch, computed} from 'vue'
+import {nextTick, type PropType, useAttrs, watch} from 'vue'
 import {VTextField} from "vuetify/components"
 
 const model = defineModel({
@@ -36,10 +36,6 @@ const props = defineProps({
 })
 
 const attrs = useAttrs()
-
-const textFieldProps = computed(() => {
-  return VTextField.filterProps(attrs)
-})
 
 const { inputRef, formattedValue, setValue } = useCurrencyInput({
   currency: 'USD',
