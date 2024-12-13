@@ -7,8 +7,6 @@
     @click:clear="clear"
     validate-on="blur"
     :maxlength="$attrs.maxlength || 16"
-    :suffix="$attrs.suffix"
-    :prefix="$attrs.prefix"
     @input="handleInput"
   />
 </template>
@@ -16,7 +14,7 @@
 
 <script setup lang="ts">
 import {CurrencyDisplay, useCurrencyInput} from 'vue-currency-input'
-import {nextTick, type PropType, useAttrs, watch} from 'vue'
+import {nextTick, type PropType, useAttrs, watch, computed} from 'vue'
 import {VTextField} from "vuetify/components"
 
 const model = defineModel({
@@ -39,7 +37,9 @@ const props = defineProps({
 
 const attrs = useAttrs()
 
-const textFieldProps = VTextField.filterProps(attrs)
+const textFieldProps = computed(() => {
+  return VTextField.filterProps(attrs)
+})
 
 const { inputRef, formattedValue, setValue } = useCurrencyInput({
   currency: 'USD',
