@@ -37,7 +37,7 @@ const props = defineProps({
 
 const attrs = useAttrs()
 
-const { inputRef, formattedValue, setValue } = useCurrencyInput({
+const { inputRef, formattedValue, setValue, setOptions } = useCurrencyInput({
   currency: 'USD',
   currencyDisplay: CurrencyDisplay.hidden,
   precision: Number(props.decimals),
@@ -63,5 +63,11 @@ function onlyNumbers(value: string | number | null): number | null {
 
 watch(model, (value: string | number | null) => {
   setValue(onlyNumbers(value))
+})
+watch(() => props.decimals, (newDecimals) => {
+  setOptions({
+    precision: Number(newDecimals),
+    currency: 'USD'
+  })
 })
 </script>
