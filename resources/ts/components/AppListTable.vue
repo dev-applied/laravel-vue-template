@@ -151,7 +151,9 @@ const search = ref("")
 const items = ref<any[]>([])
 const errorMsg = ref<undefined | string>(undefined)
 const loading = ref<boolean>(false)
-const mergedProps = ref({...toRefs(props.filters), search: search})
+const mergedProps = ref({...toRefs(props.filters), ...(props.showSearchBar ? { search } : {})})
+const infiniteScrollEvents = ref<((value: 'ok' | 'empty' | 'error' | 'canceled') => void) | undefined>(undefined)
+const internalStatus = ref<'ok' | 'empty' | 'error' | 'canceled'>('ok')
 
 const { pagination, loadData, setPagination } = usePaginationData(props.endpoint, mergedProps, props?.method)
 
@@ -173,20 +175,21 @@ const debounceReload = useDebounceFn(() => {
   reload().then()
 }, 1000)
 
-let oldFilters = cloneDeep(toValue(props?.filters))
+const oldFilters = ref(cloneDeep(toValue(props?.filters)))
 watch(() => props?.filters, (newValue: any) => {
   newValue = toValue(newValue)
 
   if (JSON.stringify(newValue) === JSON.stringify(oldFilters)) {
     return
   }
-  if (newValue?.search !== oldFilters?.search) {
+  internalStatus.value = 'ok'
+  if(newValue?.search !== oldFilters?.value.search) {
     debounceReload().then()
   } else {
     reload().then()
   }
-  oldFilters = cloneDeep(newValue)
-}, { deep: true })
+  oldFilters.value = cloneDeep(newValue)
+}, { deep: true, immediate: true })
 
 async function reload() {
   setPagination({page: 1})
@@ -198,9 +201,18 @@ async function reload() {
   }
   errorMsg.value = error
   items.value = data
+  internalStatus.value = status
+  if(status !== 'empty') {
+    refreshItems()
+  }
 }
 
-async function handleLoad({done}) {
+async function handleLoad({done}: { done: (value: 'ok' | 'empty' | 'error' | 'canceled') => void }) {
+  if(internalStatus.value === 'empty') {
+    done('empty')
+    return
+  }
+  infiniteScrollEvents.value = done
   loading.value = true
   const {data, status, error} = await loadData()
   loading.value = false
@@ -208,9 +220,14 @@ async function handleLoad({done}) {
   items.value = items.value.concat(data)
   setPagination({ page: pagination.value.page + 1})
   done(status)
+  internalStatus.value = status
 }
 
-
+function refreshItems(): void {
+  if (infiniteScrollEvents.value) {
+    infiniteScrollEvents.value('ok')
+  }
+}
 </script>
 
 <style lang="scss">
@@ -219,7 +236,7 @@ async function handleLoad({done}) {
   position: relative;
 
   &__header {
-    @media #{map-get(settings.$display-breakpoints, 'sm-and-down')} {
+    @media (max-width: 600px) {
       position: sticky;
       top: 80px;
 
