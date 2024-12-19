@@ -30,7 +30,7 @@
       :items="items"
       @load="handleLoad"
       :empty-text="noDataText"
-      class="py-1"
+      class="py-2"
     >
       <v-list
         :style="computedStyle"
@@ -135,7 +135,7 @@ export const AppListTableProps = {
 }
 </script>
 <script setup lang="ts">
-import {ref, computed, useAttrs, toValue, watch} from "vue"
+import {ref, computed, useAttrs, toValue, watch, toRefs} from "vue"
 import { useDisplay } from "vuetify"
 import usePaginationData from "@/composables/usePaginationData"
 import {useDebounceFn} from "@vueuse/core"
@@ -151,8 +151,9 @@ const search = ref("")
 const items = ref<any[]>([])
 const errorMsg = ref<undefined | string>(undefined)
 const loading = ref<boolean>(false)
+const mergedProps = ref({...toRefs(props.filters), search: search})
 
-const { pagination, loadData, setPagination } = usePaginationData(props.endpoint, {...props.filters, search: search.value}, props?.method)
+const { pagination, loadData, setPagination } = usePaginationData(props.endpoint, mergedProps, props?.method)
 
 const { smAndDown } = useDisplay()
 
