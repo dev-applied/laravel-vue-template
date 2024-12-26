@@ -189,7 +189,7 @@ watch(() => props?.filters, (newValue: any) => {
     reload().then()
   }
   oldFilters.value = cloneDeep(newValue)
-}, { deep: true, immediate: true })
+}, { deep: true })
 
 async function reload() {
   setPagination({page: 1})
