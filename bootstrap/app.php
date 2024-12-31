@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\AppException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,7 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->dontReportDuplicates();
         $exceptions->dontReport([
             TokenExpiredException::class,
-            JWTException::class
+            JWTException::class,
+            AppException::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {
