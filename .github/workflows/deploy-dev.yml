@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - staging
+      - dev
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
