@@ -2,13 +2,11 @@
   <v-text-field
     ref="inputRef"
     :model-value="formattedValue"
-    v-bind="textFieldProps"
+    v-bind="attrs"
     :class="$attrs.class"
     @click:clear="clear"
     validate-on="blur"
     :maxlength="$attrs.maxlength || 16"
-    :suffix="$attrs.suffix"
-    :prefix="$attrs.prefix"
     @input="handleInput"
   />
 </template>
@@ -39,9 +37,7 @@ const props = defineProps({
 
 const attrs = useAttrs()
 
-const textFieldProps = VTextField.filterProps(attrs)
-
-const { inputRef, formattedValue, setValue } = useCurrencyInput({
+const { inputRef, formattedValue, setValue, setOptions } = useCurrencyInput({
   currency: 'USD',
   currencyDisplay: CurrencyDisplay.hidden,
   precision: Number(props.decimals),
@@ -67,5 +63,11 @@ function onlyNumbers(value: string | number | null): number | null {
 
 watch(model, (value: string | number | null) => {
   setValue(onlyNumbers(value))
+})
+watch(() => props.decimals, (newDecimals) => {
+  setOptions({
+    precision: Number(newDecimals),
+    currency: 'USD'
+  })
 })
 </script>

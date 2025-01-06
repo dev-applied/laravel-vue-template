@@ -167,6 +167,11 @@ async function onChange(options: { itemsPerPage: number, page: number, sortBy: R
     :deep(tbody tr:nth-of-type(odd)) {
       background-color: rgba(0, 0, 0, .05);
     }
+    :deep(tbody tr) {
+      &:hover {
+        background-color: rgba(0, 0, 0, .1);
+      }
+    }
   }
 }
 </style>

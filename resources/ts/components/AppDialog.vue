@@ -1,6 +1,7 @@
 <template>
   <component
     :is="($vuetify.display.smAndDown) ? 'v-bottomSheet' : 'v-dialog'"
+    class="app-dialog"
     v-bind="$attrs"
   >
     <slot />
@@ -18,6 +19,8 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-
+<style lang="scss">
+.v-overlay-container .v-dialog.v-bottom-sheet.app-dialog > .v-overlay__content {
+  max-width: 100%!important;
+}
 </style>

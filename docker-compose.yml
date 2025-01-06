@@ -10,7 +10,7 @@ services:
             XDEBUG_CONFIG: remote_host=host.docker.internal
             PHP_EXTENSION_XDEBUG: 1
             PHP_EXTENSION_MYSQLI: 1
-            PHP_EXTENSION_MATH: 1
+            PHP_EXTENSION_BCMATH: 1
             PHP_INI_MEMORY_LIMIT: 4g
             PHP_EXTENSION_GD: 1
             APACHE_DOCUMENT_ROOT: public/
@@ -20,6 +20,7 @@ services:
             PHP_INI_XDEBUG__REMOTE_START: 1
             PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
             PHP_IDE_CONFIG: 'serverName=$DOCKER_DOMAIN'
+            STARTUP_COMMAND_1: composer install
         #     Uncomment the 3 lines below to enable the scheduler cron
         #      CRON_USER: root
         #      CRON_SCHEDULE: '* * * * *'
@@ -74,7 +75,7 @@ services:
 #      PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
 #      PHP_IDE_CONFIG: 'serverName=horizon'
 
-# Uncomment the service below to enable stripe webhook listener
+# Uncomment the service below to enable stripe webhook listener remember to update webserver to the correct service name
 #    stripe-cli:
 #        image: stripe/stripe-cli
 #        command: "listen --api-key ${STRIPE_SECRET} --forward-to webserver:80 -a"
