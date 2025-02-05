@@ -66,7 +66,6 @@ export default function usePaginationData<T = any>(
 
     pagination.value.total = data.total
     const statusMsg = data.data.length === 0 || !data.next_page_url ? 'empty' : 'ok'
-
     return { status: statusMsg, data: data.data }
   }
 
