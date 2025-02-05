@@ -12,3 +12,4 @@ sudo apt install php$phpversion -y
 sudo apt install php$phpversion-{cli,common,mbstring,mysql,xml,curl,gd,imagick,bcmath,zip,tokenizer,dom} openssl -y
 sudo a2enmod ssl rewrite
 sudo service apache2 restart
+sudo chown -R ubuntu:www:data /var/www
