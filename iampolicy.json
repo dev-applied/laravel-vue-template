@@ -1,0 +1,29 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "rds:*",
+                "iot:*",
+                "apigateway:*",
+                "s3:*",
+                "logs:*",
+                "dynamodb:*",
+                "cloudformation:*",
+                "ssm:GetParameter",
+                "iam:*",
+                "ssm:PutParameter",
+                "cloudfront:*",
+                "ssm:DeleteParameter",
+                "ssm:DescribeParameters",
+                "lambda:*",
+                "ec2:*",
+                "ecr:*",
+                "events:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

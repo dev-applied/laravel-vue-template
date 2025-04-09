@@ -32,11 +32,12 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('/auth/impersonate', [AuthController::class, 'impersonate']);
         Route::delete('/auth/stop-impersonating', [AuthController::class, 'stopImpersonating']);
 
+        // File Routes
         Route::group(['prefix' => '/files'], function () {
-            Route::get('/download/{id}/{size?}', [FileController::class, 'download']);
-            Route::post('/upload', [FileController::class, 'upload']);
-            Route::post('/upload-multiple', [FileController::class, 'uploadMultiple']);
-            Route::get('/view/{id}', [FileController::class, 'view']);
+            Route::get('/{file}/{size?}', [FileController::class, 'url'])->whereNumber('file');
+            Route::get('/view/{file}', [FileController::class, 'show']);
+            Route::get('/download/{file}/{size?}', [FileController::class, 'download']);
+            Route::post('', [FileController::class, 'store']);
             Route::delete('/{file}', [FileController::class, 'destroy']);
         });
     });

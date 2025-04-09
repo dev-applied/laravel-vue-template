@@ -1,16 +1,29 @@
 {
-    "extends": "@vue/tsconfig/tsconfig.json",
-    "include": ["env.d.ts", "resources/ts/**/*", "resources/ts/**/*.ts", "resources/ts/**/*.d.ts", "resources/ts/**/*.vue", "stories/**/*.ts", "vite.config.ts"],
-    "exclude": ["resources/ts/**/__tests__/*"],
-    "compilerOptions": {
-        "composite": true,
-        "noImplicitAny": false,
-        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-
-        "baseUrl": ".",
-        "paths": {
-            "@/scss/*": ["./resources/scss/*"],
-            "@/*": ["./resources/ts/*"],
-        }
+  "extends": "@vue/tsconfig/tsconfig.json",
+  "include": [
+    "env.d.ts",
+    "resources/ts/**/*",
+    "resources/ts/**/*.ts",
+    "resources/ts/**/*.d.ts",
+    "resources/ts/**/*.vue",
+    "stories/**/*.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "resources/ts/**/__tests__/*"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "noImplicitAny": false,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "baseUrl": ".",
+    "paths": {
+      "@/scss/*": [
+        "./resources/scss/*"
+      ],
+      "@/*": [
+        "./resources/ts/*"
+      ]
     }
+  }
 }

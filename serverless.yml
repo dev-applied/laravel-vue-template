@@ -1,0 +1,162 @@
+service: \\AppName\\
+
+
+params:
+  default:
+    domain: ${sls:stage}.\\domain\\.com
+    DB_DATABASE: ${self:service}
+    DB_USERNAME: admin
+    DB_CLASS: db.t4g.small
+    DB_SIZE: 20
+    DB_PASSWORD: ''
+    VPC_ID: ''
+    SSL_ARN: ''
+
+provider:
+  name: aws
+  region: us-east-1
+  environment:
+    APP_ENV: ${sls:stage}
+    APP_DOMAIN: ${param:domain}
+    CACHE_DRIVER: dynamodb
+    DYNAMODB_CACHE_TABLE: !Ref CacheTable
+    FILESYSTEM_DISK: s3
+    AWS_BUCKET: !Ref Storage
+    DB_CONNECTION: mysql
+    DB_HOST: { "Fn::GetAtt": [ "MySQLDatabase", "Endpoint.Address" ] }
+    DB_DATABASE: ${param:DB_DATABASE}
+    DB_USERNAME: ${param:DB_USERNAME}
+    DB_PASSWORD: ${param:DB_PASSWORD}
+  iam:
+    role:
+      statements:
+        # Allow Lambda to read and write cache in the dynamoDB table
+        - Effect: Allow
+          Resource: !GetAtt CacheTable.Arn
+          Action:
+            - dynamodb:DescribeTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+        # Allow Lambda to read and write files in the S3 buckets
+        - Effect: Allow
+          Action:
+            - s3:ListBucket
+          Resource: !Join [ "", [ "arn:aws:s3:::", !Ref Storage ] ]
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+          Resource: !Join [ "", [ "arn:aws:s3:::", !Ref Storage, "/*" ] ]
+
+resources:
+  Resources:
+    CacheTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions: # only keys are defined here, other attributes are dynamic
+          - AttributeName: id # adds a mandatory id field
+            AttributeType: S # the type of id is a string
+        BillingMode: PAY_PER_REQUEST # billed for each request instead of paying for a constant capacity
+        TimeToLiveSpecification: # deletes cache keys automatically based on a ttl field which contains a timestamp
+          AttributeName: ttl
+          Enabled: true
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH # the type of key, HASH means partition key (similar to primary keys in SQL)
+    MySQLDatabase:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        DBInstanceIdentifier: mysql-instance-${sls:stage}
+        AllocatedStorage: ${param:DB_SIZE}
+        DBInstanceClass: ${param:DB_CLASS}
+        Engine: mysql
+        EngineVersion: "8.0"
+        DBName: ${param:DB_DATABASE}
+        MasterUsername: ${param:DB_USERNAME}
+        MasterUserPassword: ${param:DB_PASSWORD}
+        VPCSecurityGroups:
+          - !GetAtt RDSSecurityGroup.GroupId
+        PubliclyAccessible: true
+    RDSSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Security Group for RDS MySQL
+        VpcId: ${param:VPC_ID}
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 3306
+            ToPort: 3306
+            CidrIp: 0.0.0.0/0
+    Storage:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${sls:stage}-bucket
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+    StoragePolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref Storage
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: "*"
+              Action:
+                - s3:GetObject
+              Resource: !Join [ "", [ "arn:aws:s3:::", !Ref Storage, "/*" ] ]
+
+constructs:
+  cdn:
+    type: server-side-website
+    domain: ${param:domain}
+    certificate: ${param:SSL_ARN}
+    assets:
+      '/.well-known/*': public/.well-known
+      '/build/*': public/build
+      '/images/*': public/images
+      '/vendor/*': public/vendor
+      '/favicon.ico': public/favicon.ico
+      '/manifest.webmanifest': public/manifest.webmanifest
+      '/robots.txt': public/robots.txt
+
+functions:
+  # This function runs the Laravel website/API
+  web:
+    runtime: php-83-fpm
+    handler: public/index.php
+    layers:
+      - ${bref-extra:imagick-php-83}
+      - ${bref-extra:gd-php-83}
+    timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
+    events:
+      - httpApi: '*'
+
+  # This function lets us run artisan commands in Lambda
+  artisan:
+    runtime: php-83-console
+    handler: artisan
+    timeout: 720 # in seconds
+    layers:
+      - ${bref-extra:imagick-php-83}
+      - ${bref-extra:gd-php-83}
+    events:
+      - schedule:
+          rate: rate(1 minute)
+          input: '"schedule:run"'
+
+
+plugins:
+  # We need to include the Bref plugin
+  - ./vendor/bref/bref
+  - serverless-lift
+  - ./vendor/bref/extra-php-extensions

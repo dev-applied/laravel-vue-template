@@ -38,7 +38,7 @@ services:
         working_dir: /usr/src/app
         #    restart: unless-stopped
         labels:
-            - traefik.http.routers.${DOCKER_ROUTER}-HMR.rule=Host(`$VITE_HMR_DOMAIN`)
+            - traefik.http.routers.${DOCKER_ROUTER}-HMR.rule=Host(`$DOCKER_DOMAIN`) && PathPrefix(`/hmr`)
             - traefik.http.routers.${DOCKER_ROUTER}-HMR.entrypoints=https
             - traefik.http.routers.${DOCKER_ROUTER}-HMR.tls=true
             - traefik.http.services.${DOCKER_ROUTER}-HMR.loadbalancer.server.port=8080
