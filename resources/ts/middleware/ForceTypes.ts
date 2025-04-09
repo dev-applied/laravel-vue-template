@@ -17,7 +17,7 @@ export default class ForceTypes implements App.Middleware.Instance {
       if (!isNaN(param)) {
         return (to.params[key] = Number(param))
       }
-      if (moment(param).isValid()) {
+      if (moment(param, moment.ISO_8601, true).isValid()) {
         return (to.params[key] = moment(param))
       }
       if (param === "true" || param === "false") {
