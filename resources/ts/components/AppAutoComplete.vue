@@ -186,7 +186,7 @@ const getSearch = () => {
 }
 
 const canSearch = computed(() => {
-  return state.search.length >= props.minSearchChars || model.value
+  return state.search?.length >= props.minSearchChars || model.value
 })
 
 const filters = computed(() => {
