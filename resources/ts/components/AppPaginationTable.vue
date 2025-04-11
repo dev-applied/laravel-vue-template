@@ -98,8 +98,9 @@ const props = defineProps(AppPaginationTableProps)
 const items = ref<any[]>([])
 const errorMsg = ref<string | undefined>(undefined)
 const loading = ref<boolean>(false)
+const {endpoint, filters, method} = toRefs(props)
 
-const { pagination, loadData, setPagination } = usePaginationData(props.endpoint, props?.filters, props?.method)
+const { pagination, loadData, setPagination } = usePaginationData(endpoint, filters, method)
 
 watchEffect(() => {
   if (props.static) {
