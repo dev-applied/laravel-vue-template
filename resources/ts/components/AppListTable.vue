@@ -154,8 +154,9 @@ const loading = ref<boolean>(false)
 const mergedProps = ref({...toRefs(props.filters), ...(props.showSearchBar ? { search } : {})})
 const infiniteScrollEvents = ref<((value: 'ok' | 'empty' | 'error' | 'canceled') => void) | undefined>(undefined)
 const internalStatus = ref<'ok' | 'empty' | 'error' | 'canceled'>('ok')
+const {endpoint, method} = toRefs(props)
 
-const { pagination, loadData, setPagination } = usePaginationData(props.endpoint, mergedProps, props?.method)
+const { pagination, loadData, setPagination } = usePaginationData(endpoint, mergedProps, method)
 
 const { smAndDown } = useDisplay()
 

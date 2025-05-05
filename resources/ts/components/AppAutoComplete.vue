@@ -186,7 +186,7 @@ const getSearch = () => {
 }
 
 const canSearch = computed(() => {
-  return state.search.length >= props.minSearchChars || model.value
+  return state.search?.length >= props.minSearchChars || model.value
 })
 
 const filters = computed(() => {
@@ -232,8 +232,8 @@ const computedItems = computed(() => {
 
   return computedItems
 })
-
-const {loadData, pagination, setPagination} = usePaginationData(props.endpoint, filters)
+const {endpoint} = toRefs(props)
+const {loadData, pagination, setPagination} = usePaginationData(endpoint, filters)
 
 async function reload() {
   setPagination({page: 1})
