@@ -1,10 +1,10 @@
+import type {AxiosResponse as Response} from "axios"
 import axios from "axios"
 import router from "@/router"
-import { useUserStore } from "@/stores/user"
-import type { AxiosResponse as Response } from "axios"
-import errorHandler from "@/plugins/errorHandler"
-import { ROUTES } from "@/router/paths"
-import { type App } from "vue"
+import {useUserStore} from "@/stores/user"
+import {$error} from "@/plugins/errorHandler"
+import {ROUTES} from "@/router/paths"
+import {type App} from "vue"
 
 export type AxiosResponse<T = object> = Response<T & { errors?: string[] }>
 
@@ -26,14 +26,17 @@ export interface AxiosPaginationResponse<ItemType> extends AxiosResponse {
   }
 }
 
+export const $http = axios.create({
+  headers: {
+    common: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    }
+  },
+  baseURL: `${import.meta.env.VITE_APP_URL}${import.meta.env.VITE_API_BASE_URL}`
+})
 
-axios.defaults.headers.common = {
-  Accept: "application/json",
-  "Content-Type": "application/json"
-}
-axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
-
-axios.interceptors.request.use((config) => {
+$http.interceptors.request.use((config) => {
   if (localStorage.getItem("token")) {
     config.headers["Authorization"] = "bearer " + localStorage.getItem("token")
   }
@@ -45,13 +48,13 @@ axios.interceptors.request.use((config) => {
   return config
 })
 
-axios.interceptors.response.use(
-  function(response) {
+$http.interceptors.response.use(
+  function (response) {
     return response
   },
-  function({ response, message }) {
+  function ({response, message}) {
     if (!response) {
-      return Promise.reject({ status: 500, data: { message } })
+      return Promise.reject({status: 500, data: {message}})
     }
     if (
       response.status === 401 ||
@@ -61,7 +64,7 @@ axios.interceptors.response.use(
         const userStore = useUserStore()
         userStore.logout().then(() => {
           router
-            .push({ name: ROUTES.LOGIN, query: { to: router.currentRoute.value.fullPath } })
+            .push({name: ROUTES.LOGIN, query: {to: router.currentRoute.value.fullPath}})
             .catch((e: Error) => e)
         })
       }
@@ -70,7 +73,7 @@ axios.interceptors.response.use(
   }
 )
 
-axios.download = async function <T = any, R = AxiosResponse<T>>(url: string, params = {}, method = "get"): Promise<R> {
+$http.download = async function <T = any, R = AxiosResponse<T>>(url: string, params = {}, method = "get"): Promise<R> {
   const response = await this.request({
     url,
     method,
@@ -81,7 +84,7 @@ axios.download = async function <T = any, R = AxiosResponse<T>>(url: string, par
 
   if (response.status > 299) {
     const jsonData = await new Response(response.data).json()
-    if (errorHandler(response.status, jsonData.message)) return response
+    if ($error(response.status, jsonData.message)) return response
   }
 
   // Get File Name
@@ -109,6 +112,6 @@ axios.download = async function <T = any, R = AxiosResponse<T>>(url: string, par
 
 export default {
   install(app: App) {
-    app.config.globalProperties.$http = axios
+    app.config.globalProperties.$http = $http
   }
 }

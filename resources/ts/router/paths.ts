@@ -10,10 +10,12 @@ export const ROUTES = {
   SET_PASSWORD: "set-password",
   DASHBOARD: "dashboard",
   HOME: "home",
+  TEST: "test"
 }
 
 RouteDesigner.group({ middleware: [ForceTypes, Authentication] }, function() {
   RouteDesigner.group({ layout: "Empty" }, function() {
+    RouteDesigner.route("/test", "TestPage", ROUTES.TEST)
     RouteDesigner.route("/", "LoginPage", ROUTES.LOGIN)
     RouteDesigner.route("/home", "HomePage", ROUTES.HOME)
     RouteDesigner.route('set-password/:token', 'SetPasswordPage', ROUTES.SET_PASSWORD).passProps()

@@ -1,7 +1,7 @@
 declare module "axios" {
-  import type { AxiosResponse } from "@/composables/axios"
+  import type {AxiosResponse} from "@/composables/axios"
 
-  export interface AxiosStatic {
+  export interface AxiosInstance {
     download: <T = any, R = AxiosResponse<T>>(url: string, params?: any, method?: string) => Promise<R>
   }
 }

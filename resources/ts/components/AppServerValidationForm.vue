@@ -1,7 +1,7 @@
-<script setup lang="ts" generic="T">
+<script generic="T" lang="ts" setup>
 import {type MaybeRef, nextTick, ref, toValue} from "vue"
 import {useLayout} from "vuetify"
-import useAxios from "@/composables/useAxios"
+import useHttp from "@/composables/useHttp"
 import {get} from "lodash"
 import {useAppStore} from "@/stores/app"
 
@@ -19,16 +19,16 @@ const props = withDefaults(defineProps<{
 const emits = defineEmits(['success', 'error'])
 const form = ref()
 
-const errorBag = ref<{[key: string]: string}>({})
+const errorBag = ref<{ [key: string]: string }>({})
 const loading = ref<boolean>(false)
-const {axios} = useAxios()
+const {axios} = useHttp()
 const layout = useLayout()
 
 const getErrors = (field: string) => {
   return get(errorBag.value, field, [])
 }
 
-const submit: () => Promise<void> = async ()=> {
+const submit: () => Promise<void> = async () => {
   if (!((await toValue(form).validate()).valid)) {
     throw new Error('Form is invalid')
   }
@@ -44,7 +44,7 @@ const submit: () => Promise<void> = async ()=> {
   }
 
   loading.value = true
-  const { status, data } = await axios[method.toLowerCase()](toValue(endpoint), config).catch((e: any) => e)
+  const {status, data} = await axios[method.toLowerCase()](toValue(endpoint), config).catch((e: any) => e)
   loading.value = false
 
   if (status > 204) {
@@ -80,9 +80,9 @@ defineExpose({
   <v-form
     ref="form"
     :readonly="loading"
+    v-bind="$attrs"
     validate-on="eager"
     @submit.prevent
-    v-bind="$attrs"
   >
     <slot v-bind="{ submit, loading, getErrors, errorBag }" />
   </v-form>

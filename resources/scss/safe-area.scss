@@ -1,0 +1,14 @@
+#applied {
+  .v-application__wrap {
+    padding: var(--v-safe-area-top) var(--v-safe-area-right) var(--v-safe-area-bottom) var(--v-safe-area-left);
+  }
+
+  .v-dialog--fullscreen > .v-overlay__content {
+    padding-top: var(--v-safe-area-top);
+  }
+}
+
+
+
+
+

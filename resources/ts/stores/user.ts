@@ -1,6 +1,5 @@
-import { defineStore } from "pinia"
-import axios from "axios"
-import type { AxiosResponse } from "@/plugins/axios"
+import {defineStore} from "pinia"
+import {$http, type AxiosResponse} from "@/plugins/axios"
 
 export interface LoginForm {
   email: string
@@ -14,8 +13,8 @@ export const useUserStore = defineStore("user", {
     }
   },
   actions: {
-    async login({ email, password }: LoginForm) {
-      const response: AxiosResponse<{ access_token: string }> = await axios
+    async login({email, password}: LoginForm) {
+      const response: AxiosResponse<{ access_token: string }> = await $http
         .post("/auth", {
           email,
           password
@@ -30,7 +29,7 @@ export const useUserStore = defineStore("user", {
       return response
     },
     async logout() {
-      await axios.delete("/auth").catch((e) => e)
+      await $http.delete("/auth").catch((e) => e)
       this.user = null
       localStorage.removeItem('token')
     },
@@ -39,12 +38,12 @@ export const useUserStore = defineStore("user", {
         return
       }
       const {
-        data: { user }
-      }: AxiosResponse<{ user: App.Models.AuthUser }> = await axios.get("/auth").catch((e) => e)
+        data: {user}
+      }: AxiosResponse<{ user: App.Models.AuthUser }> = await $http.get("/auth").catch((e) => e)
       this.user = user
     },
     async impersonate(userId: number) {
-      const response: AxiosResponse<{ access_token: string }> = await axios
+      const response: AxiosResponse<{ access_token: string }> = await $http
         .post("/auth/impersonate", {
           user_id: userId
         })
@@ -58,7 +57,7 @@ export const useUserStore = defineStore("user", {
       return response
     },
     async stopImpersonating() {
-      const response: AxiosResponse<{ access_token: string }> = await axios
+      const response: AxiosResponse<{ access_token: string }> = await $http
         .delete("/auth/stop-impersonating")
         .catch((e) => e)
 

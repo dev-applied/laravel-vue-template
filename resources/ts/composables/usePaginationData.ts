@@ -1,6 +1,6 @@
-import { ref, toValue, type MaybeRef } from "vue"
-import axios from "axios"
-import errorHandler from "@/plugins/errorHandler"
+import {type MaybeRef, ref, toValue} from "vue"
+import {$http} from "@/plugins/axios"
+import {$error} from "@/plugins/errorHandler"
 
 export type Methods = "GET" | "POST" | "PUT" | "PATCH"
 export type InfiniteScrollStatus = "ok" | "empty" | "error" | "canceled"
@@ -55,18 +55,18 @@ export default function usePaginationData<T = any>(
       }
     }
 
-    const { status, data } = await axios[toValue(method).toLowerCase()](toValue(endpoint), config).catch((e: any) => e)
+    const {status, data} = await $http[toValue(method).toLowerCase()](toValue(endpoint), config).catch((e: any) => e)
 
-    const hasError = errorHandler(status, data.message, data.errors, false)
+    const hasError = $error(status, data.message, data.errors, false)
     if (hasError && data.message !== "canceled") {
-      return { status: "error", data: [], error: data.message }
+      return {status: "error", data: [], error: data.message}
     } else if (hasError) {
-      return { status: "canceled", data: [] }
+      return {status: "canceled", data: []}
     }
 
     pagination.value.total = data.total
     const statusMsg = data.data.length === 0 || !data.next_page_url ? 'empty' : 'ok'
-    return { status: statusMsg, data: data.data }
+    return {status: statusMsg, data: data.data}
   }
 
   return {

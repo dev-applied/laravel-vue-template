@@ -7,9 +7,9 @@
     </v-row>
     <v-btn
       :loading="loading"
-      v-bind="props.btnAttributes"
-      color="primary"
       class="text-capitalize mb-2"
+      color="primary"
+      v-bind="props.btnAttributes"
       @click="open"
     >
       <span v-if="!internalFile || !internalFile.name">Upload {{ props.buttonTitle }}</span>
@@ -33,19 +33,19 @@
     >
       <v-img
         v-if="fileId && isImage"
+        :rounded="props.previewCircle ? 'circle' : undefined"
         :src="$file.url(fileId, 'thumbnail')"
         :style="`max-width: ${props.width}px;`"
         :width="props.width"
         class="mr-4"
         contain
-        :rounded="props.previewCircle ? 'circle' : undefined"
       />
       <a
         v-if="!isImage"
         :href="$file.url(internalFile.id)"
+        class="primary--text text-decoration-none"
         target="_blank"
         title="View File"
-        class="primary--text text-decoration-none"
       >
         File: {{ internalFile.name }} ({{ size(internalFile) }})
       </a>
@@ -72,15 +72,13 @@
 
 <script lang='ts' setup>
 import {useFileDialog} from "@vueuse/core"
-import useErrorHandler from "@/composables/useErrorHandler"
-import useAxios from "@/composables/useAxios"
+import useHttp from "@/composables/useHttp"
 import {computed, type PropType, ref, watch} from "vue"
 
 const fileId = defineModel<number | undefined | null>()
 const internalFile = ref<App.Models.File | undefined>()
 const loading = ref(false)
-const {axios} = useAxios()
-const {errorHandler} = useErrorHandler()
+const {$http, $error} = useHttp()
 const props = defineProps({
   modelValue: {
     type: [Number, String],
@@ -132,7 +130,7 @@ const isImage = computed(() => {
   return props.accept.includes('image')
 })
 
-const { open, onChange } = useFileDialog({
+const {open, onChange} = useFileDialog({
   multiple: false,
   accept: props.accept,
   reset: true
@@ -144,8 +142,8 @@ const removeFile = () => {
 }
 
 const getFile = async (id: number) => {
-  const { data: { file, message, errors }, status } = await axios.get(`/files/view/${id}`, {}).catch(e => e)
-  if (errorHandler(status, message, errors)) {
+  const {data: {file, message, errors}, status} = await $http.get(`/files/view/${id}`, {}).catch(e => e)
+  if ($error(status, message, errors)) {
     return
   }
   internalFile.value = file
@@ -180,13 +178,15 @@ onChange(async (files) => {
 
 
   loading.value = true
-  const { data: { file, message, errors }, status } = await axios.post<{file: App.Models.File}>('/files/upload', formData, {
+  const {data: {file, message, errors}, status} = await $http.post<{
+    file: App.Models.File
+  }>('/files/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   }).catch(e => e)
   loading.value = false
-  if (errorHandler(status, message, errors)) {
+  if ($error(status, message, errors)) {
     internalErrorMessages.value.push(message)
     return
   }
@@ -202,7 +202,7 @@ watch(fileId, (id: number | undefined | null) => {
   } else {
     internalFile.value = undefined
   }
-}, { immediate: true })
+}, {immediate: true})
 
 </script>
 

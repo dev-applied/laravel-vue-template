@@ -1,9 +1,11 @@
 // Padding offsets for mobile
 @forward 'vuetify/settings';
 
+// Allows detecting safe areas from devices
+// --c-safe-area... is set by https://chromewebstore.google.com/detail/capacitor-safe-area-simul/ddaaodgcccedhjbjeollookhompnlfhi which can be used to emulate safe areas in browser for different devices
 :root {
-  --v-safe-area-top: env(safe-area-inset-top, 0px);
-  --v-safe-area-right: env(safe-area-inset-right, 0px);
-  --v-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --v-safe-area-left: env(safe-area-inset-left, 0px);
+  --v-safe-area-top: max(env(safe-area-inset-top, 0px), var(--c-safe-area-top, 0px));
+  --v-safe-area-right: max(env(safe-area-inset-right, 0px), var(--c-safe-area-right, 0px));
+  --v-safe-area-bottom: max(env(safe-area-inset-bottom, 0px), var(--c-safe-area-bottom, 0px));
+  --v-safe-area-left: max(env(safe-area-inset-left, 0px), var(--c-safe-area-left, 0px));
 }

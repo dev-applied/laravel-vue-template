@@ -1,7 +1,7 @@
-import { forEach } from "lodash"
-import { useAppStore } from "@/stores/app"
+import {forEach} from "lodash"
+import {useAppStore} from "@/stores/app"
 
-const errorHandler = (
+export const $error = (
   status: number,
   message = "Unknown Error",
   errors: boolean | any = false,
@@ -23,16 +23,21 @@ const errorHandler = (
 
 function loopErrors(errors: any, internal_key: string | null = null) {
   forEach(errors, (value: string | object, key: string) => {
-    let field = internal_key ? `${internal_key}.${key}` : key
+    const field = internal_key ? `${internal_key}.${key}` : key
     if (typeof value === "object") {
       return loopErrors(value, field)
     }
-    if (Array.isArray(value)) {
-      value = value.join(", ")
-    }
-    field = field.split(".")[0]
-    useAppStore().addError(`${field} - ${value}`)
+
+    const field_name = field
+      ? field
+        .replace(/_/g, ' ')
+        .replace(/\./g, ' ')
+        .replace(/\w\S*/g, (txt: string) => {
+          return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
+        })
+      : 'Error'
+    const showFieldName = key != '0'
+
+    useAppStore().addError(`${showFieldName ? field_name + ' - ' : ''}${value}`)
   })
 }
-
-export default errorHandler

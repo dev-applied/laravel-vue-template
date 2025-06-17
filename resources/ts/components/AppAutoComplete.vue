@@ -1,26 +1,26 @@
 <template>
   <v-text-field
+    v-if="initialLoading"
     :loading="true"
     readonly
-    v-if="initialLoading"
     v-bind="mergeProps(bindings, {modelValue: ''})"
   />
   <v-autocomplete
     v-else
     ref="autoComplete"
-    v-bind="bindings"
-    :items="computedItems"
-    hide-selected
-    return-object
     v-model="objectModel"
-    no-filter
-    eager
     v-model:search="state.search"
+    :items="computedItems"
+    eager
+    hide-selected
+    no-filter
+    return-object
+    v-bind="bindings"
   >
     <template #prepend-item>
       <slot
-        name="prepend-item"
         v-if="!loading && !props.allowCustomItems"
+        name="prepend-item"
       />
       <v-list-item
         v-else-if="props.allowCustomItems && canSearch && searchItemDoesNotExist && items.length > 0"
@@ -34,26 +34,26 @@
     <template #append-item>
       <slot name="append-item" />
       <div
-        class="d-flex justify-center"
-        v-intersect="handleLoad"
         v-if="!state.finished"
+        v-intersect="handleLoad"
+        class="d-flex justify-center"
       >
         <v-progress-circular
-          indeterminate
           color="primary"
+          indeterminate
         />
       </div>
     </template>
     <template
-      #append-inner
       v-if="!$slots['append-inner']"
+      #append-inner
     >
       <v-progress-circular
+        v-if="loading"
+        color="primary"
         indeterminate
         size="12"
         width="2"
-        color="primary"
-        v-if="loading"
       />
     </template>
     <template
@@ -61,8 +61,8 @@
     >
       <span v-if="!loading">
         <slot
-          name="no-data"
           v-if="$slots['no-data']"
+          name="no-data"
         />
         <v-list-item
           v-else-if="props.allowCustomItems && canSearch"
@@ -76,7 +76,9 @@
           v-else-if="!canSearch"
         >
           <v-list-item-title>
-            Type at least <strong>{{ props.minSearchChars }}</strong> characters to search {{ props.allowCustomItems ? 'or create a new one' : '' }}
+            Type at least <strong>{{
+              props.minSearchChars
+            }}</strong> characters to search {{ props.allowCustomItems ? 'or create a new one' : '' }}
           </v-list-item-title>
         </v-list-item>
         <v-list-item
@@ -97,9 +99,9 @@
         :title="itemProps.item.raw.header"
       />
       <slot
+        v-else
         name="item"
         v-bind="itemProps"
-        v-else
       >
         <v-list-item v-bind="itemProps.props" />
       </slot>
@@ -117,14 +119,14 @@
   </v-autocomplete>
 </template>
 
-<script setup lang="ts">
-import {computed, mergeProps, nextTick, onMounted, reactive, ref, toValue, useAttrs, watch} from "vue"
+<script lang="ts" setup>
+import {computed, mergeProps, nextTick, onMounted, reactive, ref, toRefs, toValue, useAttrs, watch} from "vue"
 import {VAutocomplete} from "vuetify/components/VAutocomplete"
 import usePaginationData from "@/composables/usePaginationData"
 import {cloneDeep, isEqual} from "lodash"
 import {useDebounceFn} from "@vueuse/core"
-import axios from "axios"
-import errorHandler from "@/plugins/errorHandler"
+import {$http} from "@/plugins/axios"
+import {$error} from "@/plugins/errorHandler"
 
 defineOptions({inheritAttrs: false})
 
@@ -237,7 +239,7 @@ const {loadData, pagination, setPagination} = usePaginationData(endpoint, filter
 
 async function reload() {
   setPagination({page: 1})
-  if(!canSearch.value) {
+  if (!canSearch.value) {
     items.value = []
     loading.value = false
     return
@@ -288,7 +290,7 @@ watch(() => filters, (newValue: any) => {
     reload().then()
   }
   oldFilters = cloneDeep(newValue)
-}, { deep: true })
+}, {deep: true})
 
 watch(() => props.endpoint, () => {
   reload()
@@ -304,7 +306,7 @@ watch(() => objectModel.value, setModel)
 
 async function handleLoad(_isIntersecting: boolean, entries: IntersectionObserverEntry[]) {
   if (entries[0].intersectionRatio <= 0) return
-  if(!canSearch.value) {
+  if (!canSearch.value) {
     state.finished = true
     items.value = []
     loading.value = false
@@ -371,16 +373,20 @@ onMounted(async () => {
 })
 
 const autoComplete = ref<InstanceType<typeof VAutocomplete>>()
+
 async function addCustomItem() {
-  const {data: {newItem, message, errors}, status} = await axios.post(props.endpoint, { name: state.search }).catch((e: any) => e)
-  if (errorHandler(status, message, errors)) return
+  const {
+    data: {newItem, message, errors},
+    status
+  } = await $http.post(props.endpoint, {name: state.search}).catch((e: any) => e)
+  if ($error(status, message, errors)) return
   items.value.push(newItem)
-  if(props.multiple) {
+  if (props.multiple) {
     objectModel.value.push(newItem)
   } else {
     objectModel.value = newItem
   }
-  if(autoComplete.value) {
+  if (autoComplete.value) {
     autoComplete.value.$el?.getElementsByTagName('input')?.[0].blur()
   }
 }
