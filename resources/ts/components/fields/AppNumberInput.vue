@@ -1,18 +1,33 @@
 <template>
-  <v-text-field
-    ref="inputRef"
-    :model-value="formattedValue"
-    v-bind="attrs"
-    :class="$attrs.class"
-    validate-on="blur"
-    :maxlength="$attrs.maxlength || 16"
-    @click:clear="clear"
-    @update:model-value="handleInput"
-  />
+  <div class="text-left">
+    <div class="mb-2 d-flex ga-4 align-center justify-space-between">
+      <div class="label">
+        {{ label }}<span
+          v-if="required"
+          class="text-error"
+        >*</span>
+        <slot name="label-append" />
+      </div>
+    </div>
+    <v-text-field
+      ref="inputRef"
+      :class="$attrs.class"
+      :maxlength="$attrs.maxlength || 16"
+      :model-value="formattedValue"
+      v-bind="attrs"
+      validate-on="blur"
+      @click:clear="clear"
+      @update:model-value="handleInput"
+    >
+      <template #message="message">
+        <span v-html="message.message" />
+      </template>
+    </v-text-field>
+  </div>
 </template>
 
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import {CurrencyDisplay, useCurrencyInput} from 'vue-currency-input'
 import {nextTick, type PropType, useAttrs, watch} from 'vue'
 import {VTextField} from "vuetify/components"
@@ -22,22 +37,25 @@ const model = defineModel({
   type: [Number, String] as PropType<string | number | null>,
 })
 
-defineEmits([
-  'change',
-])
-
-
 defineOptions({inheritAttrs: false})
 const props = defineProps({
   decimals: {
     type: [Number, String],
     default: 2
   },
+  label: {
+    type: String,
+    default: ''
+  },
+  required: {
+    type: Boolean,
+    default: false
+  },
 })
 
 const attrs = useAttrs()
 
-const { inputRef, formattedValue, setValue, setOptions } = useCurrencyInput({
+const {inputRef, formattedValue, setValue, setOptions} = useCurrencyInput({
   currency: 'USD',
   currencyDisplay: CurrencyDisplay.hidden,
   precision: Number(props.decimals),
