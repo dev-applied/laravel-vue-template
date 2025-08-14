@@ -2,40 +2,40 @@
   <div class="list-table">
     <v-toolbar
       v-show="showSearchBar || showFilterBar"
-      color="white"
-      height="40"
       :flat="smAndDown"
       class="list-table__header"
+      color="white"
+      height="40"
     >
       <v-text-field
         v-if="showSearchBar"
         v-model="search"
-        dense
-        hide-details
-        class="list-table__header__search"
-        placeholder="Search..."
         :readonly="loading"
+        class="list-table__header__search"
+        density="compact"
+        hide-details
         label="Search..."
+        placeholder="Search..."
       />
       <v-btn
         v-if="showFilterBar"
         :icon="true"
         @click="$emit('showFilter')"
       >
-        <v-icon>mdi-filter</v-icon>
+        <v-icon>filter_alt</v-icon>
       </v-btn>
     </v-toolbar>
     <v-infinite-scroll
+      :empty-text="noDataText"
       :height="height"
       :items="items"
-      @load="handleLoad"
-      :empty-text="noDataText"
       class="py-2"
+      @load="handleLoad"
     >
       <v-list
         :style="computedStyle"
-        v-bind="pass"
         class="py-0"
+        v-bind="pass"
       >
         <template
           v-for="(item, i) in items"
@@ -43,8 +43,8 @@
         >
           <v-list-item @click="$emit('click:item', item)">
             <slot
-              name="item"
               :item="item"
+              name="item"
             />
           </v-list-item>
           <v-divider
@@ -61,8 +61,8 @@
             <v-btn
               color="white"
               size="small"
-              variant="outlined"
               v-bind="passingProps"
+              variant="outlined"
             >
               Retry
             </v-btn>
@@ -84,7 +84,7 @@
 </template>
 
 <script lang="ts">
-import type { PropType } from "vue"
+import type {PropType} from "vue"
 
 export const AppListTableProps = {
   endpoint: {
@@ -134,9 +134,9 @@ export const AppListTableProps = {
   },
 }
 </script>
-<script setup lang="ts">
+<script lang="ts" setup>
 import {ref, computed, useAttrs, toValue, watch, toRefs} from "vue"
-import { useDisplay } from "vuetify"
+import {useDisplay} from "vuetify"
 import usePaginationData from "@/composables/usePaginationData"
 import {useDebounceFn} from "@vueuse/core"
 import {cloneDeep} from "lodash"
@@ -151,14 +151,14 @@ const search = ref("")
 const items = ref<any[]>([])
 const errorMsg = ref<undefined | string>(undefined)
 const loading = ref<boolean>(false)
-const mergedProps = ref({...toRefs(props.filters), ...(props.showSearchBar ? { search } : {})})
+const mergedProps = ref({...toRefs(props.filters), ...(props.showSearchBar ? {search} : {})})
 const infiniteScrollEvents = ref<((value: 'ok' | 'empty' | 'error' | 'canceled') => void) | undefined>(undefined)
 const internalStatus = ref<'ok' | 'empty' | 'error' | 'canceled'>('ok')
 const {endpoint, method} = toRefs(props)
 
-const { pagination, loadData, setPagination } = usePaginationData(endpoint, mergedProps, method)
+const {pagination, loadData, setPagination} = usePaginationData(endpoint, mergedProps, method)
 
-const { smAndDown } = useDisplay()
+const {smAndDown} = useDisplay()
 
 defineExpose({
   reload
@@ -166,9 +166,9 @@ defineExpose({
 
 const computedStyle = computed(() => {
   if (props.showSearchBar || props.showFilterBar) {
-    return { height: "calc(100% - 56px)", "overflow-y": "scroll" }
+    return {height: "calc(100% - 56px)", "overflow-y": "scroll"}
   } else {
-    return { height: "100%" }
+    return {height: "100%"}
   }
 })
 
@@ -184,13 +184,13 @@ watch(() => props?.filters, (newValue: any) => {
     return
   }
   internalStatus.value = 'ok'
-  if(newValue?.search !== oldFilters?.value.search) {
+  if (newValue?.search !== oldFilters?.value.search) {
     debounceReload().then()
   } else {
     reload().then()
   }
   oldFilters.value = cloneDeep(newValue)
-}, { deep: true })
+}, {deep: true})
 
 async function reload() {
   setPagination({page: 1})
@@ -203,13 +203,13 @@ async function reload() {
   errorMsg.value = error
   items.value = data
   internalStatus.value = status
-  if(status !== 'empty') {
+  if (status !== 'empty') {
     refreshItems()
   }
 }
 
 async function handleLoad({done}: { done: (value: 'ok' | 'empty' | 'error' | 'canceled') => void }) {
-  if(internalStatus.value === 'empty') {
+  if (internalStatus.value === 'empty') {
     done('empty')
     return
   }
@@ -219,7 +219,7 @@ async function handleLoad({done}: { done: (value: 'ok' | 'empty' | 'error' | 'ca
   loading.value = false
   errorMsg.value = error
   items.value = items.value.concat(data)
-  setPagination({ page: pagination.value.page + 1})
+  setPagination({page: pagination.value.page + 1})
   done(status)
   internalStatus.value = status
 }

@@ -1,5 +1,6 @@
-import { createVuetify, type ThemeDefinition } from "vuetify"
-import '@mdi/font/css/materialdesignicons.css'
+import {createVuetify, type ThemeDefinition} from "vuetify"
+import {aliases, md} from 'vuetify/iconsets/md'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 const lightTheme: ThemeDefinition = {
   dark: false,
@@ -14,9 +15,7 @@ const lightTheme: ThemeDefinition = {
     warning: "#ffa21a",
     application: "#EFEFEF"
   },
-  variables: {
-
-  }
+  variables: {}
 }
 
 export default createVuetify({
@@ -25,6 +24,13 @@ export default createVuetify({
     themes: {
       lightTheme
     }
+  },
+  icons: {
+    defaultSet: 'md',
+    aliases,
+    sets: {
+      md,
+    },
   },
   defaults: {
     VTextField: {

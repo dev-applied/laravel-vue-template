@@ -28,14 +28,14 @@ export default defineComponent({
       showLogin: true,
     }
   },
-  mounted() {
-    if (this.$auth.user) {
-      this.$router.push(this.$routeTo(this.ROUTES.DASHBOARD))
-    }
-  },
   computed: {
     title() {
       return this.showLogin ? 'User Login' : 'Email Sent'
+    }
+  },
+  mounted() {
+    if (this.$auth.user) {
+      this.$router.push(this.$routeTo(this.ROUTES.DASHBOARD))
     }
   },
   methods: {

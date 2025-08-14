@@ -1,18 +1,18 @@
 <template>
   <v-text-field
+    ref="dateInput"
     v-model="maskedDate"
     label="Date"
     placeholder="mm/dd/yyyy"
-    ref="dateInput"
     :focused="menu || isFocused"
     :error-messages="dateError"
+    :prepend-inner-icon="prependInnerIcon"
+    :counter="false"
     @focus="isFocused = true"
     @click:clear="$emit('update:modelValue', null)"
     @blur="validateDate"
-    :prepend-inner-icon="prependInnerIcon"
     @click:prepend-inner="menu = !menu"
-    :counter="false"
-    @input="onAccept"
+    @update:model-value="onAccept"
   >
     <v-menu
       v-model="menu"

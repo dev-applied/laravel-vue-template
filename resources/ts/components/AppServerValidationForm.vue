@@ -50,7 +50,7 @@ const submit: () => Promise<void> = async () => {
   if (status > 204) {
     useAppStore().addError(data?.message ?? 'Unknown Error')
     errorBag.value = data?.errors ?? {}
-    emits('error', errorBag)
+    emits('error', errorBag.value)
     if (Object.keys(errorBag.value).length !== 0) {
       await nextTick(() => {
         window.scrollTo({

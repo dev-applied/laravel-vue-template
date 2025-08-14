@@ -4,7 +4,7 @@ import eslint from 'vite-plugin-eslint'
 import {defineConfig, loadEnv, type UserConfig} from "vite"
 import vue from '@vitejs/plugin-vue'
 import laravel from 'laravel-vite-plugin'
-import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import Vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
 import ViteFonts from 'unplugin-fonts/vite'
 import UnheadVite from '@unhead/addons/vite'
 import {sentryVitePlugin} from "@sentry/vite-plugin"
@@ -30,7 +30,7 @@ export default defineConfig(({mode, command}) => {
         }
       }),
       Vuetify({
-        autoImport: { labs: true },
+        autoImport: {labs: true},
         styles: {
           configFile: 'resources/scss/settings.scss'
         }
@@ -100,7 +100,7 @@ export default defineConfig(({mode, command}) => {
         rollupOptions: {
           input: resolve(__dirname, './index.html'),
         },
-        outDir: resolve(__dirname, './capacitor-build'),
+        outDir: resolve(__dirname, './dist'),
       },
       server: undefined,
     }

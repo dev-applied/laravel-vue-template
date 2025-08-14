@@ -86,7 +86,6 @@ const setPlace = async (suggestion: Suggestion | null) => {
     v-bind="$attrs"
     v-model:search="query"
     :model-value="query"
-    @update:model-value="setPlace"
     return-object
     auto-complete="off"
     :items="suggestions"
@@ -94,6 +93,7 @@ const setPlace = async (suggestion: Suggestion | null) => {
     item-value="description"
     :loading="loading"
     no-data-text="No Results Found"
+    @update:model-value="setPlace"
   />
 </template>
 

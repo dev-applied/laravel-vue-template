@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Exceptions\AppException;
+use App\Models\User;
 use Carbon\CarbonInterval;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use Illuminate\Validation\ValidationException;
 use RateLimiter;
 use Throwable;
@@ -26,8 +28,6 @@ class AuthController extends Controller
 
     /**
      * Get the authenticated User.
-     *
-     * @return JsonResponse
      */
     public function me(): JsonResponse
     {
@@ -45,39 +45,39 @@ class AuthController extends Controller
     /**
      * Get a JWT via given credentials.
      *
-     * @param  Request  $request
-     * @return JsonResponse
      * @throws ValidationException
      */
     public function login(Request $request): JsonResponse
     {
         $credentials = $this->validate($request, [
-            'email' => 'required|string',
-            'password' => 'required|string'
+            'email'    => 'required|string',
+            'password' => 'required|string',
         ]);
 
         if (RateLimiter::tooManyAttempts('login:'.$request->ip(), 5)) {
             $seconds = RateLimiter::availableIn('login:'.$request->ip());
 
-            return response()->json(['message' =>  'You may try again in ' . CarbonInterval::seconds($seconds)->cascade()->forHumans()], 401);
+            return response()->json(['message' => 'You may try again in '.CarbonInterval::seconds($seconds)->cascade()->forHumans()], 401);
         }
 
         $user = User::where('email', $credentials['email'])->first();
-        if (!$user) {
+
+        if (! $user) {
             RateLimiter::hit('login:'.$request->ip(), 60 * 5);
+
             return response()->json(['message' => 'User or password incorrect'], 401);
         }
 
         $token = Auth::attempt($credentials);
 
-        if (!$token) {
+        if (! $token) {
             RateLimiter::hit('login:'.$request->ip(), 5 * 60);
+
             return response()->json(['message' => 'User or password incorrect'], 401);
         }
 
         return $this->respondWithToken($token);
     }
-
 
     /**
      * @throws ValidationException
@@ -85,7 +85,7 @@ class AuthController extends Controller
     public function impersonate(Request $request): JsonResponse
     {
         $data = $this->validate($request, [
-            'user_id' => 'required|exists:users,id'
+            'user_id' => 'required|exists:users,id',
         ]);
 
         /** @var User $user */
@@ -108,8 +108,6 @@ class AuthController extends Controller
 
     /**
      * Log the user out (Invalidate the token).
-     *
-     * @return JsonResponse
      */
     public function logout(): JsonResponse
     {
@@ -118,28 +116,25 @@ class AuthController extends Controller
         return response()->json(['message' => 'Successfully logged out'])->withoutCookie('token', null, $this->getRootDomain());
     }
 
-    private function getRootDomain(): string
-    {
-        preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
-        return $matches[1];
-    }
-
     /**
      * Get the token array structure.
-     *
-     * @param string $token
-     *
-     * @return JsonResponse
      */
     protected function respondWithToken(string $token): JsonResponse
     {
         $response = response()->json([
             'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'token_type'   => 'bearer',
+            'expires_in'   => auth()->factory()->getTTL() * 60,
         ]);
         $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $this->getRootDomain()));
+
         return $response;
     }
 
+    private function getRootDomain(): string
+    {
+        preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
+
+        return $matches[1];
+    }
 }

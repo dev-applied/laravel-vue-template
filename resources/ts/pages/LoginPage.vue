@@ -2,8 +2,8 @@
   <v-container class="fill-height">
     <v-row>
       <v-col
-        offset-md="3"
         md="6"
+        offset-md="3"
       >
         <v-card>
           <v-card-title>
@@ -22,7 +22,7 @@
               <v-alert
                 v-model="notAuthorized"
                 color="error"
-                dismissible
+                closable
               >
                 {{ notAuthorizedMessage }}
               </v-alert>
@@ -30,23 +30,23 @@
                 <v-text-field
                   ref="email"
                   v-model="email"
-                  outlined
-                  prepend-inner-icon="mdi-account"
+                  variant="outlined"
                   placeholder="Email"
+                  prepend-inner-icon="account_circle"
                   @keydown.enter="login"
                 />
                 <v-text-field
                   v-model="password"
-                  outlined
-                  placeholder="Password"
-                  prepend-inner-icon="mdi-lock"
                   :type="showPassword ? 'text' : 'password'"
+                  variant="outlined"
+                  placeholder="Password"
+                  prepend-inner-icon="lock"
                   @keydown.enter="login"
                 >
                   <template #append>
                     <v-btn
                       icon
-                      small
+                      size="small"
                       style="margin-top: -2px;"
                       tabindex="-1"
                       @click="showPassword = !showPassword"
@@ -54,7 +54,7 @@
                       <v-icon
                         size="20"
                       >
-                        {{ !showPassword ? 'mdi-eye' : 'mdi-eye-off' }}
+                        {{ !showPassword ? 'visibility' : 'visibility_off' }}
                       </v-icon>
                     </v-btn>
                   </template>
@@ -62,7 +62,7 @@
 
                 <div>
                   <span
-                    class="primary--text"
+                    class="text-primary"
                     role="button"
                     @click="sendResetPassword"
                   >Forgot password?</span>
@@ -87,8 +87,8 @@
             <v-spacer />
             <template v-if="showLogin">
               <v-btn
-                color="primary"
                 :loading="loading"
+                color="primary"
                 @click="login"
               >
                 Login
@@ -111,7 +111,7 @@
 
 <script lang="ts">
 import validators from "@/mixins/validators"
-import { defineComponent } from "vue"
+import {defineComponent} from "vue"
 
 export default defineComponent({
   mixins: [validators],
@@ -129,6 +129,11 @@ export default defineComponent({
       showLogin: true,
     }
   },
+  computed: {
+    title() {
+      return this.showLogin ? 'User Login' : 'Email Sent'
+    }
+  },
   mounted() {
     if (this.$auth.user) {
       this.$router.push(this.$routeTo(this.ROUTES.HOME))
@@ -138,17 +143,12 @@ export default defineComponent({
       this.remember = true
     }
   },
-  computed: {
-    title() {
-      return this.showLogin ? 'User Login' : 'Email Sent'
-    }
-  },
   methods: {
     async login() {
       if (!await this.$refs!.form!.validate()) return
       this.loading = true
       const {
-        data: { message, errors },
+        data: {message, errors},
         status
       } = await this.$auth
         .login({
@@ -181,7 +181,7 @@ export default defineComponent({
       }
 
       this.loading = true
-      const { data: { message, errors }, status } = await this.$http.post('/forgot-password', {
+      const {data: {message, errors}, status} = await this.$http.post('/forgot-password', {
         email: this.email
       }).catch(e => e)
       this.loading = false

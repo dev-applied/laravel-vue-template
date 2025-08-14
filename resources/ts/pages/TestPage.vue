@@ -11,7 +11,7 @@
           knewflk
         </div>
         <v-spacer />
-        <v-icon>mdi-close</v-icon>
+        <v-icon>close</v-icon>
       </v-card-title>
     </v-card>
   </app-dialog>

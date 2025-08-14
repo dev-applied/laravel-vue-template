@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mixins;
 
 use App\Traits\WithSelected;
@@ -10,7 +12,7 @@ use Schema;
 
 /**
  * Class VuetifyPaginateMixin
- * @package App\Mixins
+ *
  * @mixin Builder
  */
 class VuetifyPaginateMixin
@@ -21,20 +23,24 @@ class VuetifyPaginateMixin
             $query = $this
                 ->when(request()->input('sortBy'), function (Builder $query, array $sortBy) {
                     $columns = collect($query->getQuery()->getColumns());
+
                     if ($columns->isEmpty()) {
                         $tableName = $query->getModel()->getTable();
-                        $columns = collect(Schema::getColumnListing($tableName))
-                            ->map(function($col) use ($tableName) {
+                        $columns   = collect(Schema::getColumnListing($tableName))
+                            ->map(function ($col) {
                                 return $col;
                             });
                     } else {
                         $columns = $columns->map(function ($column) {
                             if (str_contains($column, '.*')) {
                                 [$table] = explode('.', $column);
+
                                 return collect(Schema::getColumns($table))->pluck('name');
                             }
+
                             if (str_contains($column, ' as ')) {
                                 [$select, $column] = explode(' as ', $column);
+
                                 return str_replace('`', '', $column);
                             }
 
@@ -59,9 +65,10 @@ class VuetifyPaginateMixin
                     $query->withSelected(request('selected'), request('key'));
                 });
 
-            if (request()->input('itemsPerPage') === "-1") {
+            if (request()->input('itemsPerPage') === '-1') {
                 $items = $query->get();
-                return new LengthAwarePaginator($items, $items->count(), ($items->count() > 0 ? $items->count() : 1), 1) ;
+
+                return new LengthAwarePaginator($items, $items->count(), ($items->count() > 0 ? $items->count() : 1), 1);
             } else {
                 return $query->paginate(request()->input('itemsPerPage', 10), ['*']);
             }

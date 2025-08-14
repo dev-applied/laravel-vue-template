@@ -4,10 +4,10 @@
     :model-value="formattedValue"
     v-bind="attrs"
     :class="$attrs.class"
-    @click:clear="clear"
     validate-on="blur"
     :maxlength="$attrs.maxlength || 16"
-    @input="handleInput"
+    @click:clear="clear"
+    @update:model-value="handleInput"
   />
 </template>
 

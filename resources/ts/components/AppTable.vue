@@ -1,9 +1,9 @@
 <template>
   <app-pagination-table
     v-if="mdAndUp"
-    :hide-default-footer="static"
     v-bind="TableProps"
     ref="table"
+    :hide-default-footer="static"
   >
     <template
       v-for="(_, name) in $slots"

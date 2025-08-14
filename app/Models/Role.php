@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Eloquent;
@@ -17,10 +19,11 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @property string $guard_name
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, \App\Models\Permission> $permissions
+ * @property-read Collection<int, Permission> $permissions
  * @property-read int|null $permissions_count
- * @property-read Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
+ *
  * @method static Builder|Role newModelQuery()
  * @method static Builder|Role newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Role permission($permissions, $without = false)
@@ -31,7 +34,9 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @method static Builder|Role whereName($value)
  * @method static Builder|Role whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role withoutPermission($permissions)
+ *
  * @mixin Eloquent
+ *
  * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
  */
@@ -40,6 +45,8 @@ class Role extends SpatieRole
     use HasFactory;
 
     public const ROLE_ADMIN = 'Admin';
+
     public const ROLE_REPORTER = 'Reporter';
+
     public const ROLE_CUSTOMER = 'Customer';
 }

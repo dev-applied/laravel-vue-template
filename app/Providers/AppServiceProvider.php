@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Mixins\HasManyMixin;
@@ -13,6 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use ReflectionException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,7 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     * @throws \ReflectionException
+     *
+     * @throws ReflectionException
      */
     public function boot(): void
     {

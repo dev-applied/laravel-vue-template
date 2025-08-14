@@ -71,5 +71,5 @@ services:
 
 networks:
     default:
-        external:
-            name: nginx-proxy
+        external: true
+        name: nginx-proxy

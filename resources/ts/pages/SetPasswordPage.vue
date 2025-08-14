@@ -2,10 +2,10 @@
   <v-container class="fill-height set-password">
     <v-row>
       <v-col
-        offset-md="3"
         md="6"
-        sm="8"
+        offset-md="3"
         offset-sm="2"
+        sm="8"
       >
         <v-card>
           <v-card-title>
@@ -23,9 +23,9 @@
             <v-alert
               v-if="errorMessage"
               v-model="errorMessage"
-              color="error"
               class=""
-              dismissible
+              color="error"
+              closable
             >
               {{ errorMessage }}
             </v-alert>
@@ -36,18 +36,18 @@
               <v-text-field
                 ref="password"
                 v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                outlined
-                prepend-inner-icon="mdi-lock"
                 :rules="rules.password"
-                placeholder="Password*"
+                :type="showPassword ? 'text' : 'password'"
                 autocomplete="new-password"
+                variant="outlined"
+                placeholder="Password*"
+                prepend-inner-icon="lock"
                 @keyup="$refs.confirmPassword.validate(true)"
               >
                 <template #append>
                   <v-btn
                     icon
-                    small
+                    size="small"
                     style="margin-top: -2px;"
                     tabindex="-1"
                     @click="showPassword = !showPassword"
@@ -55,7 +55,7 @@
                     <v-icon
                       size="20"
                     >
-                      {{ !showPassword ? 'mdi-eye' : 'mdi-eye-off' }}
+                      {{ !showPassword ? 'visibility' : 'visibility_off' }}
                     </v-icon>
                   </v-btn>
                 </template>
@@ -64,16 +64,16 @@
                 ref="confirmPassword"
                 v-model="confirm_password"
                 :rules="confirmPasswordRules(password, confirm_password)"
-                outlined
-                placeholder="Confirm Password*"
-                autocomplete="new-password"
-                prepend-inner-icon="mdi-lock"
                 :type="showConfirmPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                variant="outlined"
+                placeholder="Confirm Password*"
+                prepend-inner-icon="lock"
               >
                 <template #append>
                   <v-btn
                     icon
-                    small
+                    size="small"
                     style="margin-top: -2px;"
                     tabindex="-1"
                     @click="showConfirmPassword = !showConfirmPassword"
@@ -81,7 +81,7 @@
                     <v-icon
                       size="20"
                     >
-                      {{ !showConfirmPassword ? 'mdi-eye' : 'mdi-eye-off' }}
+                      {{ !showConfirmPassword ? 'visibility' : 'visibility_off' }}
                     </v-icon>
                   </v-btn>
                 </template>
@@ -97,14 +97,14 @@
             <v-spacer />
             <v-btn
               color="secondary"
-              outlined
+              variant="outlined"
               @click="$router.push($routeTo(ROUTES.LOGIN))"
             >
               Return to Sign In
             </v-btn>
             <v-btn
-              :loading="loading"
               :disabled="!valid"
+              :loading="loading"
               class="set-password__action"
               color="primary"
               @click="setPassword"
@@ -123,7 +123,7 @@ import validators from "@/mixins/validators"
 import PasswordValidation from '@/components/AppPasswordValidation.vue'
 import {defineComponent} from "vue"
 import {useUserStore} from "@/stores/user"
-import type { VForm } from "vuetify/components"
+import type {VForm} from "vuetify/components"
 
 export default defineComponent({
   components: {

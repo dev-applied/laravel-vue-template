@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Exceptions\AppException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Sentry\Laravel\Integration;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
-use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -36,5 +38,3 @@ return Application::configure(basePath: dirname(__DIR__))
         // $schedule->command('inspire')->hourly();
     })
     ->create();
-
-

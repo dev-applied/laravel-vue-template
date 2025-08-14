@@ -1,22 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mixins;
+
+use Closure;
 
 /**
  * Class HasManyMixin
- * @package App\Mixins
+ *
  * @mixin \Illuminate\Database\Eloquent\Relations\HasMany
  */
 class HasManyMixin
 {
-    public function syncWithoutDetaching(): \Closure
+    public function syncWithoutDetaching(): Closure
     {
         return function ($data): array {
             return $this->sync()($data, false);
         };
     }
 
-    public function sync(): \Closure
+    public function sync(): Closure
     {
         return function ($data, $deleting = true): array {
             $changes = [];
@@ -32,12 +36,13 @@ class HasManyMixin
 
             // Separate the submitted data into "update" and "new"
             $updateRows = [];
-            $newRows = [];
+            $newRows    = [];
+
             foreach ($data as $row) {
                 // We determine "updateable" rows as those whose $relatedKeyName (usually 'id') is set, not empty, and
                 // match a related row in the database.
-                if (isset($row[$relatedKeyName]) && !empty($row[$relatedKeyName]) && in_array($row[$relatedKeyName], $current)) {
-                    $id = $row[$relatedKeyName];
+                if (isset($row[$relatedKeyName]) && ! empty($row[$relatedKeyName]) && in_array($row[$relatedKeyName], $current)) {
+                    $id              = $row[$relatedKeyName];
                     $updateRows[$id] = $row;
                 } else {
                     $newRows[] = $row;
@@ -48,8 +53,9 @@ class HasManyMixin
             // These rows will be scheduled for deletion.  Again, we determine based on the relatedKeyName (typically 'id').
             $updateIds = array_keys($updateRows);
             $deleteIds = [];
+
             foreach ($current as $currentId) {
-                if (!in_array($currentId, $updateIds)) {
+                if (! in_array($currentId, $updateIds)) {
                     $deleteIds[] = $currentId;
                 }
             }
@@ -71,6 +77,7 @@ class HasManyMixin
 
             // Insert the new rows
             $newIds = [];
+
             foreach ($newRows as $row) {
                 $newModel = $this->create($row);
                 $newIds[] = $newModel->$relatedKeyName;
@@ -82,15 +89,13 @@ class HasManyMixin
         };
     }
 
-
     /**
      * Cast the given keys to integers if they are numeric and string otherwise.
-     *
      */
-    protected function castKeys(): \Closure
+    protected function castKeys(): Closure
     {
         return function (array $keys): array {
-            return (array)array_map(function ($v) {
+            return (array) array_map(function ($v) {
                 return $this->castKey($v);
             }, $keys);
         };
@@ -98,12 +103,11 @@ class HasManyMixin
 
     /**
      * Cast the given key to an integer if it is numeric.
-     *
      */
-    protected function castKey(): \Closure
+    protected function castKey(): Closure
     {
         return function (int|string $key): int|string {
-            return is_numeric($key) ? (int)$key : (string)$key;
+            return is_numeric($key) ? (int) $key : (string) $key;
         };
     }
 }

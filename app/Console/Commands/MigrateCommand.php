@@ -1,21 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
-use Barryvdh\LaravelIdeHelper\Console\ModelsCommand;
-use Based\TypeScript\Commands\TypeScriptGenerateCommand;
-use Illuminate\Console\Command;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Console\Migrations\MigrateCommand as BaseMigrateCommand;
+use Scrumble\TypeGenerator\Console\Commands\GenerateTypesCommand;
 use Throwable;
 
 class MigrateCommand extends BaseMigrateCommand
 {
-
-
     public function __construct()
     {
-        $migrator = app("migrator");
+        $migrator   = app('migrator');
         $dispatcher = app(Dispatcher::class);
 
         parent::__construct($migrator, $dispatcher);
@@ -24,18 +22,18 @@ class MigrateCommand extends BaseMigrateCommand
     /**
      * Execute the console command.
      *
-     * @return int
      * @throws Throwable
      */
     public function handle(): int
     {
         $response = parent::handle();
+
         if ($response !== self::SUCCESS) {
             return $response;
         }
+
         if (app()->environment('local')) {
-            $this->call(ModelsCommand::class, ['-W' => true, '-R' => true, '-p' => true]);
-            $this->call(TypeScriptGenerateCommand::class);
+            $this->call(GenerateTypesCommand::class);
         }
 
         return self::SUCCESS;

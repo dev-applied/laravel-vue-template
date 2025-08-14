@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FileController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,7 +45,6 @@ Route::group(['prefix' => '/v1'], function () {
     });
 });
 
-
 Route::fallback(function () {
-    abort(404, 'Route Not Found: ' . request()->path());
+    abort(404, 'Route Not Found: '.request()->path());
 });

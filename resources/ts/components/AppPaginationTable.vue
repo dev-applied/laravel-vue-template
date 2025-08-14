@@ -1,7 +1,7 @@
 <template>
   <v-data-table-server
-    :items="items"
     :class="{'app-pagination-table--striped': striped}"
+    :items="items"
     :items-length="pagination.total"
     :loading="loading"
     v-bind="{...$props, ...$attrs}"
@@ -17,13 +17,13 @@
       />
     </template>
     <template
-      #body
       v-if="errorMsg"
+      #body
     >
       <div class="d-flex">
         <v-alert
           class="mt-4 mx-auto"
-          icon="mdi-close-circle-outline"
+          icon="cancel"
           type="error"
         >
           {{ errorMsg }}
@@ -31,8 +31,8 @@
       </div>
     </template>
     <template
-      #loading
       v-if="!$slots.loading"
+      #loading
     >
       <v-skeleton-loader :type="`table-row@${itemsPerPage}`" />
     </template>
@@ -40,9 +40,9 @@
 </template>
 
 <script lang="ts">
-import { VDataTableServer } from "vuetify/components/VDataTable"
-import { type PropType } from "vue"
-import { clone } from "lodash"
+import {VDataTableServer} from "vuetify/components/VDataTable"
+import {type PropType} from "vue"
+import {clone} from "lodash"
 
 const VDataTableServerProps = clone(VDataTableServer.props)
 delete VDataTableServerProps.itemsLength
@@ -84,7 +84,7 @@ export const AppPaginationTableProps = {
   }
 }
 </script>
-<script setup lang="ts">
+<script lang="ts" setup>
 import {ref, toValue, watch, watchEffect} from "vue"
 import usePaginationData from "@/composables/usePaginationData"
 import {cloneDeep} from "lodash"
@@ -100,7 +100,7 @@ const errorMsg = ref<string | undefined>(undefined)
 const loading = ref<boolean>(false)
 const {endpoint, filters, method} = toRefs(props)
 
-const { pagination, loadData, setPagination } = usePaginationData(endpoint, filters, method)
+const {pagination, loadData, setPagination} = usePaginationData(endpoint, filters, method)
 
 watchEffect(() => {
   if (props.static) {
@@ -131,7 +131,7 @@ watch(() => props?.filters, (newValue: any) => {
     reload().then()
   }
   oldFilters = cloneDeep(newValue)
-}, { deep: true })
+}, {deep: true})
 
 async function reload() {
   setPagination({page: 1})
@@ -152,7 +152,7 @@ defineExpose({
 async function onChange(options: { itemsPerPage: number, page: number, sortBy: Record<string, any> }) {
   setPagination(options)
   loading.value = true
-  const { data, status, error } = await loadData()
+  const {data, status, error} = await loadData()
   loading.value = false
   if (status === "canceled") {
     return
@@ -168,6 +168,7 @@ async function onChange(options: { itemsPerPage: number, page: number, sortBy: R
     :deep(tbody tr:nth-of-type(odd)) {
       background-color: rgba(0, 0, 0, .05);
     }
+
     :deep(tbody tr) {
       &:hover {
         background-color: rgba(0, 0, 0, .1);

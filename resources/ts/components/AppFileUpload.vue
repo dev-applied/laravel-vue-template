@@ -17,7 +17,7 @@
     </v-btn>
     <span
       v-if="props.extraInfo"
-      class="ml-3 align-center mt-2 red--text"
+      class="ml-3 align-center mt-2 text-red"
     >
       {{ props.extraInfo }}
     </span>
@@ -38,12 +38,11 @@
         :style="`max-width: ${props.width}px;`"
         :width="props.width"
         class="mr-4"
-        contain
       />
       <a
         v-if="!isImage"
         :href="$file.url(internalFile.id)"
-        class="primary--text text-decoration-none"
+        class="text-primary text-decoration-none"
         target="_blank"
         title="View File"
       >
@@ -63,7 +62,7 @@
           color="red"
           size="24"
         >
-          mdi-close
+          close
         </v-icon>
       </v-btn>
     </div>

@@ -3,18 +3,18 @@ import { defineStore } from "pinia"
 export const useAppStore = defineStore("app", {
   state: () => {
     return {
-      messages: [] as { type: "Success" | "Error" | "Warning", message: String }[],
+      messages: [] as { type: "Success" | "Error" | "Warning", message: string }[],
       showNavigation: false as boolean,
     }
   },
   actions: {
-    addError(error: String, timeout: number = 10000) {
+    addError(error: string, timeout: number = 10000) {
       this.messages.push({ type: "Error", message: error })
       setTimeout(() => {
         this.messages.splice(0, 1)
       }, timeout)
     },
-    addSuccess(message: String, timeout: number = 5000) {
+    addSuccess(message: string, timeout: number = 5000) {
       this.messages.push({ type: "Success", message })
       if (timeout > 0) {
         setTimeout(() => {
@@ -22,7 +22,7 @@ export const useAppStore = defineStore("app", {
         }, timeout)
       }
     },
-    addWarning(message: String, timeout: number = 10000) {
+    addWarning(message: string, timeout: number = 10000) {
       this.messages.push({ type: "Warning", message })
       if (timeout > 0) {
         setTimeout(() => {

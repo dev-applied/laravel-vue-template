@@ -1,11 +1,9 @@
 import Confirm from './ConfirmDialog.vue'
 import type {App} from "vue"
-import vuetify from "@/plugins/vuetify"
 import {createApp} from "vue"
+import vuetify from "@/plugins/vuetify"
 
-const defaultOptions: {property: string} = {
-  property: '$confirm',
-}
+type defaultOptions = { property: string }
 
 export type ConfirmOptions = {
   buttonTrueText: string
@@ -23,7 +21,7 @@ export type ConfirmOptions = {
   width: string | number
 }
 
-function createDialogCmp (options: Partial<ConfirmOptions>) {
+function createDialogCmp(options: Partial<ConfirmOptions>) {
   const container = document.querySelector('[data-app=true]') || document.body
 
   return new Promise(resolve => {
@@ -57,7 +55,7 @@ function show(title: string, message: string | ConfirmOptions | undefined = unde
   return createDialogCmp(options)
 }
 
-function install (app: App, options?: typeof defaultOptions) {
+function install(app: App, options?: defaultOptions) {
   const property = options?.property || '$confirm'
   app.config.globalProperties[property] = show
 }

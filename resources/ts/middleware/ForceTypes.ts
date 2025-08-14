@@ -1,6 +1,6 @@
-import moment from "moment"
-import { forEach } from "lodash"
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, NavigationGuardNext } from "vue-router"
+import {forEach} from "lodash"
+import type {NavigationGuardNext, RouteLocationNormalized, RouteLocationNormalizedLoaded} from "vue-router"
+import dayjs from "@/utils/dayjs.ts"
 
 export default class ForceTypes implements App.Middleware.Instance {
   async handle(
@@ -17,8 +17,8 @@ export default class ForceTypes implements App.Middleware.Instance {
       if (!isNaN(param)) {
         return (to.params[key] = Number(param))
       }
-      if (moment(param, moment.ISO_8601, true).isValid()) {
-        return (to.params[key] = moment(param))
+      if (dayjs(param).isValid()) {
+        return (to.params[key] = dayjs(param))
       }
       if (param === "true" || param === "false") {
         return (to.params[key] = Boolean(param))

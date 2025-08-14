@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -15,6 +16,7 @@ class ForgotPasswordMail extends Mailable
     use Queueable, SerializesModels;
 
     public string $token;
+
     public User $user;
 
     /**
@@ -23,7 +25,7 @@ class ForgotPasswordMail extends Mailable
     public function __construct($token, User $user)
     {
         $this->token = $token;
-        $this->user = $user;
+        $this->user  = $user;
     }
 
     /**

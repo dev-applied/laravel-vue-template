@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -19,10 +21,10 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Spatie\Permission\Traits\HasRoles;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 use Rickycezar\Impersonate\Models\Impersonate;
 use Rickycezar\Impersonate\Services\ImpersonateManager;
+use Spatie\Permission\Traits\HasRoles;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * App\Models\User
@@ -38,10 +40,11 @@ use Rickycezar\Impersonate\Services\ImpersonateManager;
  * @property-read Collection $all_permissions
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Permission> $permissions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Permission> $permissions
  * @property-read int|null $permissions_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Role> $roles
  * @property-read int|null $roles_count
+ *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
@@ -58,26 +61,22 @@ use Rickycezar\Impersonate\Services\ImpersonateManager;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder|User withoutRole($roles, $guard = null)
+ *
  * @mixin \Eloquent
+ *
  * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
  */
-class User extends Model implements
-    JWTSubject,
-    AuthenticatableContract,
-    AuthorizableContract,
-    CanResetPasswordContract
+class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject
 {
-
-    use
-        HasFactory,
-        Notifiable,
-        Authenticatable,
+    use Authenticatable,
         Authorizable,
         CanResetPassword,
-        MustVerifyEmail,
+        HasFactory,
         HasRoles,
-        Impersonate;
+        Impersonate,
+        MustVerifyEmail,
+        Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -110,9 +109,6 @@ class User extends Model implements
         'email_verified_at' => 'datetime',
     ];
 
-    /**
-     * @return void
-     */
     public static function booted(): void
     {
         parent::booted();
@@ -123,35 +119,25 @@ class User extends Model implements
         });
     }
 
-    /**
-     * @return mixed
-     */
     public function getJWTIdentifier(): mixed
     {
         return $this->getKey();
     }
 
-    /**
-     * @return array
-     */
     public function getJWTCustomClaims(): array
     {
         return [];
     }
 
-    /**
-     * @return Attribute
-     */
     public function allPermissions(): Attribute
     {
-        return new Attribute(fn(): Collection => $this->getAllPermissions());
+        return new Attribute(fn (): Collection => $this->getAllPermissions());
     }
 
     /**
      * sendPasswordResetNotification
      *
-     * @param mixed $token
-     * @return void
+     * @param  mixed  $token
      */
     public function sendPasswordResetNotification($token): void
     {
@@ -166,7 +152,7 @@ class User extends Model implements
 
     public function canBeImpersonated(): bool
     {
-        return !$this->canImpersonate();
+        return ! $this->canImpersonate();
     }
 
     public function isImpersonated(): Attribute

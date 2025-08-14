@@ -21,7 +21,10 @@
                 "lambda:*",
                 "ec2:*",
                 "ecr:*",
-                "events:*"
+                "events:*",
+                "sns:*",
+                "sqs:*",
+                "cloudwatch:*"
             ],
             "Resource": "*"
         }

@@ -1,0 +1,20 @@
+#1/bin/sh
+
+npm run fix
+
+# Name of your container (adjust if needed)
+CONTAINER_NAME=levelup
+
+# Check if the container is running
+if docker compose ps -q "$CONTAINER_NAME" >/dev/null 2>&1 && \
+   [ -n "$(docker compose ps -q "$CONTAINER_NAME")" ] && \
+   docker inspect -f '{{.State.Running}}' "$(docker compose ps -q "$CONTAINER_NAME")" 2>/dev/null | grep -q true; then
+
+  echo "🛠 Running in Docker container: $CONTAINER_NAME"
+
+  docker compose exec -T "$CONTAINER_NAME" ./vendor/bin/pint --test --parallel || exit 1
+else
+  echo "⚙️ Running locally on host"
+
+  eval "./vendor/bin/pint --test --parallel"
+fi

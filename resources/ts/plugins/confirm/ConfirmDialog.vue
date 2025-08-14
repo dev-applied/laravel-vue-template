@@ -1,17 +1,17 @@
 <template>
   <v-dialog
+    :max-width="width"
+    :model-value="true"
+    :persistent="persistent"
     eager
     @update:model-value="change"
-    :model-value="true"
-    :max-width="width"
-    :persistent="persistent"
     @keydown.esc="choose(undefined)"
   >
     <v-card tile>
       <v-toolbar
         v-if="!!title"
-        dark
         :color="color"
+        dark
         dense
         flat
       >
@@ -22,19 +22,19 @@
           {{ icon }}
         </v-icon>
         <v-toolbar-title
-          class="white--text"
+          class="text-white"
           v-text="title"
         />
         <v-spacer />
         <v-icon
           v-if="showCancel"
-          icon="mdi-close"
-          @click="choose(undefined)"
           class="mr-4"
+          icon="close"
+          @click="choose(undefined)"
         />
       </v-toolbar>
       <v-card-text
-        class="body-1 text-body-1 py-3"
+        class="text-body-1 text-body-1 py-3"
         v-html="message"
       />
       <v-card-actions>
@@ -63,7 +63,6 @@
 <script lang="ts">
 
 export default {
-  emits: ['close'],
   props: {
     buttonTrueText: {
       type: String,
@@ -95,7 +94,7 @@ export default {
     },
     icon: {
       type: String,
-      default: 'mdi-alert'
+      default: 'warning'
     },
     message: {
       type: String,
@@ -115,29 +114,30 @@ export default {
       default: false
     }
   },
-  mounted () {
+  emits: ['close'],
+  mounted() {
     document.addEventListener('keyup', this.onEnterPressed)
   },
-  unmounted () {
+  unmounted() {
     document.removeEventListener('keyup', this.onEnterPressed)
   },
   methods: {
-    onEnterPressed (e) {
+    onEnterPressed(e) {
       if (e.keyCode === 13) {
         e.stopPropagation()
         this.choose(true)
       }
     },
-    choose (value) {
+    choose(value) {
       this.$emit('close', value)
     },
-    change () {
+    change() {
       this.$emit('close', false)
     }
   }
 }
 </script>
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .v-dialog .v-toolbar-title {
   min-width: calc(100% - 160px);
 }

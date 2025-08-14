@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Traits\WhoDidIt;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Imagine\Image\Box;
@@ -29,11 +30,12 @@ use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
  * @property int|null $deleted_by_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $created_by
- * @property-read \App\Models\User|null $deleted_by
- * @property-read \App\Models\TFactory|null $use_factory
- * @property-read \App\Models\User|null $updated_by
+ * @property-read User|null $created_by
+ * @property-read User|null $deleted_by
+ * @property-read TFactory|null $use_factory
+ * @property-read User|null $updated_by
  * @property-read mixed $url
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File query()
@@ -49,7 +51,9 @@ use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedById($value)
+ *
  * @mixin \Eloquent
+ *
  * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
  */
@@ -59,22 +63,22 @@ class File extends Model
 
     public const SIZES = [
         'thumbnail' => [
-            'width' => 250,
+            'width'  => 250,
             'height' => 250,
         ],
         'medium' => [
-            'width' => 1440,
+            'width'  => 1440,
             'height' => 1440,
         ],
         'large' => [
-            'width' => 2500,
+            'width'  => 2500,
             'height' => 2500,
         ],
     ];
 
     public $casts = [
         'responsive_images' => 'array',
-        'responsive_paths' => 'json',
+        'responsive_paths'  => 'json',
     ];
 
     protected $appends = [
@@ -87,33 +91,10 @@ class File extends Model
         'type',
         'size',
         'disk',
-        'responsive_paths'
+        'responsive_paths',
     ];
 
-    //boot on delete delete file from storage
-    protected static function booted(): void
-    {
-        parent::booted();
-        self::deleting(function ($file) {
-            //remove all files
-            $filePath = str_replace("/storage/", "", $file->path);
-            Storage::disk($file->disk)->delete($filePath);
-
-            //remove all responsive images
-            foreach ($file->responsive_paths as $responsiveImage) {
-                $filePath = str_replace("/storage/", "", $responsiveImage);
-                Storage::disk($file->disk)->delete($filePath);
-            }
-
-        });
-    }
-
-    protected function url(): Attribute
-    {
-        return Attribute::get(fn($value): string => Storage::disk($this->disk)->url(ltrim($value, '/')));
-    }
-
-    public static function upload(UploadedFile|string $file, $path = 'uploads', $disk = null, $watermark = false): File
+    public static function upload(UploadedFile|string $file, $path = 'uploads', $disk = null, $watermark = false): self
     {
         if (is_string($file)) {
             if (str_contains($file, 'http')) {
@@ -126,17 +107,17 @@ class File extends Model
 
         // Modify uploaded file with watermark
         if ($watermark) {
-            $watermark = public_path('images/watermark.png');
-            $tmp = tempnam(sys_get_temp_dir(), 'watermark') . '.' . $file->getClientOriginalExtension();
+            $watermark      = public_path('images/watermark.png');
+            $tmp            = tempnam(sys_get_temp_dir(), 'watermark').'.'.$file->getClientOriginalExtension();
             $watermarkImage = new Imagine;
-            $image = new Imagine;
-            $image = $image->open($file->getRealPath());
-            $watermark = $watermarkImage->open($watermark);
-            $imageSize = $image->getSize();
+            $image          = new Imagine;
+            $image          = $image->open($file->getRealPath());
+            $watermark      = $watermarkImage->open($watermark);
+            $imageSize      = $image->getSize();
 
             // Calculate the number of watermarks needed in each dimension
             $numWatermarksHeight = ceil($imageSize->getHeight() / 300);
-            $numWatermarksWidth = ceil($imageSize->getWidth() / 500);
+            $numWatermarksWidth  = ceil($imageSize->getWidth() / 500);
 
             // Loop over the image and paste the watermark at the correct positions
             for ($i = 0; $i < $numWatermarksHeight; $i++) {
@@ -151,37 +132,38 @@ class File extends Model
             $file = new UploadedFile($tmp, $file->getClientOriginalName());
         }
 
-        $disk = $disk ?: config('filesystems.default');
+        $disk         = $disk ?: config('filesystems.default');
         $uniqueNumber = time();
-        $ext = strtolower($file->getClientOriginalExtension());
-        $mime = $file->getMimeType();
-        $fileName = strtolower(str_replace(".$ext", '', $file->getClientOriginalName()) . "_$uniqueNumber.$ext");
-        $directory = rtrim(ltrim($path, '/'), '/') . '/' . str_replace(".$ext", '', $fileName);
-        $path = $file->storeAs($directory, $fileName, $disk);
+        $ext          = mb_strtolower($file->getClientOriginalExtension());
+        $mime         = $file->getMimeType();
+        $fileName     = mb_strtolower(str_replace(".$ext", '', $file->getClientOriginalName())."_$uniqueNumber.$ext");
+        $directory    = mb_rtrim(mb_ltrim($path, '/'), '/').'/'.str_replace(".$ext", '', $fileName);
+        $path         = $file->storeAs($directory, $fileName, $disk);
 
-        $media = new File([
-            'name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'type' => $mime,
-            'size' => $file->getSize() / 1000,
-            'disk' => $disk,
+        $media = new self([
+            'name'             => $file->getClientOriginalName(),
+            'path'             => $path,
+            'type'             => $mime,
+            'size'             => $file->getSize() / 1000,
+            'disk'             => $disk,
             'responsive_paths' => [
                 'original' => $path,
             ],
         ]);
 
         if ($isImage) {
-            foreach (File::SIZES as $name => $dims) {
-                $tmp = tempnam(sys_get_temp_dir(), $name) . '.' . $file->getClientOriginalExtension();
+            foreach (self::SIZES as $name => $dims) {
+                $tmp   = tempnam(sys_get_temp_dir(), $name).'.'.$file->getClientOriginalExtension();
                 $image = new Imagine;
                 $image = $image->open($file->getRealPath());
+
                 if ($file->getClientOriginalExtension() !== 'svg') {
                     $image = $image->thumbnail(new Box($dims['width'], $dims['height']));
                 }
                 $image->save($tmp);
                 ImageOptimizer::optimize($tmp);
-                $thumbnail = new UploadedFile($tmp, $file->getClientOriginalName());
-                $media->responsive_paths = array_merge($media->responsive_paths, [$name => $thumbnail->storeAs($directory, str_replace(".$ext", '', $fileName) . "_$name.$ext", $disk)]);
+                $thumbnail               = new UploadedFile($tmp, $file->getClientOriginalName());
+                $media->responsive_paths = array_merge($media->responsive_paths, [$name => $thumbnail->storeAs($directory, str_replace(".$ext", '', $fileName)."_$name.$ext", $disk)]);
                 unlink($tmp);
             }
         }
@@ -191,19 +173,42 @@ class File extends Model
         return $media;
     }
 
+    // boot on delete delete file from storage
+    protected static function booted(): void
+    {
+        parent::booted();
+        self::deleting(function ($file) {
+            // remove all files
+            $filePath = str_replace('/storage/', '', $file->path);
+            Storage::disk($file->disk)->delete($filePath);
+
+            // remove all responsive images
+            foreach ($file->responsive_paths as $responsiveImage) {
+                $filePath = str_replace('/storage/', '', $responsiveImage);
+                Storage::disk($file->disk)->delete($filePath);
+            }
+
+        });
+    }
+
+    protected function url(): Attribute
+    {
+        return Attribute::get(fn ($value): string => Storage::disk($this->disk)->url(mb_ltrim($value, '/')));
+    }
+
     protected function sizeFormatted(): Attribute
     {
-        return Attribute::get(function($value): string {
-            $units = array('kb', 'mb', 'gb', 'tb');
+        return Attribute::get(function ($value): string {
+            $units     = ['kb', 'mb', 'gb', 'tb'];
             $units[-1] = 'b';
 
             $bytes = max($this->size, 0);
-            $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-            $pow = min($pow, count($units) - 1);
+            $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
+            $pow   = min($pow, count($units) - 1);
 
             $bytes /= pow(1024, $pow);
 
-            return round($bytes, 2) . ' ' . $units[$pow];
+            return round($bytes, 2).' '.$units[$pow];
         });
     }
 }
