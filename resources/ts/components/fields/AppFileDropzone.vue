@@ -455,7 +455,7 @@ const dropzoneWrapper = ref(null)
 
 
 const acceptText = computed(() => {
-  let acceptText: string[] = []
+  const acceptText: string[] = []
 
   for (const accept of props.accept) {
     if (accept === 'image/*') {
@@ -473,7 +473,7 @@ const acceptText = computed(() => {
 })
 
 watchEffect(async () => {
-  let newfiles = []
+  const newfiles = []
   if (!model.value) {
     files.value = newfiles
     return

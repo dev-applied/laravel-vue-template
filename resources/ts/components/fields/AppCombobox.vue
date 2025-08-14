@@ -12,12 +12,12 @@
     <v-combobox
       ref="combobox"
       v-model="internalValue"
+      v-bind="comboboxProps"
+      v-model:search="search"
       closable-chips
       chips
       :hide-no-data="!search"
       hide-details="auto"
-      v-bind="comboboxProps"
-      v-model:search="search"
       :multiple="multiple"
     >
       <template #no-data>
