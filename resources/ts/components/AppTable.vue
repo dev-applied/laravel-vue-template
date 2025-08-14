@@ -1,9 +1,9 @@
 <template>
   <app-pagination-table
     v-if="mdAndUp"
-    v-bind="TableProps"
     ref="table"
     :hide-default-footer="static"
+    v-bind="TableProps"
   >
     <template
       v-for="(_, name) in $slots"
@@ -22,8 +22,8 @@
   >
     <template #item="{ item }">
       <slot
-        name="mobile-item"
         :item="item"
+        name="mobile-item"
       />
     </template>
     <template #no-items>
@@ -32,12 +32,12 @@
   </app-list-table>
 </template>
 
-<script setup lang="ts">
-import { computed, ref, useAttrs } from "vue"
+<script lang="ts" setup>
+import {computed, ref, useAttrs} from "vue"
 import AppPaginationTable, {AppPaginationTableProps} from "@/components/AppPaginationTable.vue"
 import AppListTable, {AppListTableProps} from "@/components/AppListTable.vue"
 import {useDisplay} from "vuetify"
-import { pick } from "lodash"
+import pick from "lodash.pick"
 
 const props = defineProps({
   ...AppPaginationTableProps,
@@ -45,8 +45,8 @@ const props = defineProps({
 })
 
 const attrs = useAttrs()
-const TableProps = computed(() => pick({...props,  attrs}, Object.keys(AppPaginationTableProps)))
-const ListProps = computed(() => pick({...props,  attrs}, Object.keys(AppListTableProps)))
+const TableProps = computed(() => pick({...props, attrs}, Object.keys(AppPaginationTableProps)))
+const ListProps = computed(() => pick({...props, attrs}, Object.keys(AppListTableProps)))
 
 
 const table = ref<InstanceType<typeof AppPaginationTable> | null>(null)

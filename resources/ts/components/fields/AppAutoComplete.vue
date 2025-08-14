@@ -123,7 +123,8 @@
 import {computed, mergeProps, nextTick, onMounted, reactive, ref, toRefs, toValue, useAttrs, watch} from "vue"
 import {VAutocomplete} from "vuetify/components/VAutocomplete"
 import usePaginationData from "@/composables/usePaginationData"
-import {cloneDeep, isEqual} from "lodash"
+import cloneDeep from 'lodash.clonedeep'
+import isEqual from 'lodash.isequal'
 import {useDebounceFn} from "@vueuse/core"
 import {$http} from "@/plugins/axios"
 import {$error} from "@/plugins/errorHandler"

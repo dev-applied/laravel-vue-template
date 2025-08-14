@@ -1,8 +1,10 @@
-import { forEach, isFunction, merge, omit, trim } from "lodash"
-import type { RouteConfig } from "vue-router/types/router"
+import merge from "lodash.merge"
+import trim from "lodash.trim"
 import RouteDesigner from "@/router/RouteDesigner"
+import {RouteBuilder, RouteGroup} from "@/router/internal"
+import type {RouteRecordRaw} from "vue-router"
 
-export default class Route {
+export class Route extends RouteBuilder {
   private readonly uri: string
 
   private readonly page: {
@@ -12,101 +14,26 @@ export default class Route {
 
   private readonly name?: string
 
-  private attributes: App.Router.RouteAttributes = {
-    prefix: undefined,
-    middleware: [],
-    where: {},
-    props: false,
-    layout: undefined,
-    permissions_all: [],
-    permissions_any: []
-  }
-
-  private wheres: Record<string, string> = {}
-
-  private routeChildren: Route[] = []
-
-  private parent: Route | null = null
-
-  constructor(uri: string, page: string | { template: string }, name?: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
+  constructor(uri: string, page: string | {
+    template: string
+  }, name?: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
+    super()
     this.uri = uri
-    this.page = { default: page }
+    this.page = {default: page}
     this.name = name
     this.attributes = merge({}, this.attributes, attributes)
   }
 
-  public getAttributes(key: string | null = null): any {
-    if (!key) return this.attributes
-    // @ts-ignore
-    return this.attributes[key] ?? null
-  }
-
-  public setAttributes(attributes: App.Router.RouteAttributes) {
-    this.attributes = attributes
-  }
-
-  // Parameter Conditions
-
-  public where(name: string | object, expression: string | null = null) {
-    forEach(this.parseWhere(name, expression), (expression: string, name: string) => {
-      this.wheres[name] = expression
-    })
-
-    return this
-  }
-
-  public whereUuid(parameters: string[] | string) {
-    return this.assignExpressionToParameters(parameters, "[\\da-fA-F]{8}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{4}-[\\da-fA-F]{12}")
-  }
-
-  public whereNumber(parameters: string[] | string) {
-    return this.assignExpressionToParameters(parameters, "\\d")
-  }
-
-  private assignExpressionToParameters(parameters: string[] | string, expression: string) {
-    parameters = Array.isArray(parameters) ? parameters : [parameters]
-    const compiledParameters: Record<string, string> = {}
-
-    parameters.forEach((parameter) => {
-      compiledParameters[parameter] = expression
-    })
-
-    return this.where(parameters)
-  }
-
-  private parseWhere(name: string | object, expression: string | null = null) {
-    return typeof name === "object" ? name : { [name]: expression }
-  }
-
   // Route Modifiers
-
-  public child(route: Route) {
-    RouteDesigner.routes.pop()
-    this.routeChildren.push(route.setParent(this))
-
+  public children(routes: () => void) {
+    RouteDesigner._setActiveRoute(this)
+    routes()
+    RouteDesigner._setActiveRoute(undefined)
     return this
   }
 
-  public children(routes: Route[] | (() => void)) {
-    if (isFunction(routes)) {
-      const startIndex = RouteDesigner.routes.length
-      routes()
-      routes = RouteDesigner.routes.splice(startIndex, RouteDesigner.routes.length - 1)
-    }
-    this.routeChildren = this.routeChildren.concat(routes.map((r) => r.setParent(this)))
-
-    return this
-  }
-
-  public setParent(route: Route) {
-    this.parent = route
-
-    return this
-  }
-
-  public layout(layout: App.Layout) {
-    this.attributes.layout = layout
-
+  public redirect(to: string) {
+    this.attributes.redirect = to
     return this
   }
 
@@ -116,33 +43,33 @@ export default class Route {
     return this
   }
 
-  public passProps(): Route {
-    this.attributes.props = true
+  /**
+   * @internal
+   * @param uri
+   * @param page
+   * @param name
+   */
+  public _route(uri: string, page: string | { template: string }, name?: string) {
+    const route = super._route(uri, page, name)
+    route._setParent(this)
 
-    return this
+    return route
   }
 
-  public meta(meta: Record<string, any>): Route {
-    this.attributes = merge({}, this.attributes, omit(meta, ["prefix", "middleware", "where", "props", "layout", "permissions_all", "permissions_any"]))
-
-    return this
+  public _group(uri: string, routes: () => void): RouteGroup {
+    const attributes = this._getAttributes()
+    attributes.prefix = attributes.prefix + '/' + trim(this.uri, '/')
+    const group = new RouteGroup(uri, routes)
+    group._setAttributes(this.mergeAttributes({prefix: group._getAttributes().prefix}, attributes))
+    this.routes.push(group)
+    return group
   }
 
-  public addPermissionAny(permissions: string | string[]): Route {
-    this.attributes.permissions_any = this.attributes.permissions_any.concat(Array.isArray(permissions) ? permissions : [permissions])
-
-    return this
-  }
-
-  public addPermissionAll(permissions: string | string[]): Route {
-    this.attributes.permissions_all = this.attributes.permissions_any.concat(Array.isArray(permissions) ? permissions : [permissions])
-
-    return this
-  }
-
-  // Internal Functions
-
-  public compile(): RouteConfig {
+  /**
+   * @internal
+   */
+  public _compile(): RouteRecordRaw[] {
+    this.where(merge({}, RouteDesigner.getPatterns(), this.attributes.where ?? {}))
     const components: {
       default: (() => Promise<any>) | { template: string }
       [key: string]: (() => Promise<any>) | { template: string }
@@ -157,36 +84,14 @@ export default class Route {
       components[key] = typeof this.page[key] === "string" ? () => import(`./../components/${this.page[key]}.vue`) : this.page[key]
     })
 
-    return {
+    return [{
       name: this.name,
       path: this.compileUri(this.uri),
       components,
-      props: { default: this.attributes.props ?? false },
-      // @ts-ignore
-      meta: omit(this.attributes, ["where", "prefix"]),
-      children: this.routeChildren.map((child) => child.compile())
-    }
-  }
-
-  public compileUri(uri: string): string {
-    const PATH_REGEXP = new RegExp(["(\\\\.)", "([\\/.])?(?:(?:\\:(\\w+)(?:\\(((?:\\\\.|[^\\\\()])+)\\))?|\\(((?:\\\\.|[^\\\\()])+)\\))([+*?])?|(\\*))"].join("|"), "g")
-    let res
-
-    while ((res = PATH_REGEXP.exec(uri)) != null) {
-      const parameter = res[3]
-      if (this.wheres[parameter]) {
-        uri = uri.replace(parameter, parameter + `(${this.wheres[parameter]})`)
-      }
-    }
-
-    uri = trim(uri, "/")
-    if (!this.isChild()) {
-      uri = (this.attributes.prefix ? `/${trim(this.attributes.prefix, "/")}` : "") + (uri ? `/${uri}` : "")
-    }
-    return uri
-  }
-
-  public isChild() {
-    return !!this.parent
+      props: {default: this.attributes.props ?? false},
+      redirect: this.attributes.redirect,
+      meta: this._getMeta(),
+      children: this.routes.map((child) => child._compile()).flat()
+    }]
   }
 }

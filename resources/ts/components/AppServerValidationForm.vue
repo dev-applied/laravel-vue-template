@@ -2,7 +2,7 @@
 import {type MaybeRef, nextTick, ref, toValue} from "vue"
 import {useLayout} from "vuetify"
 import useHttp from "@/composables/useHttp"
-import {get} from "lodash"
+import get from "lodash.get"
 import {useAppStore} from "@/stores/app"
 
 const props = withDefaults(defineProps<{

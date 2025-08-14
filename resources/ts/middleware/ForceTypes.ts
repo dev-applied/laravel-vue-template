@@ -1,4 +1,4 @@
-import {forEach} from "lodash"
+import forEach from "lodash.foreach"
 import type {NavigationGuardNext, RouteLocationNormalized, RouteLocationNormalizedLoaded} from "vue-router"
 import dayjs from "@/utils/dayjs.ts"
 

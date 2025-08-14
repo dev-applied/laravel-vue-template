@@ -139,7 +139,7 @@ import {ref, computed, useAttrs, toValue, watch, toRefs} from "vue"
 import {useDisplay} from "vuetify"
 import usePaginationData from "@/composables/usePaginationData"
 import {useDebounceFn} from "@vueuse/core"
-import {cloneDeep} from "lodash"
+import cloneDeep from "lodash.clonedeep"
 
 const props = defineProps(AppListTableProps)
 

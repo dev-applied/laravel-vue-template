@@ -42,9 +42,9 @@
 <script lang="ts">
 import {VDataTableServer} from "vuetify/components/VDataTable"
 import {type PropType} from "vue"
-import {clone} from "lodash"
+import clonedeep from "lodash.clonedeep"
 
-const VDataTableServerProps = clone(VDataTableServer.props)
+const VDataTableServerProps = clonedeep(VDataTableServer.props)
 delete VDataTableServerProps.itemsLength
 delete VDataTableServerProps.items
 delete VDataTableServerProps.loading
@@ -87,7 +87,7 @@ export const AppPaginationTableProps = {
 <script lang="ts" setup>
 import {ref, toValue, watch, watchEffect} from "vue"
 import usePaginationData from "@/composables/usePaginationData"
-import {cloneDeep} from "lodash"
+import cloneDeep from "lodash.clonedeep"
 import {useDebounceFn} from "@vueuse/core"
 
 defineOptions({

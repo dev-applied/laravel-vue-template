@@ -1,4 +1,4 @@
-import {forEach} from "lodash"
+import forEach from "lodash.foreach"
 import {useAppStore} from "@/stores/app"
 
 export const $error = (

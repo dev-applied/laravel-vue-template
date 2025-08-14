@@ -1,105 +1,87 @@
-import Route from "@/router/Route"
-import { cloneDeep, forEach, merge, trim, union } from "lodash"
+import {Redirect, Route, RouteGroup} from "@/router/internal"
+import type {RouteRecordRaw} from "vue-router"
 
 export default class RouteDesigner {
-  public static routes: Route[] = []
+  public static routes: (Route | RouteGroup | Redirect)[] = []
 
-  private static groupStack: Partial<App.Router.RouteAttributes>[] = []
+  private static activeGroup?: RouteGroup
+
+  private static activeRoute?: Route
 
   private static patterns: Record<string, string> = {}
 
   private static notFound?: Route
 
-  public static route(uri: string, page: string | { template: string }, name?: string) {
-    const route = this.createRoute(uri, page, name)
+  public static route(uri: string, page: string | { template: string }, name?: string): Route {
+    if (this.activeRoute) {
+      // Active route takes priority over active group
+      return this.activeRoute._route(uri, page, name)
+    }
+    if (this.activeGroup) {
+      return this.activeGroup._route(uri, page, name)
+    }
+
+    const route = new Route(uri, page, name)
     this.routes.push(route)
 
     return route
   }
 
-  public static group(attributes: Partial<App.Router.RouteAttributes>, routes: () => void) {
-    this.updateGroupStack(attributes)
-    routes()
-    this.groupStack.pop()
+  public static redirect(from: string, to: string): Redirect {
+    if (this.activeRoute) {
+      // Active route takes priority over active group
+      return this.activeRoute._redirect(from, to)
+    }
+    if (this.activeGroup) {
+      return this.activeGroup._redirect(from, to)
+    }
+    const redirect = new Redirect(from, to)
+    this.routes.push(redirect)
 
-    return this
+    return redirect
   }
 
-  public static setNotFound(page: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
-    this.notFound = this.newRoute("/:pathMatch(.*)*", page, "NotFound", attributes)
+  public static group(uri: string, routes: () => void): RouteGroup {
+    if (this.activeRoute) {
+      // Active route takes priority over active group
+      return this.activeRoute._group(uri, routes)
+    }
+    if (this.activeGroup) {
+      return this.activeGroup._group(uri, routes)
+    }
+    const group = new RouteGroup(uri, routes)
+    this.routes.push(group)
+
+    return group
+  }
+
+  public static setNotFound(page: string) {
+    this.notFound = new Route("/:catchAll(.*)", page, "not-found")
+    return this.notFound
   }
 
   public static pattern(key: string, pattern: string) {
     this.patterns[key] = pattern
   }
 
-  public static compile() {
-    const routes = this.routes.map((route) => route.compile())
+  public static getPatterns() {
+    return this.patterns
+  }
+
+  public static compile(): RouteRecordRaw[] {
+    let routes = this.routes.map((route) => route._compile()).flat()
     if (this.notFound) {
-      routes.push(this.notFound.compile())
+      routes = routes.concat(this.notFound._compile())
     }
     return routes
   }
 
-  private static updateGroupStack(attributes: Partial<App.Router.RouteAttributes>) {
-    if (this.hasGroupStack()) {
-      attributes = this.mergeWithLastGroup(attributes)
-    }
-
-    this.groupStack.push(attributes)
+  // Internal Functions
+  public static _setActiveGroup(group: RouteGroup | undefined) {
+    this.activeGroup = group
   }
 
-  private static hasGroupStack(): boolean {
-    return this.groupStack.length > 0
-  }
-
-  public static mergeWithLastGroup(attributes: Partial<App.Router.RouteAttributes>): App.Router.RouteAttributes {
-    const oldAttributes = cloneDeep(this.groupStack[this.groupStack.length - 1])
-
-    forEach(attributes, (value, key) => {
-      if (key === "prefix") {
-        return (oldAttributes.prefix = this.formatPrefix(attributes, oldAttributes))
-      }
-      if (Array.isArray(value)) {
-        oldAttributes[key] = union([], oldAttributes[key] ?? [], value)
-      } else if (typeof value === "object") {
-        oldAttributes[key] = merge({}, oldAttributes[key] ?? {}, value)
-      } else if (typeof value !== "undefined") {
-        oldAttributes[key] = value
-      }
-    })
-
-    return oldAttributes
-  }
-
-  private static formatPrefix(newAttributes: Partial<App.Router.RouteAttributes>, oldAttributes: Partial<App.Router.RouteAttributes>) {
-    const oldPrefix = oldAttributes.prefix ?? ""
-
-    return newAttributes.prefix ? trim(oldPrefix, "/") + "/" + trim(newAttributes.prefix, "/") : oldPrefix
-  }
-
-  private static createRoute(uri: string, page: string | { template: string }, name?: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
-    const route = this.newRoute(uri, page, name, attributes)
-    if (this.hasGroupStack()) {
-      this.mergeGroupAttributesIntoRoute(route)
-    }
-
-    this.addWhereClausesToRoute(route)
-
-    return route
-  }
-
-  private static mergeGroupAttributesIntoRoute(route: Route) {
-    route.setAttributes(this.mergeWithLastGroup(route.getAttributes()))
-  }
-
-  private static addWhereClausesToRoute(route: Route) {
-    route.where(merge({}, this.patterns, route.getAttributes().where ?? {}))
-
-    return route
-  }
-
-  private static newRoute(uri: string, page: string | { template: string }, name?: string, attributes: Partial<App.Router.RouteAttributes> = {}) {
-    return new Route(uri, page, name, attributes)
+  public static _setActiveRoute(route: Route | undefined) {
+    this.activeRoute = route
   }
 }

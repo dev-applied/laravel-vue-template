@@ -1,5 +1,5 @@
 import {type App} from "vue"
-import route from "@/plugins/route"
+import routeTo from "@/plugins/routeTo.ts"
 import {downloadFile, fileUrl} from "@/plugins/file"
 import {$error} from "@/plugins/errorHandler"
 import BackButton from "@/plugins/backButton/index"
@@ -8,7 +8,7 @@ import axios from "@/plugins/axios"
 import auth from "@/plugins/auth"
 import Confirm from "@/plugins/confirm"
 import {ROUTES} from "@/router/paths"
-import {createHead, VueHeadMixin} from '@unhead/vue'
+import {createHead, VueHeadMixin} from '@unhead/vue/client'
 
 export function usePlugins(app: App) {
   // Global Mixins
@@ -23,7 +23,7 @@ export function usePlugins(app: App) {
   app.use(createHead())
 
   app.config.globalProperties.$error = $error
-  app.config.globalProperties.$routeTo = route
+  app.config.globalProperties.$routeTo = routeTo
   app.config.globalProperties.$file = {
     url: fileUrl,
     download: downloadFile

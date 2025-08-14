@@ -32,11 +32,11 @@ export default defineConfig(({mode, command}) => {
       Vuetify({
         autoImport: {labs: true},
         styles: {
-          configFile: 'resources/scss/settings.scss'
+          configFile: fileURLToPath(new URL('./resources/scss/settings.scss', import.meta.url)),
         }
       }),
       eslint({
-        exclude: [/virtual:/, /node_modules/, /stories/]
+        exclude: [/virtual:/, /node_modules/]
       }),
       ViteFonts({
         google: {
@@ -79,15 +79,6 @@ export default defineConfig(({mode, command}) => {
     },
     css: {
       devSourcemap: true,
-      preprocessorOptions: {
-        scss: {
-          additionalData: [
-            // vuetify variable overrides
-            '@use "resources/scss/settings";',
-            ''
-          ].join('\n'),
-        },
-      },
     }
   }
 

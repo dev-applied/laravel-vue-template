@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter } from "vue-router"
+import {createRouter, createWebHistory} from "vue-router"
 import "@/router/paths"
 import RouteDesigner from "@/router/RouteDesigner"
 import Pipeline from "@/middleware/Pipeline"
@@ -7,13 +7,16 @@ const router = createRouter({
   history: createWebHistory(),
   routes: RouteDesigner.compile(),
   scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        top: 130,
+      }
+    }
     if (savedPosition) {
       return savedPosition
     }
-    if (to.hash) {
-      return { selector: to.hash }
-    }
-    return { top: 0 }
+    return {top: 0}
   }
 })
 

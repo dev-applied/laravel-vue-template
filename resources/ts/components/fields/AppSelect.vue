@@ -22,11 +22,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import {computed, ref, useAttrs, watch} from "vue"
 import {VSelect} from "vuetify/components"
-import type { ComponentSlots } from 'vue-component-type-helpers'
-import {mapKeys} from "lodash"
+import type {ComponentSlots} from 'vue-component-type-helpers'
+import mapKeys from "lodash.mapkeys"
 
 
 export interface AdditionalProps {
@@ -37,7 +37,7 @@ export interface AdditionalProps {
 
 defineSlots<ComponentSlots<typeof VSelect>>()
 
-type Props =  AdditionalProps & /* @vue-ignore */InstanceType<typeof VSelect>["$props"]
+type Props = AdditionalProps & /* @vue-ignore */InstanceType<typeof VSelect>["$props"]
 
 const props = defineProps<Props>()
 
@@ -69,6 +69,7 @@ watch(() => props.modelValue, (value) => {
       &::after {
         display: none;
       }
+
       &::before {
         border-radius: 4px;
         border-width: 1px;
