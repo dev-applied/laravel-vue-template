@@ -5,7 +5,6 @@ import {defineConfig, loadEnv, type UserConfig} from "vite"
 import vue from '@vitejs/plugin-vue'
 import laravel from 'laravel-vite-plugin'
 import Vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
-import ViteFonts from 'unplugin-fonts/vite'
 import UnheadVite from '@unhead/addons/vite'
 import {sentryVitePlugin} from "@sentry/vite-plugin"
 import {resolve} from "path"
@@ -38,14 +37,6 @@ export default defineConfig(({mode, command}) => {
       eslint({
         exclude: [/virtual:/, /node_modules/]
       }),
-      ViteFonts({
-        google: {
-          families: [{
-            name: 'Roboto',
-            styles: 'wght@100;300;400;500;700;900',
-          }],
-        },
-      }),
       sentryVitePlugin({
         bundleSizeOptimizations: {
           excludeDebugStatements: true,
@@ -62,6 +53,7 @@ export default defineConfig(({mode, command}) => {
     resolve: {
       alias: {
         '@/scss': fileURLToPath(new URL('./resources/scss', import.meta.url)),
+        '@/images': fileURLToPath(new URL('./resources/images', import.meta.url)),
         '@': fileURLToPath(new URL('./resources/ts', import.meta.url)),
       }
     },

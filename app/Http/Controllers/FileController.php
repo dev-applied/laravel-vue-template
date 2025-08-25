@@ -39,22 +39,8 @@ class FileController extends Controller
         return response()->download(Storage::disk($file->disk)->path($file->path));
     }
 
-    /**
-     * @throws AppException
-     */
     public function show(File $file): JsonResponse
     {
-        if ($file->processing_issues) {
-            $file->delete();
-
-            throw new AppException('File processing failed. Please try again.', 400);
-        }
-
-        // only uploader or someone on account can view file
-        if ($file->created_by->account_id !== Auth::user()->account_id && Auth::id() !== $file->created_by_id) {
-            throw new AppException('Unauthorized', 400);
-        }
-
         return response()->json(compact('file'));
     }
 
@@ -65,23 +51,13 @@ class FileController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $this->validate(request(), [
-            'file'     => 'required|file|max:20480',
-            'id'       => 'nullable|integer',
-            'kind'     => 'nullable|string',
-            'duration' => 'nullable|integer',
+            'file' => 'required|file|max:20480',
         ], [
             'file.max' => 'This file is too large. Please upload a file less than 20MB.',
         ]);
 
-        $media = DB::transaction(function () use ($data, $request) {
-            if ($data['id'] ?? null) {
-                $oldFile            = File::findOrFail($data['id']);
-                $data['event_id']   = $oldFile->event_id;
-                $data['event_data'] = $oldFile->event_data;
-                $oldFile->delete();
-            }
-
-            $media = File::upload($request->file('file'), additionalData: $data);
+        $media = DB::transaction(function () use ($request) {
+            $media = File::upload($request->file('file'));
 
             $media->load(['created_by', 'updated_by']);
 
@@ -91,16 +67,8 @@ class FileController extends Controller
         return response()->json(['file' => $media]);
     }
 
-    /**
-     * @throws AppException
-     */
     public function destroy(File $file): JsonResponse
     {
-        // only uploader can view file
-        if (Auth::id() !== $file->created_by_id) {
-            throw new AppException('Unauthorized', 400);
-        }
-
         $file->delete();
 
         return response()->json()->setStatusCode(204);

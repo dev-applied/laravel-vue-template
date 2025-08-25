@@ -22,11 +22,15 @@ export const useUserStore = defineStore("user", {
         .catch((e) => e)
 
       if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token)
+        await this.setToken(response.data.access_token)
         await this.loadUser()
       }
 
       return response
+    },
+    async setToken(token: string) {
+      localStorage.setItem("token", token)
+      await this.loadUser(true)
     },
     async logout() {
       await $http.delete("/auth").catch((e) => e)

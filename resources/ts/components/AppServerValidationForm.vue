@@ -3,16 +3,18 @@ import {type MaybeRef, nextTick, ref, toValue} from "vue"
 import {useLayout} from "vuetify"
 import useHttp from "@/composables/useHttp"
 import get from "lodash.get"
-import {useAppStore} from "@/stores/app"
+import {useMessageStore} from "@/stores/message.ts"
 
 const props = withDefaults(defineProps<{
   endpoint: MaybeRef<string>,
   method?: MaybeRef<string>,
   data: MaybeRef<T>,
   hideSuccess?: boolean,
+  successMessage?: MaybeRef<string>,
 }>(), {
   method: 'post',
   hideSuccess: false,
+  successMessage: 'Success',
 })
 
 
@@ -21,7 +23,7 @@ const form = ref()
 
 const errorBag = ref<{ [key: string]: string }>({})
 const loading = ref<boolean>(false)
-const {axios} = useHttp()
+const {$http} = useHttp()
 const layout = useLayout()
 
 const getErrors = (field: string) => {
@@ -44,11 +46,11 @@ const submit: () => Promise<void> = async () => {
   }
 
   loading.value = true
-  const {status, data} = await axios[method.toLowerCase()](toValue(endpoint), config).catch((e: any) => e)
+  const {status, data} = await $http[method.toLowerCase()](toValue(endpoint), config).catch((e: any) => e)
   loading.value = false
 
   if (status > 204) {
-    useAppStore().addError(data?.message ?? 'Unknown Error')
+    useMessageStore().addError(data?.message ?? 'Unknown Error')
     errorBag.value = data?.errors ?? {}
     emits('error', errorBag.value)
     if (Object.keys(errorBag.value).length !== 0) {
@@ -64,7 +66,7 @@ const submit: () => Promise<void> = async () => {
   }
 
   if (!props.hideSuccess) {
-    useAppStore().addSuccess('Success')
+    useMessageStore().addSuccess('Success')
   }
   emits('success', data)
 }
