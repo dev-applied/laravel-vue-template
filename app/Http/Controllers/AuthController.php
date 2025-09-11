@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Exceptions\AppException;
+use App\Http\Resources\AuthUserResource;
 use App\Models\User;
 use Carbon\CarbonInterval;
 use Illuminate\Http\JsonResponse;
@@ -31,13 +32,8 @@ class AuthController extends Controller
      */
     public function me(): JsonResponse
     {
-        try {
-            $user = Auth::user();
-            $user->append('all_permissions');
-            $user->append('is_impersonated');
-        } catch (Throwable $exception) {
-            $user = null;
-        }
+        $user = Auth::user();
+        $user = $user ? AuthUserResource::make($user) : null;
 
         return response()->json(compact('user'));
     }
@@ -45,7 +41,7 @@ class AuthController extends Controller
     /**
      * Get a JWT via given credentials.
      *
-     * @throws ValidationException
+     * @throws ValidationException|\Exception
      */
     public function login(Request $request): JsonResponse
     {
@@ -68,7 +64,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'User or password incorrect'], 401);
         }
 
-        $token = Auth::attempt($credentials);
+        $token = (string) Auth::attempt($credentials);
 
         if (! $token) {
             RateLimiter::hit('login:'.$request->ip(), 5 * 60);
@@ -113,7 +109,7 @@ class AuthController extends Controller
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out'])->withoutCookie('token', null, $this->getRootDomain());
+        return response()->json(['message' => 'Successfully logged out']);
     }
 
     /**
@@ -121,14 +117,11 @@ class AuthController extends Controller
      */
     protected function respondWithToken(string $token): JsonResponse
     {
-        $response = response()->json([
+        return response()->json([
             'access_token' => $token,
             'token_type'   => 'bearer',
-            'expires_in'   => auth()->factory()->getTTL() * 60,
+            'expires_in'   => config('jwt.ttl') * 60,
         ]);
-        $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $this->getRootDomain()));
-
-        return $response;
     }
 
     private function getRootDomain(): string

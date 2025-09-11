@@ -1,5 +1,5 @@
 import forEach from "lodash.foreach"
-import {useAppStore} from "@/stores/app"
+import {useMessageStore} from "@/stores/message.ts"
 
 export const $error = (
   status: number,
@@ -13,7 +13,7 @@ export const $error = (
       if (errors) {
         loopErrors(errors)
       } else {
-        useAppStore().addError(message)
+        useMessageStore().addError(message)
       }
     }
     return true
@@ -38,6 +38,6 @@ function loopErrors(errors: any, internal_key: string | null = null) {
       : 'Error'
     const showFieldName = key != '0'
 
-    useAppStore().addError(`${showFieldName ? field_name + ' - ' : ''}${value}`)
+    useMessageStore().addError(`${showFieldName ? field_name + ' - ' : ''}${value}`)
   })
 }
