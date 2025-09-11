@@ -109,6 +109,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'email_verified_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'full_name',
+    ];
+
     public static function booted(): void
     {
         parent::booted();
@@ -160,5 +164,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return Attribute::get(function (): bool {
             return app(ImpersonateManager::class)->isImpersonating();
         });
+    }
+
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(fn () => mb_trim($this->first_name.' '.$this->last_name));
     }
 }
