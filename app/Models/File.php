@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine;
@@ -163,7 +164,9 @@ class File extends Model
                 $image->save($tmp);
                 ImageOptimizer::optimize($tmp);
                 $thumbnail               = new UploadedFile($tmp, $file->getClientOriginalName());
-                $media->responsive_paths = array_merge($media->responsive_paths, [$name => $thumbnail->storeAs($directory, str_replace(".$ext", '', $fileName)."_$name.$ext", $disk)]);
+                $media->responsive_paths = array_merge($media->responsive_paths, [
+                    $name => $thumbnail->storeAs($directory, str_replace(".$ext", '', $fileName)."_$name.$ext", $disk),
+                ]);
                 unlink($tmp);
             }
         }
@@ -198,17 +201,6 @@ class File extends Model
 
     protected function sizeFormatted(): Attribute
     {
-        return Attribute::get(function ($value): string {
-            $units     = ['kb', 'mb', 'gb', 'tb'];
-            $units[-1] = 'b';
-
-            $bytes = max($this->size, 0);
-            $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
-            $pow   = min($pow, count($units) - 1);
-
-            $bytes /= pow(1024, $pow);
-
-            return round($bytes, 2).' '.$units[$pow];
-        });
+        return Attribute::get(fn ($value): string => Number::fileSize($value, 1, 2));
     }
 }

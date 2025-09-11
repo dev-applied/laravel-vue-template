@@ -2,7 +2,7 @@ declare namespace Vuetify {
 
   export type VForm = Vue & {
     reset: () => void
-    validate: () => boolean
+    validate: () => Promise<{ valid: boolean, errors: string[] }>
     resetValidation: () => void
   }
 

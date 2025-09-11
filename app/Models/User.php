@@ -109,6 +109,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'email_verified_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'full_name',
+    ];
+
     public static function booted(): void
     {
         parent::booted();
@@ -145,14 +149,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             ->send(new ForgotPasswordMail($token, $this));
     }
 
-    public function canImpersonate(): bool
-    {
-        return $this->hasPermissionTo(Permissions::IMPERSONATE_USER);
-    }
-
     public function canBeImpersonated(): bool
     {
         return ! $this->canImpersonate();
+    }
+
+    public function canImpersonate(): bool
+    {
+        return $this->hasPermissionTo(Permissions::IMPERSONATE_USER);
     }
 
     public function isImpersonated(): Attribute
@@ -160,5 +164,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return Attribute::get(function (): bool {
             return app(ImpersonateManager::class)->isImpersonating();
         });
+    }
+
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(fn () => mb_trim($this->first_name.' '.$this->last_name));
     }
 }

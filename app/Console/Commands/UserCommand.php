@@ -15,7 +15,7 @@ class UserCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'create:user {email?} {--password=} {--firstName=} {--lastName=} {--role=}';
+    protected $signature = 'create:user {email?} {--password=} {--firstName=} {--lastName=}';
 
     /**
      * The console command description.
@@ -29,27 +29,35 @@ class UserCommand extends Command
      */
     public function handle(Generator $faker): int
     {
-        $user             = new User;
-        $user->email      = $this->argument('email') ?? $faker->email;
-        $user->first_name = $this->option('firstName') ?: $faker->firstName;
-        $user->last_name  = $this->option('lastName') ?: $faker->lastName;
-        $password         = $this->option('password') ?: 'Test123!';
-        $user->password   = $password;
+        $validate = function (string $value): ?string {
+            if (filled($value) && ! filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                return 'Please enter a valid email address.';
+            }
 
-        if ($this->option('role')) {
-            $user->assignRole($this->option('role'));
-        }
-        //        else {
-        //            $user->assignRole(DEFAULT_ROLE);
-        //        }
+            if (filled($value) && User::where('email', $value)->exists()) {
+                return 'This email is already in use.';
+            }
+
+            return null;
+        };
+
+        $email     = text('Email', default: $this->argument('email') ?? $faker->email, validate: $validate);
+        $firstName = text('First Name', default: $this->option('firstName') ?: $faker->firstName);
+        $lastName  = text('Last Name', default: $this->option('lastName') ?: $faker->lastName);
+        $password  = text('Password', default: $this->option('password') ?: 'Test123!');
+
+        $user             = new User;
+        $user->email      = $email;
+        $user->first_name = $firstName;
+        $user->last_name  = $lastName;
+        $user->password   = $password;
 
         $user->save();
 
-        $this->output->success('Successfully created user');
-        $this->output->table(['Email', 'Password'], [
-            [$user->email, $password],
-        ]);
+        $this->components->info('User created successfully');
 
-        return Command::SUCCESS;
+        table(['Email', 'Password'], [[$user->email, $password]]);
+
+        return self::SUCCESS;
     }
 }
