@@ -271,7 +271,7 @@ watch(() => props.disabled, () => {
   if (!props.disabled) {
     reload()
   }
-}, {immediate: true})
+})
 
 const debounceReload = useDebounceFn(() => {
   reload().then()
