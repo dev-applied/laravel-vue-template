@@ -33,7 +33,7 @@ class MigrateCommand extends BaseMigrateCommand
         }
 
         if (app()->environment('local')) {
-            $this->call(GenerateTypesCommand::class, ['--outputDir' => 'resources/ts/types/models']);
+            $this->call(GenerateTypesCommand::class, ['--outputDir' => 'resources/ts/types/models', '--namespace' => true]);
         }
 
         return self::SUCCESS;
