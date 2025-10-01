@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\AppException;
 use App\Models\File;
-use Auth;
 use Bref\Event\InvalidLambdaEvent;
 use DB;
 use Illuminate\Http\JsonResponse;

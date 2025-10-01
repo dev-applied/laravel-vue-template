@@ -8,12 +8,12 @@ use App\Exceptions\AppException;
 use App\Http\Resources\AuthUserResource;
 use App\Models\User;
 use Carbon\CarbonInterval;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use RateLimiter;
-use Throwable;
 
 class AuthController extends Controller
 {
@@ -41,7 +41,7 @@ class AuthController extends Controller
     /**
      * Get a JWT via given credentials.
      *
-     * @throws ValidationException|\Exception
+     * @throws ValidationException|Exception
      */
     public function login(Request $request): JsonResponse
     {
@@ -89,7 +89,7 @@ class AuthController extends Controller
 
         $token = Auth::user()->impersonate($user);
 
-        return $this->respondWithToken($token);
+        return $this->respondWithToken((string) $token);
     }
 
     /**
@@ -99,7 +99,7 @@ class AuthController extends Controller
     {
         $token = Auth::user()->leaveImpersonation();
 
-        return $this->respondWithToken($token);
+        return $this->respondWithToken((string) $token);
     }
 
     /**

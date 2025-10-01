@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -74,7 +75,7 @@ class AppServiceProvider extends ServiceProvider
         HasMany::mixin(new HasManyMixin);
         Relation::mixin(new VuetifyPaginateMixin);
         Builder::mixin(new VuetifyPaginateMixin);
-        \Illuminate\Database\Query\Builder::mixin(new VuetifyPaginateMixin);
+        QueryBuilder::mixin(new VuetifyPaginateMixin);
         Blueprint::mixin(new WhoDidItMixin);
     }
 

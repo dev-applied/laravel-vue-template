@@ -1,0 +1,22 @@
+<template>
+  <h1>{{ name }}.vue</h1>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue"
+
+export default defineComponent({
+  components: {},
+  data() {
+    return {}
+  },
+  computed: {},
+  watch: {},
+  mounted() {},
+  methods: {},
+})
+</script>
+
+<style lang="scss" scoped>
+//
+</style>

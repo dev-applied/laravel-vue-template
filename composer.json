@@ -36,8 +36,10 @@
         "laravel/pint": "^1.24",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
-        "pestphp/pest": "^3.8",
-        "scrumble-nl/laravel-model-ts-type": "^10.5"
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-type-coverage": "^4.0",
+        "scrumble-nl/laravel-model-ts-type": "^10.5",
+        "spatie/laravel-ray": "^1.40"
     },
     "autoload": {
         "psr-4": {
@@ -65,6 +67,11 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
             "@php artisan jwt:secret"
+        ],
+        "format": "./vendor/bin/pint --parallel",
+        "ci": [
+            "./vendor/bin/pint --test",
+            "./vendor/bin/pest --parallel"
         ]
     },
     "extra": {

@@ -19,7 +19,7 @@ class AuthUserResource extends JsonResource
     public function toArray(Request $request): array
     {
         $this->withoutRelations();
-        $this->load(['']); //load relationships needed for the auth
+        $this->load(['']); // load relationships needed for the auth
 
         return $this->resource->toArray();
     }
