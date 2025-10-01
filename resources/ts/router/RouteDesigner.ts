@@ -55,8 +55,8 @@ export default class RouteDesigner {
     return group
   }
 
-  public static setNotFound(page: string) {
-    this.notFound = new Route("/:catchAll(.*)", page, "not-found")
+  public static setNotFound(page: string, name: string = "not-found"): Route {
+    this.notFound = new Route("/:catchAll(.*)?", page, name)
     return this.notFound
   }
 
