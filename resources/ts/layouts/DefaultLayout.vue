@@ -12,8 +12,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
-import AppMessages from "@/components/AppMessages.vue"
+import {defineComponent} from "vue"
 
 
 export default defineComponent({

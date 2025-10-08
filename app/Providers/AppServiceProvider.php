@@ -103,4 +103,28 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised();
         });
     }
+
+    // To enable Import both classes install laravel-notification-channels/twilio and call the function from the boot method
+    private function configureTwilio(): void
+    {
+        if (! $this->app->environment('production')) {
+            $this->app->extend(TwilioService::class, function () {
+                return new TwilioHogService(
+                    config('twilio-notification-channel.account_sid'),
+                    config('twilio-notification-channel.auth_token'),
+                    config('twilio-notification-channel.mock_server_url'),
+                );
+            });
+        }
+    }
+
+    // To enable Import both classes install aws/aws-sdk-php and laravel-notification-channels/aws-sns and call the function from the boot method
+    private function configureSns(): void
+    {
+        if (! $this->app->environment('staging', 'production')) {
+            $this->app->bind(SnsService::class, function () {
+                return new SnsHogService(config('services.sns', []));
+            });
+        }
+    }
 }
