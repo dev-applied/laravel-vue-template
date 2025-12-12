@@ -30,7 +30,7 @@ jobs:
       - name: Label review updates
         if: >
           steps.metadata.outputs.update-type == 'version-update:semver-minor' &&
-          steps.metadata.outputs.dependency-type == 'direct'
+          startsWith(steps.metadata.outputs.dependency-type, 'direct')
         run: |
           gh pr edit ${{ github.event.pull_request.number }} --add-label "deps:review"
 
