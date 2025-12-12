@@ -25,6 +25,8 @@ jobs:
           steps.metadata.outputs.dependency-type == 'development'
         run: |
           gh pr edit ${{ github.event.pull_request.number }} --add-label "deps:safe"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # REVIEW: minor prod updates
       - name: Label review updates
@@ -33,6 +35,8 @@ jobs:
           startsWith(steps.metadata.outputs.dependency-type, 'direct')
         run: |
           gh pr edit ${{ github.event.pull_request.number }} --add-label "deps:review"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # MIGRATION: major updates
       - name: Label migration updates
@@ -40,3 +44,5 @@ jobs:
           steps.metadata.outputs.update-type == 'version-update:semver-major'
         run: |
           gh pr edit ${{ github.event.pull_request.number }} --add-label "deps:migration"
+        env:
+          GH_TOKEN: ${{ github.token }}
