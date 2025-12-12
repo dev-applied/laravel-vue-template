@@ -2,9 +2,9 @@ name: Deploy Staging
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - staging
+#  push:
+#    branches:
+#      - staging
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

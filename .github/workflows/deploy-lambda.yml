@@ -2,9 +2,9 @@ name: Deploy //environment//
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - //branch//
+#  push:
+#    branches:
+#      - //branch//
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

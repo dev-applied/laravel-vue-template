@@ -2,9 +2,9 @@ name: Deploy Releases
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - releases/*
+#  push:
+#    branches:
+#      - releases/*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -2,15 +2,15 @@ name: CI
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-      - staging
-  push:
-    branches-ignore:
-      - main
-      - staging
-      - dev
+#  pull_request:
+#    branches:
+#      - main
+#      - staging
+#  push:
+#    branches-ignore:
+#      - main
+#      - staging
+#      - dev
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
