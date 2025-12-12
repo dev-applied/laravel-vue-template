@@ -1,0 +1,42 @@
+name: Dependabot labels
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+
+      # SAFE: patch updates or dev deps
+      - name: Label safe updates
+        if: >
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.dependency-type == 'development'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "deps:safe"
+
+      # REVIEW: minor prod updates
+      - name: Label review updates
+        if: >
+          steps.metadata.outputs.update-type == 'version-update:semver-minor' &&
+          steps.metadata.outputs.dependency-type == 'direct'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "deps:review"
+
+      # MIGRATION: major updates
+      - name: Label migration updates
+        if: >
+          steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "deps:migration"
