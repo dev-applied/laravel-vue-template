@@ -5,7 +5,7 @@ updates:
   # PHP / Laravel (Composer)
   # -------------------------
   - package-ecosystem: "composer"
-    target-branch: "dev"
+    target-branch: "main"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -34,7 +34,7 @@ updates:
   # -------------------------
   - package-ecosystem: "npm"
     directory: "/"
-    target-branch: "dev"
+    target-branch: "main"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -69,7 +69,7 @@ updates:
   # -------------------------
   - package-ecosystem: "github-actions"
     directory: "/"
-    target-branch: "dev"
+    target-branch: "main"
     schedule:
       interval: "weekly"
     labels:
