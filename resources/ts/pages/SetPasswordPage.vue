@@ -36,7 +36,7 @@
               <v-text-field
                 ref="password"
                 v-model="password"
-                :rules="rules.password"
+                :rules="[rules.password(), rules.required()]"
                 :type="showPassword ? 'text' : 'password'"
                 autocomplete="new-password"
                 variant="outlined"
@@ -63,7 +63,7 @@
               <v-text-field
                 ref="confirmPassword"
                 v-model="confirm_password"
-                :rules="confirmPasswordRules(password, confirm_password)"
+                :rules="[rules.confirmed(password), rules.required()]"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 autocomplete="new-password"
                 variant="outlined"

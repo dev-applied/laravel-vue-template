@@ -16,48 +16,6 @@ use Imagine\Image\Point;
 use Imagine\Imagick\Imagine;
 use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
 
-/**
- * App\Models\File
- *
- * @property int $id
- * @property string $name
- * @property string $path
- * @property string $type
- * @property int $size
- * @property string|null $disk
- * @property array<array-key, mixed>|null $responsive_paths
- * @property int|null $created_by_id
- * @property int|null $updated_by_id
- * @property int|null $deleted_by_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read User|null $created_by
- * @property-read User|null $deleted_by
- * @property-read TFactory|null $use_factory
- * @property-read User|null $updated_by
- * @property-read mixed $url
- *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereCreatedById($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDeletedById($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereDisk($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File wherePath($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereResponsivePaths($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereSize($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|File whereUpdatedById($value)
- *
- * @mixin \Eloquent
- *
- * @noinspection PhpFullyQualifiedNameUsageInspection
- * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
- */
 class File extends Model
 {
     use HasFactory, WhoDidIt;

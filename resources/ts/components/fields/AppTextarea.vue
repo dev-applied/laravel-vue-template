@@ -1,30 +1,20 @@
 <template>
-  <div class="text-left">
-    <div class="mb-2 d-flex ga-4 align-center justify-space-between">
-      <div class="label">
-        {{ label }}<span
-          v-if="required"
-          class="text-error"
-        >*</span>
-      </div>
-    </div>
-    <v-textarea
-      v-model="internalValue"
-      class="field"
-      hide-details="auto"
-      v-bind="textareaProps"
+  <v-textarea
+    v-model="internalValue"
+    class="field"
+    hide-details="auto"
+    v-bind="textareaProps"
+  >
+    <template
+      v-for="(_, name) in $slots"
+      #[name]="slotData"
     >
-      <template
-        v-for="(_, name) in $slots"
-        #[name]="slotData"
-      >
-        <slot
-          :name="name"
-          v-bind="slotData"
-        />
-      </template>
-    </v-textarea>
-  </div>
+      <slot
+        :name="name"
+        v-bind="slotData"
+      />
+    </template>
+  </v-textarea>
 </template>
 
 <script lang="ts" setup>
@@ -33,14 +23,9 @@ import {VTextarea} from "vuetify/components"
 import type {ComponentSlots} from 'vue-component-type-helpers'
 
 
-export interface AdditionalProps {
-  required?: boolean,
-  label?: string,
-}
-
 defineSlots<ComponentSlots<typeof VTextarea>>()
 
-type Props = AdditionalProps & /* @vue-ignore */InstanceType<typeof VTextarea>["$props"]
+type Props = /* @vue-ignore */InstanceType<typeof VTextarea>["$props"]
 
 defineProps<Props>()
 

@@ -3,7 +3,7 @@
 npm run fix
 
 # Name of your container (adjust if needed)
-CONTAINER_NAME=levelup
+CONTAINER_NAME=laravel-vue-template
 
 # Check if the container is running
 if docker compose ps -q "$CONTAINER_NAME" >/dev/null 2>&1 && \

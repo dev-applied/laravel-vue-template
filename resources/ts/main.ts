@@ -1,11 +1,12 @@
-import { createApp } from 'vue'
-import { createPinia } from "pinia"
+import {createApp} from 'vue'
+import {createPinia} from "pinia"
 import vuetify from "@/plugins/vuetify"
 import {loadLayouts} from "@/layouts"
 import {usePlugins} from "@/plugins"
 import App from "./App.vue"
 import router from "@/router"
 import * as Sentry from "@sentry/vue"
+import {thirdPartyErrorFilterIntegration} from "@sentry/vue"
 
 const app = createApp(App)
 
@@ -18,7 +19,18 @@ Sentry.init({
   integrations: [
     Sentry.replayIntegration(),
     Sentry.browserTracingIntegration({ router }),
-    Sentry.captureConsoleIntegration()
+    Sentry.captureConsoleIntegration({
+      levels: ['error'],
+    }),
+    thirdPartyErrorFilterIntegration({
+      // MUST match the key you added in vite.config.ts
+      filterKeys: [import.meta.env.VITE_APP_NAME || 'ai-frontend'],
+
+      // Options:
+      // 'drop-error-if-contains-third-party-frames' (Strict)
+      // 'drop-error-if-exclusively-contains-third-party-frames' (Less strict, recommended start)
+      behaviour: 'drop-error-if-contains-third-party-frames',
+    }),
   ],
   // Session Replay
   replaysSessionSampleRate: 0,

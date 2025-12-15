@@ -33,6 +33,7 @@
                   variant="outlined"
                   placeholder="Email"
                   prepend-inner-icon="account_circle"
+                  :rules="[rules.email(), rules.required()]"
                   @keydown.enter="login"
                 />
                 <v-text-field
@@ -41,6 +42,7 @@
                   variant="outlined"
                   placeholder="Password"
                   prepend-inner-icon="lock"
+                  :rules="[rules.required()]"
                   @keydown.enter="login"
                 >
                   <template #append>
@@ -136,7 +138,7 @@ export default defineComponent({
   },
   mounted() {
     if (this.$auth.user) {
-      this.$router.push(this.$routeTo(this.ROUTES.HOME))
+      this.$router.push(this.$routeTo(this.ROUTES.DASHBOARD))
     }
     this.email = localStorage.getItem('remember') || ''
     if (this.email) {
@@ -171,7 +173,7 @@ export default defineComponent({
       }
 
       // @ts-ignore
-      await this.$router.push(this.$route.query?.to || this.ROUTES.HOME)
+      await this.$router.push(this.$route.query?.to || this.ROUTES.DASHBOARD)
     },
     async sendResetPassword() {
       this.showForgotPasswordError = false

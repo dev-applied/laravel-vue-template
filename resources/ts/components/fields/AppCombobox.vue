@@ -1,45 +1,33 @@
 <template>
-  <div class="text-left">
-    <div class="mb-2 d-flex ga-4 align-center justify-space-between">
-      <div class="label">
-        {{ label }}<span
-          v-if="required"
-          class="text-error"
-        >*</span>
-        <slot name="label-append" />
-      </div>
-    </div>
-    <v-combobox
-      ref="combobox"
-      v-model="internalValue"
-      v-model:search="search"
-      :hide-no-data="!search"
-      :multiple="multiple"
-      chips
-      closable-chips
-      hide-details="auto"
-      v-bind="comboboxProps"
-    >
-      <template #no-data>
-        <v-list-item
-          v-if="search"
-          @click="addItem"
+  <v-combobox
+    ref="combobox"
+    v-model="internalValue"
+    v-model:search="search"
+    :hide-no-data="!search"
+    chips
+    closable-chips
+    hide-details="auto"
+    v-bind="comboboxProps"
+  >
+    <template #no-data>
+      <v-list-item
+        v-if="search"
+        @click="addItem"
+      >
+        <span class="mr-3">{{ messageWhenNoData }}</span>
+        <v-chip
+          label
+          size="small"
+          variant="flat"
         >
-          <span class="mr-3">{{ messageWhenNoData }}</span>
-          <v-chip
-            label
-            size="small"
-            variant="flat"
-          >
-            {{ search }}
-          </v-chip>
-        </v-list-item>
-      </template>
-      <template #message="message">
-        <span v-html="message.message" />
-      </template>
-    </v-combobox>
-  </div>
+          {{ search }}
+        </v-chip>
+      </v-list-item>
+    </template>
+    <template #message="message">
+      <span v-html="message.message" />
+    </template>
+  </v-combobox>
 </template>
 
 <script lang="ts" setup>
@@ -50,10 +38,6 @@ import mapKeys from "lodash.mapkeys"
 
 
 export interface AdditionalProps {
-  modelValue: any[],
-  required?: boolean,
-  label: string,
-  multiple?: boolean,
   messageWhenNoData?: string,
 }
 

@@ -1,36 +1,23 @@
 <template>
-  <div class="text-left">
-    <div
-      :class="label ? 'mb-2' : null"
-      class="d-flex ga-4 align-center justify-space-between"
+  <v-mask-input
+    ref="input"
+    v-model="internalValue"
+    class="field"
+    v-bind="maskFieldProps"
+  >
+    <template
+      v-for="(_, name) in $slots"
+      #[name]="slotData"
     >
-      <div class="label">
-        {{ label }}<span
-          v-if="required"
-          class="text-error"
-        >*</span>
-      </div>
-    </div>
-    <v-mask-input
-      ref="input"
-      v-model="internalValue"
-      class="field"
-      v-bind="maskFieldProps"
-    >
-      <template
-        v-for="(_, name) in $slots"
-        #[name]="slotData"
-      >
-        <slot
-          :name="name"
-          v-bind="slotData"
-        />
-      </template>
-      <template #message="message">
-        <span v-html="message.message" />
-      </template>
-    </v-mask-input>
-  </div>
+      <slot
+        :name="name"
+        v-bind="slotData"
+      />
+    </template>
+    <template #message="message">
+      <span v-html="message.message" />
+    </template>
+  </v-mask-input>
 </template>
 
 <script lang="ts" setup>
@@ -39,14 +26,9 @@ import type {ComponentSlots} from 'vue-component-type-helpers'
 import {VMaskInput} from "vuetify/labs/components"
 
 
-export interface AdditionalProps {
-  required?: boolean,
-  label?: string,
-}
-
 defineSlots<ComponentSlots<typeof VMaskInput>>()
 
-type Props = AdditionalProps & /* @vue-ignore */InstanceType<typeof VMaskInput>["$props"]
+type Props = /* @vue-ignore */InstanceType<typeof VMaskInput>["$props"]
 
 defineProps<Props>()
 

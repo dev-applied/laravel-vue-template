@@ -1,36 +1,23 @@
 <template>
-  <div class="text-left">
-    <div
-      :class="label ? 'mb-2' : null"
-      class="d-flex ga-4 align-center justify-space-between"
+  <v-text-field
+    v-model="internalValue"
+    class="field"
+    hide-details="auto"
+    v-bind="textFieldProps"
+  >
+    <template
+      v-for="(_, name) in $slots"
+      #[name]="slotData"
     >
-      <div class="label">
-        {{ label }}<span
-          v-if="required"
-          class="text-error"
-        >*</span>
-      </div>
-    </div>
-    <v-text-field
-      v-model="internalValue"
-      class="field"
-      hide-details="auto"
-      v-bind="textFieldProps"
-    >
-      <template
-        v-for="(_, name) in $slots"
-        #[name]="slotData"
-      >
-        <slot
-          :name="name"
-          v-bind="slotData"
-        />
-      </template>
-      <template #message="message">
-        <span v-html="message.message" />
-      </template>
-    </v-text-field>
-  </div>
+      <slot
+        :name="name"
+        v-bind="slotData"
+      />
+    </template>
+    <template #message="message">
+      <span v-html="message.message" />
+    </template>
+  </v-text-field>
 </template>
 
 <script lang="ts" setup>
@@ -39,14 +26,9 @@ import {VTextField} from "vuetify/components"
 import type {ComponentSlots} from 'vue-component-type-helpers'
 
 
-export interface AdditionalProps {
-  required?: boolean,
-  label?: string,
-}
-
 defineSlots<ComponentSlots<typeof VTextField>>()
 
-type Props = AdditionalProps & /* @vue-ignore */InstanceType<typeof VTextField>["$props"]
+type Props = /* @vue-ignore */InstanceType<typeof VTextField>["$props"]
 
 defineProps<Props>()
 

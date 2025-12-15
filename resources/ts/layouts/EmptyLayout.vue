@@ -7,13 +7,17 @@
         </span>
       </v-slide-x-reverse-transition>
     </v-main>
+    <update-detector />
   </v-app>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
+import {defineComponent} from "vue"
+import UpdateDetector from "@/components/UpdateDetector.vue"
 
-export default defineComponent({})
+export default defineComponent({
+  components: {UpdateDetector}
+})
 </script>
 
 <style scoped></style>

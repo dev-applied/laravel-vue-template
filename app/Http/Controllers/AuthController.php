@@ -109,7 +109,7 @@ class AuthController extends Controller
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Successfully logged out'])/* ->withoutCookie('token', null, $this->getRootDomain()) */;
     }
 
     /**
@@ -117,11 +117,14 @@ class AuthController extends Controller
      */
     protected function respondWithToken(string $token): JsonResponse
     {
-        return response()->json([
+        $response = response()->json([
             'access_token' => $token,
             'token_type'   => 'bearer',
-            'expires_in'   => config('jwt.ttl') * 60,
+            'expires_in'   => auth()->factory()->getTTL() * 60,
         ]);
+
+        // $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $this->getRootDomain()));
+        return $response;
     }
 
     private function getRootDomain(): string

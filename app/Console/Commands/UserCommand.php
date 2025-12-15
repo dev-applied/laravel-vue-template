@@ -8,6 +8,9 @@ use App\Models\User;
 use Faker\Generator;
 use Illuminate\Console\Command;
 
+use function Laravel\Prompts\table;
+use function Laravel\Prompts\text;
+
 class UserCommand extends Command
 {
     /**

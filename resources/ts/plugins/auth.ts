@@ -1,13 +1,13 @@
-import type { LoginForm } from "@/stores/user"
-import { useUserStore } from "@/stores/user"
-import type { AxiosResponse } from "@/plugins/axios"
-import type { App } from "vue"
+import type {LoginForm} from "@/stores/user"
+import {useUserStore} from "@/stores/user"
+import type {AxiosResponse} from "@/plugins/axios"
+import type {App} from "vue"
 
 export interface Auth {
   user: App.Models.AuthUser | null
-  hasPermission: (permission: string) => boolean
+  /*hasPermission: (permission: string) => boolean
   hasAllPermissions: (permissions: string[] | string[][]) => boolean
-  hasAnyPermissions: (permissions: string[] | string[][]) => boolean
+  hasAnyPermissions: (permissions: string[] | string[][]) => boolean*/
   login: (form: LoginForm) => Promise<AxiosResponse<{ access_token: string }>>
   loadUser: (force?: boolean) => Promise<void>
   logout: () => Promise<void>
@@ -25,7 +25,7 @@ export const $auth: Auth = {
     const userStore = useUserStore()
     userStore.user = user
   },
-  hasPermission(permission: string): boolean {
+  /*hasPermission(permission: string): boolean {
     return this.hasAnyPermissions([permission])
   },
   hasAnyPermissions(permissions: string[] | string[][]): boolean {
@@ -33,7 +33,7 @@ export const $auth: Auth = {
   },
   hasAllPermissions(permissions: string[] | string[][]): boolean {
     return permissions.flat().every((p) => getPermissionsFromUser(this.user).includes(p))
-  },
+  },*/
   async login(form: LoginForm) {
     const userStore = useUserStore()
     return await userStore.login(form)
@@ -59,7 +59,7 @@ export const $auth: Auth = {
   },
 }
 
-function getPermissionsFromUser(user: App.Models.AuthUser | null) {
+/*function getPermissionsFromUser(user: App.Models.AuthUser | null) {
   let permissions: string[] = []
 
   if (!user) {
@@ -71,7 +71,7 @@ function getPermissionsFromUser(user: App.Models.AuthUser | null) {
   permissions = [...new Set(permissions)]
 
   return permissions
-}
+}*/
 
 export default {
   install(app: App) {

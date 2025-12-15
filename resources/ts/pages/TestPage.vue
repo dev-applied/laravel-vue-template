@@ -9,8 +9,68 @@
       <v-btn-secondary text="VBtnSecondary" />
       <v-btn-tertiary text="VBtnTertiary" />
     </div>
+    <h3 class="mt-14 mb-5">
+      Inputs
+    </h3>
 
-    <h3 class="mb-5">
+    <app-number-input
+      v-model="numberModel1"
+      label="App Number Input with currency symbol"
+      :display-currency-symbol="true"
+    />
+    <app-number-input
+      v-model="numberModel2"
+      label="App Number Input without currency symbol"
+    />
+
+    <app-mask-field
+      v-model="maskModel"
+      mask="(###) ###-####"
+      label="Phone Number"
+      required
+    />
+
+    <app-select
+      v-model="selectModel"
+      label="Select"
+      :items="[
+        { title: 'Option 1', value: 'option1' },
+        { title: 'Option 2', value: 'option2' },
+        { title: 'Option 3', value: 'option3' },
+      ]"
+      :hide-details="false"
+    />
+
+    <app-auto-complete
+      v-model="autoCompleteModel"
+      endpoint="users"
+      label="App Auto Complete"
+      :item-title="(item: any) => item.full_name"
+      :hide-details="false"
+    />
+
+    <app-combobox
+      v-model="comboboxModel"
+      :items="['Item 1', 'Item 2', 'Item 3']"
+      label="App Combobox"
+      placeholder="App Combobox"
+      hide-selected
+      :hide-details="false"
+    />
+
+    <app-date-input
+      v-model="dateModel"
+      label="App Date Input"
+      persistent-placeholder
+    />
+
+    <app-textarea
+      v-model="textareaModel"
+      label="App Text Area"
+      placeholder="App Text Area"
+    />
+
+    <h3 class="mt-14 mb-5">
       Components
     </h3>
     <div class="d-flex flex-column ga-4 align-start">
@@ -39,9 +99,37 @@
 <script lang="ts">
 import {defineComponent} from "vue"
 import AppDialog from "@/components/AppDialog.vue"
+import AppNumberInput from "@/components/fields/AppNumberInput.vue"
+import AppMaskField from "@/components/fields/AppMaskField.vue"
+import AppSelect from "@/components/fields/AppSelect.vue"
+import AppAutoComplete from "@/components/fields/AppAutoComplete.vue"
+import AppCombobox from "@/components/fields/AppCombobox.vue"
+import AppDateInput from "@/components/fields/AppDateInput.vue"
+import AppTextarea from "@/components/fields/AppTextarea.vue"
 
 export default defineComponent({
-  components: {AppDialog}
+  components: {
+    AppTextarea,
+    AppDateInput,
+    AppCombobox,
+    AppAutoComplete,
+    AppSelect,
+    AppMaskField,
+    AppNumberInput,
+    AppDialog
+  },
+  data() {
+    return {
+      comboboxModel: [] as string[],
+      numberModel1: null,
+      numberModel2: null,
+      maskModel: '',
+      selectModel: null,
+      autoCompleteModel: null,
+      dateModel: null,
+      textareaModel: ''
+    }
+  }
 })
 </script>
 

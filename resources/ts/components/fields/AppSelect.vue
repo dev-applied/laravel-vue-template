@@ -1,25 +1,10 @@
 <template>
-  <div class="text-left">
-    <div class="mb-2 d-flex ga-4 align-center justify-space-between">
-      <div class="label">
-        {{ label }}<span
-          v-if="required"
-          class="text-error"
-        >*</span>
-        <slot name="label-append" />
-      </div>
-    </div>
-    <v-select
-      v-model="internalValue"
-      class="field"
-      hide-details="auto"
-      v-bind="selectProps"
-    >
-      <template #message="message">
-        <span v-html="message.message" />
-      </template>
-    </v-select>
-  </div>
+  <v-select
+    v-model="internalValue"
+    class="field"
+    hide-details="auto"
+    v-bind="selectProps"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -31,8 +16,6 @@ import mapKeys from "lodash.mapkeys"
 
 export interface AdditionalProps {
   modelValue?: any,
-  required?: boolean,
-  label?: string,
 }
 
 defineSlots<ComponentSlots<typeof VSelect>>()

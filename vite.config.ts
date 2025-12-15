@@ -8,6 +8,7 @@ import Vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
 import UnheadVite from '@unhead/addons/vite'
 import {sentryVitePlugin} from "@sentry/vite-plugin"
 import {resolve} from "path"
+import versioningPlugin from "./resources/ts/plugins/versioning/viteVersioningPlugin"
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode, command}) => {
@@ -38,6 +39,7 @@ export default defineConfig(({mode, command}) => {
         exclude: [/virtual:/, /node_modules/]
       }),
       sentryVitePlugin({
+        applicationKey: process.env.VITE_APP_NAME || 'ai-frontend',
         bundleSizeOptimizations: {
           excludeDebugStatements: true,
           excludeReplayIframe: true,
@@ -49,6 +51,7 @@ export default defineConfig(({mode, command}) => {
           create: false,
         },
       }),
+      versioningPlugin()
     ],
     resolve: {
       alias: {

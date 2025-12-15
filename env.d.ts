@@ -1,4 +1,7 @@
 /// <reference types="vite/client" />
+
+declare const __APP_VERSION__: string
+
 interface ImportMetaEnv {
   VITE_API_BASE_URL: string
   VITE_PUSHER_APP_KEY: string

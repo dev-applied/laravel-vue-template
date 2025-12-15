@@ -12,7 +12,7 @@
         v-if="!!title"
         :color="color"
         dark
-        dense
+        density="compact"
         flat
       >
         <v-icon

@@ -5,6 +5,7 @@ import {useUserStore} from "@/stores/user"
 import {$error} from "@/plugins/errorHandler"
 import {ROUTES} from "@/router/paths"
 import {type App} from "vue"
+import {errorLogger, requestLogger, responseLogger} from 'axios-logger'
 
 export type AxiosResponse<T = object> = Response<T & { errors?: string[] }>
 
@@ -47,6 +48,11 @@ $http.interceptors.request.use((config) => {
 
   return config
 })
+
+if (import.meta.env.DEV) {
+  $http.interceptors.request.use(requestLogger, errorLogger)
+  $http.interceptors.response.use(responseLogger, errorLogger)
+}
 
 $http.interceptors.response.use(
   function (response) {

@@ -1,7 +1,14 @@
 import {Auth} from "@/plugins/auth"
 import {AxiosInstance} from "axios"
 import {ROUTES} from "@/router/paths"
-import type {LocationQueryRaw, RouteLocationRaw, RouteParamsGeneric} from "vue-router"
+import type {Vuetify} from "vuetify"
+import type {
+  LocationQueryRaw,
+  RouteLocationNormalizedLoaded,
+  RouteLocationRaw,
+  RouteParamsGeneric,
+  Router
+} from "vue-router"
 import type {VBtn} from "vuetify/lib/components/VBtn"
 
 declare module '@vue/runtime-core' {
@@ -15,6 +22,9 @@ declare module '@vue/runtime-core' {
     ) => boolean
     $routeTo: (name: string, params?: RouteParamsGeneric, query?: LocationQueryRaw) => RouteLocationRaw
     ROUTES: typeof ROUTES
+    $vuetify: Vuetify
+    $router: Router
+    $route: RouteLocationNormalizedLoaded
     $file: {
       url: (id: number, size: string = "thumbnail") => string,
       download: (id: number, size: string = "thumbnail") => Promise<any>,
