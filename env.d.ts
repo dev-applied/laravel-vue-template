@@ -3,6 +3,7 @@
 declare const __APP_VERSION__: string
 
 interface ImportMetaEnv {
+  VITE_APP_URL: string
   VITE_API_BASE_URL: string
   VITE_PUSHER_APP_KEY: string
   VITE_PUSHER_HOST: string

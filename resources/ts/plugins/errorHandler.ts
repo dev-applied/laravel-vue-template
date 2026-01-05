@@ -41,3 +41,5 @@ function loopErrors(errors: any, internal_key: string | null = null) {
     useMessageStore().addError(`${showFieldName ? field_name + ' - ' : ''}${value}`)
   })
 }
+
+export default $error

@@ -6,6 +6,14 @@
         <p>
           Welcome to the dashboard!
         </p>
+        <div>
+          <app-auto-complete
+            v-model="selectedUser"
+            endpoint="users"
+            label="Select User"
+            :item-title="(item: any) => item.full_name"
+          />
+        </div>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -21,9 +29,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
+import {defineComponent} from "vue"
+import AppAutoComplete from "@/components/fields/AppAutoComplete/AppAutoComplete.vue"
+
 
 export default defineComponent({
+  components: {AppAutoComplete},
+  data() {
+    return {
+      selectedUser: null
+    }
+  },
   methods: {
     async logout() {
       await this.$auth.logout()

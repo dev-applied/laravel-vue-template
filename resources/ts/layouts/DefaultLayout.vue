@@ -15,11 +15,13 @@
 <script lang="ts">
 import {defineComponent} from "vue"
 import UpdateDetector from "@/components/UpdateDetector.vue"
+import AppMessages from "@/components/AppMessages.vue"
 
 
 export default defineComponent({
   components: {
-    UpdateDetector
+    UpdateDetector,
+    AppMessages
   }
 })
 </script>
