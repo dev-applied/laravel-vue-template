@@ -57,7 +57,7 @@ return [
     'channels' => [
         'stack' => [
             'driver'            => 'stack',
-            'channels'          => ['single', 'sentry'],
+            'channels'          => ['single', 'sentry', 'sentry_logs'],
             'ignore_exceptions' => false,
         ],
 
@@ -133,6 +133,13 @@ return [
         'sentry' => [
             'driver' => 'sentry',
             'level'  => Level::Error,
+        ],
+
+        'sentry_logs' => [
+            'driver' => 'sentry_logs',
+            // The minimum logging level at which this handler will be triggered
+            // Available levels: debug, info, notice, warning, error, critical, alert, emergency
+            'level' => Level::Error, // defaults to `debug` if not set
         ],
     ],
 
