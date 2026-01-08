@@ -37,7 +37,7 @@ return [
     'profiles_sample_rate' => env('SENTRY_PROFILES_SAMPLE_RATE') === null ? null : (float) env('SENTRY_PROFILES_SAMPLE_RATE'),
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#enable_logs
-    'enable_logs' => env('SENTRY_ENABLE_LOGS', false),
+    'enable_logs' => env('SENTRY_ENABLE_LOGS', true),
 
     // The minimum log level that will be sent to Sentry as logs using the `sentry_logs` logging channel
     'logs_channel_level' => env('SENTRY_LOG_LEVEL', env('SENTRY_LOGS_LEVEL', env('LOG_LEVEL', 'debug'))),
