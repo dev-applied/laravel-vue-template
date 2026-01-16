@@ -85,7 +85,7 @@ export const AppPaginationTableProps = {
 }
 </script>
 <script lang="ts" setup>
-import {ref, toValue, watch, watchEffect} from "vue"
+import {ref, toRefs, toValue, watch, watchEffect} from "vue"
 import usePaginationData from "@/composables/usePaginationData"
 import cloneDeep from "lodash.clonedeep"
 import {useDebounceFn} from "@vueuse/core"
