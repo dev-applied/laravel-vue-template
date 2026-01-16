@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <app-messages />
     <v-main>
       <v-slide-x-reverse-transition mode="out-in">
         <span class="transition-wrapper">
@@ -14,9 +15,10 @@
 <script lang="ts">
 import {defineComponent} from "vue"
 import UpdateDetector from "@/components/UpdateDetector.vue"
+import AppMessages from "@/components/AppMessages.vue"
 
 export default defineComponent({
-  components: {UpdateDetector}
+  components: {AppMessages, UpdateDetector}
 })
 </script>
 
