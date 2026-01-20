@@ -1,6 +1,6 @@
 <template>
   <v-data-table-server
-    :class="{'app-pagination-table--striped': striped}"
+    :class="{'app-pagination-table--striped': stripedRows}"
     :items="items"
     :items-length="pagination.total"
     :loading="loading"
@@ -74,7 +74,7 @@ export const AppPaginationTableProps = {
     type: String as PropType<"POST" | "GET" | "PUT" | "PATCH">,
     default: "GET"
   },
-  striped: {
+  stripedRows: {
     type: Boolean,
     default: false
   },
