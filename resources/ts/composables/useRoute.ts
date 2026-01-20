@@ -3,7 +3,7 @@ import {ROUTES} from "@/router/paths"
 
 export default function useAuth() {
   return {
-    route: routeTo,
+    $routeTo: routeTo,
     ROUTES
   }
 }
