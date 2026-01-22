@@ -157,6 +157,6 @@ class File extends Model
 
     protected function sizeFormatted(): Attribute
     {
-        return Attribute::get(fn ($value): string => Number::fileSize($value, 1, 2));
+        return Attribute::get(fn (): string => Number::fileSize($this->size, 1, 2));
     }
 }
