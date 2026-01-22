@@ -26,6 +26,9 @@ const latestVersion = ref<string | null>(null)
 let stopPolling: (() => void) | null = null
 
 onMounted(() => {
+  const env = import.meta.env.VITE_APP_ENV
+  if (env === 'local') return
+  
   stopPolling = startVersionPolling({
     onVersionChange: ({ latestVersion: lv }) => {
       latestVersion.value = lv

@@ -31,6 +31,7 @@
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^1.0",
         "laravel/pint": "^1.24",
+        "laravel/wayfinder": "^0.1.13",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
         "pestphp/pest": "^4.0",
@@ -69,6 +70,9 @@
         "ci": [
             "./vendor/bin/pint --test",
             "./vendor/bin/pest --parallel"
+        ],
+        "typescript": [
+            "php artisan wayfinder:generate --path=./resources/ts/types/laravel --silent --ansi"
         ]
     },
     "extra": {

@@ -40,5 +40,8 @@ export const useMessageStore = defineStore("message", {
     addWarning(message: string, timeout?: number) {
       this.addMessage(MessageType.Warning, message, timeout)
     },
+    removeMessage(index: number) {
+      this.messages.splice(index, 1)
+    },
   }
 })
