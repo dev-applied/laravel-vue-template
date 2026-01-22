@@ -21,26 +21,26 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/v1'], function () {
     Route::group(['prefix' => '/auth'], function () {
-        Route::get('', [AuthController::class, 'me']);
-        Route::post('', [AuthController::class, 'login']);
-        Route::delete('', [AuthController::class, 'logout']);
+        Route::get('', [AuthController::class, 'me'])->name('auth.me');
+        Route::post('', [AuthController::class, 'login'])->name('auth.login');
+        Route::delete('', [AuthController::class, 'logout'])->name('auth.logout');
     });
 
-    Route::post('/forgot-password', [ForgotPasswordController::class, 'send']);
-    Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'reset']);
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'send'])->name('forgot-password.send');
+    Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'reset'])->name('forgot-password.reset');
     Route::apiResource('users', UserController::class);
 
     Route::group(['middleware' => ['auth']], function () {
-        Route::post('/auth/impersonate', [AuthController::class, 'impersonate']);
-        Route::delete('/auth/stop-impersonating', [AuthController::class, 'stopImpersonating']);
+        Route::post('/auth/impersonate', [AuthController::class, 'impersonate'])->name('auth.impersonate');
+        Route::delete('/auth/stop-impersonating', [AuthController::class, 'stopImpersonating'])->name('auth.stop-impersonating');
 
         // File Routes
         Route::group(['prefix' => '/files'], function () {
-            Route::get('/{file}/{size?}', [FileController::class, 'url'])->whereNumber('file');
-            Route::get('/view/{file}', [FileController::class, 'show']);
-            Route::get('/download/{file}/{size?}', [FileController::class, 'download']);
-            Route::post('', [FileController::class, 'store']);
-            Route::delete('/{file}', [FileController::class, 'destroy']);
+            Route::get('/{file}/{size?}', [FileController::class, 'url'])->whereNumber('file')->name('files.url');
+            Route::get('/view/{file}', [FileController::class, 'show'])->whereNumber('file')->name('files.show');
+            Route::get('/download/{file}/{size?}', [FileController::class, 'download'])->whereNumber('file')->name('files.download');
+            Route::post('', [FileController::class, 'store'])->name('files.store');
+            Route::delete('/{file}', [FileController::class, 'destroy'])->whereNumber('file')->name('files.destroy');
         });
     });
 });
