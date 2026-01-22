@@ -36,7 +36,7 @@ export default defineConfig(({mode, command}) => {
         }
       }),
       eslint({
-        exclude: [/virtual:/, /node_modules/]
+        exclude: [/virtual:/, /node_modules/, 'resources/ts/types/laravel/**']
       }),
       sentryVitePlugin({
         applicationKey: process.env.VITE_APP_NAME || 'ai-frontend',
