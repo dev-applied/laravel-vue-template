@@ -1,6 +1,5 @@
 import forEach from "lodash.foreach"
 import type {NavigationGuardNext, RouteLocationNormalized, RouteLocationNormalizedLoaded} from "vue-router"
-import dayjs from "@/utils/dayjs.ts"
 
 export default class ForceTypes implements App.Middleware.Instance {
   async handle(
@@ -16,9 +15,6 @@ export default class ForceTypes implements App.Middleware.Instance {
       // @ts-ignore
       if (!isNaN(param)) {
         return (to.params[key] = Number(param))
-      }
-      if (dayjs(param).isValid()) {
-        return (to.params[key] = dayjs(param))
       }
       if (param === "true" || param === "false") {
         return (to.params[key] = Boolean(param))
