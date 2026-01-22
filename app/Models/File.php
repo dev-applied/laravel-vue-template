@@ -14,7 +14,6 @@ use Illuminate\Support\Number;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine;
-use Spatie\LaravelImageOptimizer\Facades\ImageOptimizer;
 
 class File extends Model
 {
@@ -120,7 +119,6 @@ class File extends Model
                     $image = $image->thumbnail(new Box($dims['width'], $dims['height']));
                 }
                 $image->save($tmp);
-                ImageOptimizer::optimize($tmp);
                 $thumbnail               = new UploadedFile($tmp, $file->getClientOriginalName());
                 $media->responsive_paths = array_merge($media->responsive_paths, [
                     $name => $thumbnail->storeAs($directory, str_replace(".$ext", '', $fileName)."_$name.$ext", $disk),
