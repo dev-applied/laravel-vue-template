@@ -64,6 +64,21 @@ export default defineConfig(({mode, command}) => {
       host: true,
       port: 8080,
       strictPort: true,
+      watch: {
+        // Use if running into Linux running out of inotify file watchers
+        /*usePolling: true,
+        interval: 300,*/
+
+        // Also reduce what Vite tries to watch in a Laravel repo.
+        ignored: [
+          '**/node_modules/**',
+          '**/.git/**',
+          '**/vendor/**',
+          '**/storage/**',
+          '**/bootstrap/cache/**',
+          '**/public/**',
+        ],
+      },
       hmr: {
         protocol: 'wss',
         clientPort: 443,
