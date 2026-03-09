@@ -20,3 +20,4 @@ dist
 .junie
 /public/version.json
 /resources/ts/types/models
+/resources/ts/types/laravel/

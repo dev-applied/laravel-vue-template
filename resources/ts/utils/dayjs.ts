@@ -61,11 +61,11 @@ function time(time: TimeValue, local: boolean = true): string {
   return formatTime(time, "h:mma", local)
 }
 
-function short_date_time_12(time: TimeValue, local: boolean = false): string {
+function short_date_time_12(time: TimeValue, local: boolean = true): string {
   return formatTime(time, "MM/DD/YYYY h:mm a", local)
 }
 
-function short_date_time_24(time: TimeValue, local: boolean = false): string {
+function short_date_time_24(time: TimeValue, local: boolean = true): string {
   return formatTime(time, "MM/DD/YYYY HH:mm", local)
 }
 
