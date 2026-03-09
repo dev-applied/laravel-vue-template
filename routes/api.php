@@ -8,43 +8,27 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
-
-Route::group(['prefix' => '/v1'], function () {
-    Route::group(['prefix' => '/auth'], function () {
-        Route::get('', [AuthController::class, 'me']);
-        Route::post('', [AuthController::class, 'login']);
-        Route::delete('', [AuthController::class, 'logout']);
+Route::prefix('v1')->group(function () {
+    Route::prefix('auth')->group(function () {
+        Route::get('/', [AuthController::class, 'me'])->middleware('auth:sanctum');
+        Route::post('/', [AuthController::class, 'login']);
+        Route::delete('/', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+        Route::post('/impersonate', [AuthController::class, 'impersonate'])->middleware('auth:sanctum');
+        Route::delete('/stop-impersonating', [AuthController::class, 'stopImpersonating'])->middleware('auth:sanctum');
     });
 
     Route::post('/forgot-password', [ForgotPasswordController::class, 'send']);
     Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'reset']);
-    Route::apiResource('users', UserController::class);
 
-    Route::group(['middleware' => ['auth']], function () {
-        Route::post('/auth/impersonate', [AuthController::class, 'impersonate']);
-        Route::delete('/auth/stop-impersonating', [AuthController::class, 'stopImpersonating']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::apiResource('users', UserController::class);
 
-        // File Routes
-        Route::group(['prefix' => '/files'], function () {
-            Route::get('/{file}/{size?}', [FileController::class, 'url'])->whereNumber('file');
-            Route::get('/view/{file}', [FileController::class, 'show']);
-            Route::get('/download/{file}/{size?}', [FileController::class, 'download']);
-            Route::post('', [FileController::class, 'store']);
-            Route::delete('/{file}', [FileController::class, 'destroy']);
-        });
+        Route::get('/files/{file}/{size?}', [FileController::class, 'url']);
+        Route::get('/files/view/{file}', [FileController::class, 'view']);
+        Route::get('/files/download/{file}/{size?}', [FileController::class, 'download']);
+        Route::post('/files', [FileController::class, 'store']);
+        Route::delete('/files/{file}', [FileController::class, 'destroy']);
     });
-});
 
-Route::fallback(function () {
-    abort(404, 'Route Not Found: '.request()->path());
+    Route::fallback(fn () => response()->json(['message' => 'Not Found'], 404));
 });
