@@ -19,17 +19,15 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Rickycezar\Impersonate\Models\Impersonate;
-use Rickycezar\Impersonate\Services\ImpersonateManager;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, JWTSubject
+class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
     use Authenticatable,
         Authorizable,
         CanResetPassword,
+        HasApiTokens,
         HasFactory,
-        Impersonate,
         MustVerifyEmail,
         Notifiable;
 
@@ -78,16 +76,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         });
     }
 
-    public function getJWTIdentifier(): mixed
-    {
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims(): array
-    {
-        return [];
-    }
-
     /**
      * sendPasswordResetNotification
      *
@@ -97,24 +85,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         Mail::to($this)
             ->send(new ForgotPasswordMail($token, $this));
-    }
-
-    public function canBeImpersonated(): bool
-    {
-        return ! $this->canImpersonate();
-    }
-
-    public function canImpersonate(): bool
-    {
-        // need to add logic here
-        return false;
-    }
-
-    public function isImpersonated(): Attribute
-    {
-        return Attribute::get(function (): bool {
-            return app(ImpersonateManager::class)->isImpersonating();
-        });
     }
 
     protected function fullName(): Attribute
