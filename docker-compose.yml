@@ -16,6 +16,7 @@ services:
             APACHE_DOCUMENT_ROOT: public/
             PHP_EXTENSION_BZ2: 1
             PHP_EXTENSION_IMAGICK: 1
+            PHP_EXTENSION_PDO_SQLITE: 1
             PHP_INI_UPLOAD_MAX_FILESIZE: 1g
             PHP_INI_XDEBUG__REMOTE_START: 1
             PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
