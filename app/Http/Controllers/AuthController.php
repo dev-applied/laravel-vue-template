@@ -4,133 +4,86 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\AppException;
 use App\Http\Resources\AuthUserResource;
 use App\Models\User;
-use Carbon\CarbonInterval;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
-use RateLimiter;
 
 class AuthController extends Controller
 {
-    /**
-     * Create a new AuthController instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth:api', ['except' => ['login', 'me', 'logout']]);
-    }
-
-    /**
-     * Get the authenticated User.
-     */
-    public function me(): JsonResponse
-    {
-        $user = Auth::user();
-        $user = $user ? AuthUserResource::make($user) : null;
-
-        return response()->json(compact('user'));
-    }
-
-    /**
-     * Get a JWT via given credentials.
-     *
-     * @throws ValidationException|Exception
-     */
     public function login(Request $request): JsonResponse
     {
-        $credentials = $this->validate($request, [
-            'email'    => 'required|string',
+        $request->validate([
+            'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
-        if (RateLimiter::tooManyAttempts('login:'.$request->ip(), 5)) {
-            $seconds = RateLimiter::availableIn('login:'.$request->ip());
+        $key = 'login:'.$request->ip();
 
-            return response()->json(['message' => 'You may try again in '.CarbonInterval::seconds($seconds)->cascade()->forHumans()], 401);
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+
+            throw ValidationException::withMessages([
+                'email' => ["Too many login attempts. Please try again in {$seconds} seconds."],
+            ]);
         }
 
-        $user = User::where('email', $credentials['email'])->first();
+        $user = User::where('email', $request->email)->first();
 
-        if (! $user) {
-            RateLimiter::hit('login:'.$request->ip(), 60 * 5);
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            RateLimiter::hit($key, 300);
 
-            return response()->json(['message' => 'User or password incorrect'], 401);
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
         }
 
-        $token = (string) Auth::attempt($credentials);
+        RateLimiter::clear($key);
 
-        if (! $token) {
-            RateLimiter::hit('login:'.$request->ip(), 5 * 60);
+        $user->update(['last_login_at' => now()]);
 
-            return response()->json(['message' => 'User or password incorrect'], 401);
-        }
+        $token = $user->createToken('auth-token');
 
-        return $this->respondWithToken($token);
+        return response()->json([
+            'access_token' => $token->plainTextToken,
+            'token_type'   => 'bearer',
+        ]);
     }
 
-    /**
-     * @throws ValidationException
-     */
+    public function me(Request $request): JsonResponse
+    {
+        return response()->json([
+            'user' => new AuthUserResource($request->user()),
+        ]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logged out']);
+    }
+
     public function impersonate(Request $request): JsonResponse
     {
-        $data = $this->validate($request, [
-            'user_id' => 'required|exists:users,id',
-        ]);
+        $request->validate(['user_id' => 'required|exists:users,id']);
 
-        /** @var User $user */
-        $user = User::findOrFail($data['user_id']);
+        $target = User::findOrFail($request->user_id);
+        $token  = $target->createToken('impersonation-token', ['impersonated']);
 
-        $token = Auth::user()->impersonate($user);
-
-        return $this->respondWithToken((string) $token);
-    }
-
-    /**
-     * @throws AppException
-     */
-    public function stopImpersonating(): JsonResponse
-    {
-        $token = Auth::user()->leaveImpersonation();
-
-        return $this->respondWithToken((string) $token);
-    }
-
-    /**
-     * Log the user out (Invalidate the token).
-     */
-    public function logout(): JsonResponse
-    {
-        auth()->logout();
-
-        return response()->json(['message' => 'Successfully logged out'])/* ->withoutCookie('token', null, $this->getRootDomain()) */;
-    }
-
-    /**
-     * Get the token array structure.
-     */
-    protected function respondWithToken(string $token): JsonResponse
-    {
-        $response = response()->json([
-            'access_token' => $token,
+        return response()->json([
+            'access_token' => $token->plainTextToken,
             'token_type'   => 'bearer',
-            'expires_in'   => auth()->factory()->getTTL() * 60,
         ]);
-
-        // $response->withCookie(cookie(name: 'token', value: $token, minutes: auth()->factory()->getTTL() * 60, domain: $this->getRootDomain()));
-        return $response;
     }
 
-    private function getRootDomain(): string
+    public function stopImpersonating(Request $request): JsonResponse
     {
-        preg_match('/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/', config('app.url'), $matches);
+        $request->user()->currentAccessToken()->delete();
 
-        return $matches[1];
+        return response()->json(['message' => 'Impersonation stopped']);
     }
 }
