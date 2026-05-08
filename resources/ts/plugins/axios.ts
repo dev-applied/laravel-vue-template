@@ -66,14 +66,14 @@ $http.interceptors.response.use(
       response.status === 401 ||
       response.data.message === "Authentication is required to continue"
     ) {
-      if (router.currentRoute.value.name !== ROUTES.LOGIN) {
-        const userStore = useUserStore()
-        userStore.logout().then(() => {
+      const userStore = useUserStore()
+      userStore.logout().then(() => {
+        if (router.currentRoute.value.name !== ROUTES.LOGIN) {
           router
             .push({name: ROUTES.LOGIN, query: {to: router.currentRoute.value.fullPath}})
             .catch((e: Error) => e)
-        })
-      }
+        }
+      })
     }
     return Promise.reject(response)
   }

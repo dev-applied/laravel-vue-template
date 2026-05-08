@@ -56,13 +56,13 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => new AuthUserResource($request->user()),
+            'user' => $request->user() ? new AuthUserResource($request->user()) : null,
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()?->currentAccessToken()?->delete();
 
         return response()->json(['message' => 'Logged out']);
     }

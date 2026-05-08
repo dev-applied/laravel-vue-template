@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
-        Route::get('/', [AuthController::class, 'me'])->middleware('auth:sanctum');
+        Route::get('/', [AuthController::class, 'me']);
         Route::post('/', [AuthController::class, 'login']);
-        Route::delete('/', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+        Route::delete('/', [AuthController::class, 'logout']);
         Route::post('/impersonate', [AuthController::class, 'impersonate'])->middleware('auth:sanctum');
         Route::delete('/stop-impersonating', [AuthController::class, 'stopImpersonating'])->middleware('auth:sanctum');
     });

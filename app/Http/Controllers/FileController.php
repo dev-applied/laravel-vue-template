@@ -18,6 +18,11 @@ use Throwable;
 
 class FileController extends Controller
 {
+    public function view(File $file): RedirectResponse|BinaryFileResponse
+    {
+        return $this->url($file);
+    }
+
     public function url(File $file, string $size = 'original'): BinaryFileResponse|RedirectResponse
     {
         if (! isset($file->responsive_paths[$size])) {
@@ -27,7 +32,7 @@ class FileController extends Controller
         $disk = Storage::disk($file->disk);
 
         if ($disk->providesTemporaryUrls()) {
-            return response()->redirectTo($file->responsive_paths[$size]);
+            return response()->redirectTo($disk->temporaryUrl($file->responsive_paths[$size], now()->addMinutes(5)));
         } else {
             return response()->download($disk->path($file->responsive_paths[$size]), $file->name);
         }
@@ -86,8 +91,6 @@ class FileController extends Controller
             'file_name' => 'required|string',
             'file_type' => 'required|string',
             'path'      => 'sometimes|nullable|string',
-            'kind'      => 'sometimes|nullable|string',
-            'duration'  => 'sometimes|nullable|integer',
             'id'        => 'sometimes|nullable|integer',
         ]);
 
@@ -113,9 +116,7 @@ class FileController extends Controller
         $file->responsive_paths = [
             'original' => $path,
         ];
-        $file->kind     = $request->input('kind');
-        $file->duration = $request->input('duration');
-        $file->size     = 0;
+        $file->size = 0;
         $file->save();
 
         $url = Storage::disk()->getClient()->createPresignedRequest(

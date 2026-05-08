@@ -18,9 +18,11 @@ return new class extends Migration
         Schema::create('files', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('url');
+            $table->string('path');
             $table->string('type');
             $table->integer('size');
+            $table->string('disk');
+            $table->json('responsive_paths');
             $table->whoDidIt();
             $table->timestamps();
         });
