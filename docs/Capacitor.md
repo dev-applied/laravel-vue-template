@@ -151,6 +151,74 @@ Vitest specs for `useCapacitor` and `useStorage` mock `Capacitor.isNativePlatfor
 
 `build:capacitor` is smoke-tested in CI on every workflow trigger (no iOS/Android tooling required — just produces `./dist/`). This catches Capacitor-mode build regressions before they reach a developer trying to do `cap sync`.
 
+## Layout integration example
+
+The Capacitor primitives are designed to plug into the existing `DefaultLayout`. Recommended structure:
+
+```vue
+<!-- resources/ts/layouts/DefaultLayout.vue -->
+<template>
+  <v-app id="applied">
+    <v-app-bar class="pt-safe">
+      <v-app-bar-title>{{ appTitle }}</v-app-bar-title>
+    </v-app-bar>
+
+    <AppNetworkBanner />
+
+    <v-main>
+      <router-view />
+    </v-main>
+
+    <v-bottom-navigation v-if="isNative" class="pb-safe">
+      <!-- bottom nav items -->
+    </v-bottom-navigation>
+  </v-app>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue"
+import AppNetworkBanner from "@/components/AppNetworkBanner.vue"
+import { useCapacitor } from "@/composables/useCapacitor"
+import { useAppLifecycle } from "@/composables/useAppLifecycle"
+import { useKeyboard } from "@/composables/useKeyboard"
+
+export default defineComponent({
+  components: { AppNetworkBanner },
+  setup() {
+    const { isNative } = useCapacitor()
+    const { isOpen: keyboardOpen, height: keyboardHeight } = useKeyboard()
+
+    // Register Capacitor App-plugin events at the layout level (NOT each page —
+    // listeners would stack). The default back-button behavior is router.back()
+    // when history exists, App.exitApp() otherwise.
+    useAppLifecycle({
+      onUrlOpen: (event) => {
+        const url = new URL(event.url)
+        // Map your custom URL scheme paths to vue-router routes here.
+        this.$router.push(url.pathname).catch(() => {})
+      },
+    })
+
+    return { isNative, keyboardOpen, keyboardHeight }
+  },
+  computed: {
+    appTitle() {
+      return import.meta.env.VITE_APP_NAME
+    },
+  },
+})
+</script>
+```
+
+Patterns demonstrated:
+
+- `pt-safe` on the app bar reaches into the iOS notch.
+- `pb-safe` on the bottom navigation lifts above the iOS home indicator.
+- `<AppNetworkBanner />` placed once at the layout level — surfaces offline state across all pages without per-page wiring.
+- `useAppLifecycle` registered at the layout level so back-button / deep-link handlers don't stack as the user navigates.
+- `useKeyboard` exposes `keyboardOpen` and `keyboardHeight` for downstream pages that need to position a submit button above the keyboard.
+- `isNative` lets the bottom nav appear only on native (web users get a sidebar via a different layout, etc.).
+
 ## Reference
 
 - Capacitor docs: https://capacitorjs.com/docs
