@@ -9,7 +9,15 @@ use Twilio\Http\CurlClient;
 use Twilio\Http\Response;
 use Twilio\Rest\Client as TwilioService;
 
-/** @codeCoverageIgnore */
+/**
+ * Inert template extension: dev-mode replacement for Twilio\Rest\Client that
+ * rewrites every Twilio API call to hit a local mock server (Twilio's
+ * WebhooksHog or similar). Not wired by default — see configureTwilio() in
+ * AppServiceProvider and install twilio/sdk +
+ * laravel-notification-channels/twilio to enable.
+ *
+ * @codeCoverageIgnore
+ */
 class TwilioHogService extends TwilioService
 {
     public function __construct(
