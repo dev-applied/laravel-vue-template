@@ -16,6 +16,14 @@
         </div>
       </v-card-text>
       <v-card-actions>
+        <v-btn
+          color="primary"
+          variant="tonal"
+          prepend-icon="list"
+          @click="goItems"
+        >
+          Items
+        </v-btn>
         <v-spacer />
         <v-btn
           color="primary"
@@ -44,6 +52,9 @@ export default defineComponent({
     async logout() {
       await this.$auth.logout()
       await this.$router.push(this.$routeTo(this.ROUTES.LOGIN))
+    },
+    goItems() {
+      this.$router.push(this.$routeTo(this.ROUTES.ITEMS_LIST))
     }
   }
 })
