@@ -4,6 +4,7 @@ import vuetify from "@/plugins/vuetify"
 import {loadLayouts} from "@/layouts"
 import {usePlugins} from "@/plugins"
 import {loadAuthToken} from "@/plugins/authToken"
+import {initNative} from "@/plugins/nativeInit"
 import App from "./App.vue"
 import router from "@/router"
 import * as Sentry from "@sentry/vue"
@@ -47,6 +48,9 @@ app.use(createPinia())
 loadAuthToken().finally(() => {
   router.isReady().then(() => {
     app.mount('#app')
+    // Native init runs after mount so the splash hides once the app actually
+    // shows pixels — avoids a flash of white between splash and first paint.
+    void initNative()
   })
 })
 
