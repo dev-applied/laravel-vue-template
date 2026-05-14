@@ -21,3 +21,7 @@ dist
 /public/version.json
 /resources/ts/types/models
 /resources/ts/types/laravel/
+
+# Claude Code runtime state (settings.json and commands/ ARE committed)
+/.claude/scheduled_tasks.lock
+/.claude/settings.local.json
