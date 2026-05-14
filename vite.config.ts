@@ -98,11 +98,21 @@ export default defineConfig(({mode, command}) => {
       base: '/',
       publicDir: false,
       build: {
+        sourcemap: true,
         rollupOptions: {
           input: resolve(__dirname, './index.html'),
         },
-        outDir: resolve(__dirname, './dist'),
+        outDir:    resolve(__dirname, './dist'),
+        emptyOutDir: true,
       },
+      // Strip the Laravel + ESLint Vite plugins in capacitor mode — those are
+      // dev-server concerns; capacitor mode only builds a static bundle into
+      // ./dist for `cap sync` to copy into the native shell.
+      plugins: options.plugins?.filter(p => {
+        if (!p || typeof p !== 'object' || Array.isArray(p)) return true
+        const name = (p as { name?: string }).name
+        return name !== 'laravel-vite-plugin' && name !== 'vite-plugin-eslint'
+      }),
       server: undefined,
     }
   }
