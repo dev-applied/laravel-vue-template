@@ -3,6 +3,7 @@ import {createPinia} from "pinia"
 import vuetify from "@/plugins/vuetify"
 import {loadLayouts} from "@/layouts"
 import {usePlugins} from "@/plugins"
+import {loadAuthToken} from "@/plugins/authToken"
 import App from "./App.vue"
 import router from "@/router"
 import * as Sentry from "@sentry/vue"
@@ -41,8 +42,12 @@ loadLayouts(app)
 app.use(createPinia())
 
 
-router.isReady().then(() => {
-  app.mount('#app')
+// Load any persisted auth token into the sync in-memory cache before the first
+// request fires. On native this reads @capacitor/preferences; on web localStorage.
+loadAuthToken().finally(() => {
+  router.isReady().then(() => {
+    app.mount('#app')
+  })
 })
 
 export default app

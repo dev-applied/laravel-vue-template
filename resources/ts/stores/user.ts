@@ -1,5 +1,6 @@
 import {defineStore} from "pinia"
 import {$http, type AxiosResponse} from "@/plugins/axios"
+import {clearAuthToken, setAuthToken} from "@/plugins/authToken"
 
 export interface LoginForm {
   email: string
@@ -29,13 +30,13 @@ export const useUserStore = defineStore("user", {
       return response
     },
     async setToken(token: string) {
-      localStorage.setItem("token", token)
+      await setAuthToken(token)
       await this.loadUser(true)
     },
     async logout() {
       await $http.delete("/auth").catch((e) => e)
       this.user = null
-      localStorage.removeItem('token')
+      await clearAuthToken()
     },
     async loadUser(force: boolean = false) {
       if (this.user && !force) {
@@ -54,7 +55,7 @@ export const useUserStore = defineStore("user", {
         .catch((e) => e)
 
       if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token)
+        await setAuthToken(response.data.access_token)
         await this.loadUser(true)
       }
 
@@ -66,7 +67,7 @@ export const useUserStore = defineStore("user", {
         .catch((e) => e)
 
       if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token)
+        await setAuthToken(response.data.access_token)
         await this.loadUser(true)
       }
 

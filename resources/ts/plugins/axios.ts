@@ -4,6 +4,7 @@ import {Capacitor} from "@capacitor/core"
 import router from "@/router"
 import {useUserStore} from "@/stores/user"
 import {$error} from "@/plugins/errorHandler"
+import {getAuthToken} from "@/plugins/authToken"
 import {ROUTES} from "@/router/paths"
 import {type App} from "vue"
 import {errorLogger, requestLogger, responseLogger} from 'axios-logger'
@@ -51,8 +52,9 @@ export const $http = axios.create({
 })
 
 $http.interceptors.request.use((config) => {
-  if (localStorage.getItem("token")) {
-    config.headers["Authorization"] = "bearer " + localStorage.getItem("token")
+  const token = getAuthToken()
+  if (token) {
+    config.headers["Authorization"] = "bearer " + token
   }
 
   if (config.data instanceof FormData) {
