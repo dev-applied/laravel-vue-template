@@ -21,3 +21,12 @@ dist
 /public/version.json
 /resources/ts/types/models
 /resources/ts/types/laravel/
+
+# Capacitor — platform folders are generated per-machine by `npx cap add`
+# and most projects don't commit them (CI regenerates from scratch). If a
+# specific project DOES want to commit them, delete the relevant line.
+/ios
+/android
+# Capacitor build artifacts
+/capacitor-cordova-ios-plugins
+/capacitor-cordova-android-plugins
