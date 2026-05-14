@@ -8,7 +8,28 @@
   }
 }
 
+// Opt-in utility classes for components that need safe-area awareness on top of
+// (or instead of) the v-application__wrap padding. Mirrors Vuetify's spacing
+// utilities: pa-safe / pt-safe / pb-safe / pl-safe / pr-safe. Useful for:
+//   - Floating action buttons anchored to the bottom edge
+//   - Bottom navigation bars
+//   - Modal sheets that slide from the bottom
+//   - Header bars that need to reach into the notch area on iOS
+.pt-safe { padding-top:    var(--v-safe-area-top)    !important; }
+.pb-safe { padding-bottom: var(--v-safe-area-bottom) !important; }
+.pl-safe { padding-left:   var(--v-safe-area-left)   !important; }
+.pr-safe { padding-right:  var(--v-safe-area-right)  !important; }
+.pa-safe {
+  padding-top:    var(--v-safe-area-top)    !important;
+  padding-right:  var(--v-safe-area-right)  !important;
+  padding-bottom: var(--v-safe-area-bottom) !important;
+  padding-left:   var(--v-safe-area-left)   !important;
+}
 
-
-
+// Additive utilities: add the safe-area inset ON TOP OF the existing padding/
+// margin. Use when an element already has spacing and you want the safe area
+// added underneath. Example: `<v-btn class="fab-safe-bottom">` lifts a FAB
+// above the iPhone home-indicator without losing its baseline margin.
+.fab-safe-bottom { bottom: calc(16px + var(--v-safe-area-bottom)) !important; }
+.fab-safe-top    { top:    calc(16px + var(--v-safe-area-top))    !important; }
 
