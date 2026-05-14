@@ -1,5 +1,6 @@
 import type {AxiosResponse as Response} from "axios"
 import axios from "axios"
+import {Capacitor} from "@capacitor/core"
 import router from "@/router"
 import {useUserStore} from "@/stores/user"
 import {$error} from "@/plugins/errorHandler"
@@ -27,6 +28,16 @@ export interface AxiosPaginationResponse<ItemType> extends AxiosResponse {
   }
 }
 
+/**
+ * On web: same-origin relative API URL (cookies just work via Sanctum SPA mode).
+ * On native (Capacitor): absolute API URL from VITE_API_BASE_URL_NATIVE — the
+ * bundle is loaded from capacitor:// or http://localhost so a relative URL
+ * would 404.
+ */
+const baseURL = Capacitor.isNativePlatform()
+  ? import.meta.env.VITE_API_BASE_URL_NATIVE
+  : `${import.meta.env.VITE_APP_URL}${import.meta.env.VITE_API_BASE_URL}`
+
 export const $http = axios.create({
   headers: {
     common: {
@@ -34,7 +45,9 @@ export const $http = axios.create({
       "Content-Type": "application/json"
     }
   },
-  baseURL: `${import.meta.env.VITE_APP_URL}${import.meta.env.VITE_API_BASE_URL}`
+  baseURL,
+  // Native bearer-only flow doesn't need cookies; web Sanctum-SPA flow does.
+  withCredentials: !Capacitor.isNativePlatform(),
 })
 
 $http.interceptors.request.use((config) => {
