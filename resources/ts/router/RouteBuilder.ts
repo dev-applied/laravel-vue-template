@@ -2,8 +2,11 @@ import cloneDeep from "lodash.clonedeep"
 import forEach from "lodash.foreach"
 import merge from "lodash.merge"
 import omit from "lodash.omit"
-import trim from "lodash.trim"
 import union from "lodash.union"
+
+/** Strips leading/trailing slashes only. Replaces lodash.trim
+ * (unpatched ReDoS CVE-2020-28500). */
+const trimSlashes = (s: string) => s.replace(/^\/+|\/+$/g, '')
 import type {RouteMeta, RouteRecordRaw} from "vue-router"
 import {Redirect, Route, RouteGroup} from "@/router/internal"
 
@@ -168,9 +171,9 @@ export abstract class RouteBuilder {
       }
     }
 
-    uri = trim(uri, "/")
+    uri = trimSlashes(uri)
     if (!this._isChild()) {
-      uri = (this.attributes.prefix ? `/${trim(this.attributes.prefix, "/")}` : "") + (uri ? `/${uri}` : "")
+      uri = (this.attributes.prefix ? `/${trimSlashes(this.attributes.prefix)}` : "") + (uri ? `/${uri}` : "")
     }
     return uri
   }
@@ -201,7 +204,7 @@ export abstract class RouteBuilder {
   protected formatPrefix(newAttributes: Partial<App.Router.RouteAttributes>, oldAttributes: Partial<App.Router.RouteAttributes>) {
     const oldPrefix = oldAttributes.prefix ?? ""
 
-    return newAttributes.prefix ? trim(oldPrefix, "/") + "/" + trim(newAttributes.prefix, "/") : oldPrefix
+    return newAttributes.prefix ? trimSlashes(oldPrefix) + "/" + trimSlashes(newAttributes.prefix) : oldPrefix
   }
 
   private assignExpressionToParameters(parameters: string[] | string, expression: string) {
