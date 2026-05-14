@@ -64,7 +64,6 @@ export const AppPaginationTableProps = {
   endpoint: {
     type: String as PropType<string>,
     required: true,
-    default: ""
   },
   filters: {
     type: Object as PropType<Record<string, any>>,
