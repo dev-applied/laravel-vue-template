@@ -68,3 +68,22 @@ jobs:
       - name: Run Testsuite
         run: |
           php artisan test
+
+  capacitor-build:
+    name: Capacitor build smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install npm dependencies
+        run: npm ci
+      - name: Build (capacitor mode)
+        run: npm run build:capacitor
+      - name: Verify dist output exists
+        run: |
+          test -d dist
+          test -f dist/index.html
