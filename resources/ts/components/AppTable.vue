@@ -37,7 +37,17 @@ import {computed, ref, useAttrs} from "vue"
 import AppPaginationTable, {AppPaginationTableProps} from "@/components/AppPaginationTable.vue"
 import AppListTable, {AppListTableProps} from "@/components/AppListTable.vue"
 import {useDisplay} from "vuetify"
-import pick from "lodash.pick"
+
+// Tiny replacement for lodash.pick (which has an unpatched prototype-pollution
+// CVE-2020-8203 and no upstream fix). Returns a new object with only `keys`
+// that exist on `src`.
+function pick<T extends Record<string, unknown>>(src: T, keys: readonly (string | number | symbol)[]): Partial<T> {
+  const out: Partial<T> = {}
+  for (const k of keys) {
+    if (k in src) (out as Record<string | number | symbol, unknown>)[k] = src[k as keyof T]
+  }
+  return out
+}
 
 const props = defineProps({
   ...AppPaginationTableProps,
