@@ -1,8 +1,11 @@
 import merge from "lodash.merge"
-import trim from "lodash.trim"
 import RouteDesigner from "@/router/RouteDesigner"
 import {RouteBuilder, RouteGroup} from "@/router/internal"
 import type {RouteRecordRaw} from "vue-router"
+
+/** Strips leading/trailing slashes only. Replaces lodash.trim
+ * (unpatched ReDoS CVE-2020-28500). */
+const trimSlashes = (s: string) => s.replace(/^\/+|\/+$/g, '')
 
 export class Route extends RouteBuilder {
   private readonly uri: string
@@ -58,7 +61,7 @@ export class Route extends RouteBuilder {
 
   public _group(uri: string, routes: () => void): RouteGroup {
     const attributes = this._getAttributes()
-    attributes.prefix = attributes.prefix + '/' + trim(this.uri, '/')
+    attributes.prefix = attributes.prefix + '/' + trimSlashes(this.uri)
     const group = new RouteGroup(uri, routes)
     group._setAttributes(this.mergeAttributes({prefix: group._getAttributes().prefix}, attributes))
     this.routes.push(group)

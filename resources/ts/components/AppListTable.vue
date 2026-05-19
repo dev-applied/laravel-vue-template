@@ -90,7 +90,6 @@ export const AppListTableProps = {
   endpoint: {
     type: String,
     required: true,
-    default: ''
   },
   noDataText: {
     type: String,

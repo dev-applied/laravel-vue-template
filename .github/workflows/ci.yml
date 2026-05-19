@@ -32,12 +32,12 @@ jobs:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
-      - uses: actions/checkout@v3
-      - name: Configure PHP 8.3
-        uses: shivammathur/setup-php@master
+      - uses: actions/checkout@v4
+      - name: Configure PHP 8.4
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
-          extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
+          php-version: '8.4'
+          extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml, intl, bz2, gd
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -58,16 +58,29 @@ jobs:
             DB_DATABASE=laravel_db
             DB_USERNAME=root
             DB_PASSWORD=root
-            NYLAS_REGION=us
-            JWT_SECRET=r6rix9QHmc12xE2LEHotZsJpNZdMabD0xTuAZ83ZVMBva9NBGJjAm7tfDCaXcf9d
-            JWT_TTL=4320
           "
           printf "%s" "$ENV" > .env
           composer install --prefer-dist --optimize-autoloader
           cp .env .env.testing
-      - name: Run Testsuite
-        run: |
-          php artisan test
+      - name: Run Pint + Pest (composer ci)
+        run: composer ci
+
+  frontend:
+    name: Frontend (lint + type-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install npm dependencies
+        run: npm ci
+      - name: ESLint
+        run: npm run lint
+      - name: vue-tsc type check
+        run: npm run type-check
 
   capacitor-build:
     name: Capacitor build smoke

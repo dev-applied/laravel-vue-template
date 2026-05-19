@@ -1,22 +1,17 @@
 <template>
-  <h1>{{ name }}.vue</h1>
+  <v-container>
+    <h1>{{ name }}</h1>
+  </v-container>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue"
 
 export default defineComponent({
-  components: {},
   data() {
     return {}
   },
-  computed: {},
-  watch: {},
-  mounted() {},
-  methods: {},
 })
 </script>
 
-<style lang="scss" scoped>
-//
-</style>
+<style lang="scss" scoped></style>

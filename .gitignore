@@ -30,3 +30,7 @@ dist
 # Capacitor build artifacts
 /capacitor-cordova-ios-plugins
 /capacitor-cordova-android-plugins
+
+# Claude Code runtime state (settings.json and commands/ ARE committed)
+/.claude/scheduled_tasks.lock
+/.claude/settings.local.json
