@@ -1,9 +1,13 @@
-#1/bin/sh
+#!/bin/sh
 
 npm run fix
 
-# Name of your container (adjust if needed)
-CONTAINER_NAME=laravel-vue-template
+# Container name derived from DOCKER_ROUTER (set in .env). Falls back to the
+# directory name so it still works in projects that haven't set DOCKER_ROUTER.
+if [ -f .env ]; then
+  set -a; . ./.env; set +a
+fi
+CONTAINER_NAME="${DOCKER_ROUTER:-$(basename "$PWD")}"
 
 # Check if the container is running
 if docker compose ps -q "$CONTAINER_NAME" >/dev/null 2>&1 && \
