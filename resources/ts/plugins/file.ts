@@ -1,8 +1,9 @@
 import {$http} from "@/plugins/axios"
+import {getAuthToken} from "@/plugins/authToken"
 
 export function fileUrl(id: number, size: string = "thumbnail"): string {
   const url = new URL(`${import.meta.env.VITE_APP_URL}${import.meta.env.VITE_API_BASE_URL}/files/download/${id}/${size}`)
-  url.searchParams.set('token', localStorage.getItem('token') || '')
+  url.searchParams.set('token', getAuthToken() ?? '')
 
   return url.toString()
 }

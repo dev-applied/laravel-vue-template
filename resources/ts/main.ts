@@ -3,6 +3,8 @@ import {createPinia} from "pinia"
 import vuetify from "@/plugins/vuetify"
 import {loadLayouts} from "@/layouts"
 import {usePlugins} from "@/plugins"
+import {loadAuthToken} from "@/plugins/authToken"
+import {initNative} from "@/plugins/nativeInit"
 import App from "./App.vue"
 import router from "@/router"
 import * as Sentry from "@sentry/vue"
@@ -41,8 +43,17 @@ loadLayouts(app)
 app.use(createPinia())
 
 
-router.isReady().then(() => {
-  app.mount('#app')
-})
+// Load any persisted auth token into the sync in-memory cache before the first
+// request fires. On native this reads @capacitor/preferences; on web localStorage.
+// Swallow storage errors — a missing/corrupt token must not block app mount.
+loadAuthToken()
+  .catch((err) => { Sentry.captureException(err) })
+  .then(() => router.isReady())
+  .then(() => {
+    app.mount('#app')
+    // Native init runs after mount so the splash hides once the app actually
+    // shows pixels — avoids a flash of white between splash and first paint.
+    void initNative()
+  })
 
 export default app

@@ -1,8 +1,10 @@
 import type {AxiosResponse as Response} from "axios"
 import axios from "axios"
+import {Capacitor} from "@capacitor/core"
 import router from "@/router"
 import {useUserStore} from "@/stores/user"
 import {$error} from "@/plugins/errorHandler"
+import {getAuthToken} from "@/plugins/authToken"
 import {ROUTES} from "@/router/paths"
 import {type App} from "vue"
 import {errorLogger, requestLogger, responseLogger} from 'axios-logger'
@@ -27,6 +29,18 @@ export interface AxiosPaginationResponse<ItemType> extends AxiosResponse {
   }
 }
 
+/**
+ * On web: absolute API URL composed from VITE_APP_URL + VITE_API_BASE_URL.
+ * Cookies still work because VITE_APP_URL points at the same origin Vite is
+ * served from under Sanctum SPA mode.
+ * On native (Capacitor): absolute API URL from VITE_API_BASE_URL_NATIVE — the
+ * bundle is loaded from capacitor:// or http://localhost so a relative URL
+ * would 404.
+ */
+const baseURL = Capacitor.isNativePlatform()
+  ? import.meta.env.VITE_API_BASE_URL_NATIVE
+  : `${import.meta.env.VITE_APP_URL}${import.meta.env.VITE_API_BASE_URL}`
+
 export const $http = axios.create({
   headers: {
     common: {
@@ -34,12 +48,15 @@ export const $http = axios.create({
       "Content-Type": "application/json"
     }
   },
-  baseURL: `${import.meta.env.VITE_APP_URL}${import.meta.env.VITE_API_BASE_URL}`
+  baseURL,
+  // Native bearer-only flow doesn't need cookies; web Sanctum-SPA flow does.
+  withCredentials: !Capacitor.isNativePlatform(),
 })
 
 $http.interceptors.request.use((config) => {
-  if (localStorage.getItem("token")) {
-    config.headers["Authorization"] = "bearer " + localStorage.getItem("token")
+  const token = getAuthToken()
+  if (token) {
+    config.headers["Authorization"] = "bearer " + token
   }
 
   if (config.data instanceof FormData) {
