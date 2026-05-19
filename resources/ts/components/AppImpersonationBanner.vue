@@ -32,7 +32,7 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 
-const props = defineProps<{
+defineProps<{
   visible:           boolean
   impersonatingAs?:  string
   originalUser?:     string
@@ -40,23 +40,19 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   /**
-   * Fires when the user clicks "Stop impersonating". Parent should call
-   * `$auth.stopImpersonating()` and then await its resolution; bind
-   * :loading="loading" on this component (via template ref) or simply
-   * v-if=false the banner once the API call resolves.
+   * Fires when the user clicks "Stop impersonating". The banner sets its own
+   * loading state to true; the parent owns the API call and is responsible
+   * for either v-if=false-ing the banner on success or calling setLoading(false)
+   * on failure so the button stops spinning.
    */
   stop: []
 }>()
 
-void props // suppress unused
 const loading = ref(false)
 
-async function onStop() {
+function onStop() {
   loading.value = true
   emit("stop")
-  // Parent owns the API call; reset loading after a beat so a re-render
-  // from the banner-disappearing doesn't leave it spinning.
-  setTimeout(() => { loading.value = false }, 3000)
 }
 
 defineExpose({ setLoading: (v: boolean) => { loading.value = v } })

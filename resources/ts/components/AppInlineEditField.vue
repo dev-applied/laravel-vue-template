@@ -26,8 +26,8 @@
       @keydown.enter.prevent="startEdit"
       @keydown.space.prevent="startEdit"
     >
-      <slot :value="display">
-        {{ display || placeholder || "—" }}
+      <slot :value="modelValue">
+        {{ modelValue || placeholder || "—" }}
       </slot>
       <v-icon
         size="x-small"
@@ -67,11 +67,14 @@ const saving       = ref(false)
 const draft        = ref<string | number | null>(props.modelValue)
 const errorMessage = ref<string>("")
 const inputRef     = ref<HTMLInputElement | null>(null)
-const display      = ref(props.modelValue)
+// Track the draft value whose save attempt failed so a subsequent blur on
+// the same value doesn't re-fire the failing API call.
+const lastFailedDraft = ref<string | number | null | undefined>(undefined)
 
 async function startEdit() {
   draft.value = props.modelValue
   errorMessage.value = ""
+  lastFailedDraft.value = undefined
   editing.value = true
   await nextTick()
   ;(inputRef.value as unknown as { focus?: () => void })?.focus?.()
@@ -79,20 +82,26 @@ async function startEdit() {
 
 async function save() {
   if (!editing.value) return
+  if (saving.value) return
   if (draft.value === props.modelValue) {
     editing.value = false
     return
   }
+  // After a save failure we stay in editing mode for correction. A subsequent
+  // blur on the same draft must not re-hit the API — only retry when the user
+  // edits the value again.
+  if (errorMessage.value && draft.value === lastFailedDraft.value) return
 
   saving.value = true
   errorMessage.value = ""
   try {
     if (props.onSave) await props.onSave(draft.value)
     emit("update:modelValue", draft.value)
-    display.value = draft.value
     editing.value = false
+    lastFailedDraft.value = undefined
   } catch (e) {
     errorMessage.value = e instanceof Error ? e.message : "Could not save"
+    lastFailedDraft.value = draft.value
     // stay in editing mode so the user can correct
   } finally {
     saving.value = false

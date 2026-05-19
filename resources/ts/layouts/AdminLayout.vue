@@ -55,7 +55,7 @@
       :rail="rail && !mdAndDown"
       :permanent="!mdAndDown"
       :temporary="mdAndDown"
-      @click="rail = false"
+      @click.self="rail = false"
     >
       <slot name="nav">
         <v-list

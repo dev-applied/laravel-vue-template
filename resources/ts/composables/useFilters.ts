@@ -46,31 +46,49 @@ export function useFilters<T extends object>(
   // Snapshot initial for reset + comparison.
   const initialSnapshot = cloneDeep(initial)
 
-  // Seed from URL where present.
-  const seeded = { ...cloneDeep(initial) } as T
-  for (const key of Object.keys(initial) as (keyof T)[]) {
-    if (exclude.has(key)) continue
-    const fromUrl = route.query[key as string]
-    if (fromUrl === undefined) continue
-    const raw = Array.isArray(fromUrl) ? fromUrl[0] : fromUrl
-    if (raw === null) continue
+  // Re-applied when seeding initially AND when the URL changes externally
+  // (back/forward, another component pushing a new query).
+  function applySeedFromUrl(target: T): void {
+    for (const key of Object.keys(initial) as (keyof T)[]) {
+      if (exclude.has(key)) continue
+      const fromUrl = route.query[key as string]
 
-    if (options.deserialize) {
-      seeded[key] = options.deserialize(raw, key, initial) as T[keyof T]
-    } else {
-      // Best-effort default deserialization based on the initial value type
-      const init = initial[key]
-      if (typeof init === "number") seeded[key] = Number(raw) as T[keyof T]
-      else if (typeof init === "boolean") seeded[key] = (raw === "true") as T[keyof T]
-      else seeded[key] = raw as unknown as T[keyof T]
+      // Absent in URL → reset to initial value (so back-navigating away from
+      // a filtered URL clears the filter, matching browser semantics).
+      if (fromUrl === undefined) {
+        target[key] = cloneDeep((initialSnapshot as T)[key])
+        continue
+      }
+      const raw = Array.isArray(fromUrl) ? fromUrl[0] : fromUrl
+      if (raw === null || raw === undefined) {
+        target[key] = cloneDeep((initialSnapshot as T)[key])
+        continue
+      }
+
+      if (options.deserialize) {
+        target[key] = options.deserialize(raw, key, initial) as T[keyof T]
+      } else {
+        // Best-effort default deserialization based on the initial value type
+        const init = initial[key]
+        if (typeof init === "number") target[key] = Number(raw) as T[keyof T]
+        else if (typeof init === "boolean") target[key] = (raw === "true") as T[keyof T]
+        else target[key] = raw as unknown as T[keyof T]
+      }
     }
   }
 
+  const seeded = { ...cloneDeep(initial) } as T
+  applySeedFromUrl(seeded)
   const filters = reactive(seeded) as T
+
+  // Guard against the filters↔URL loop: when we re-seed from a URL change,
+  // skip the next URL write that the filters watcher would emit.
+  let applyingFromUrl = false
 
   watch(
     () => cloneDeep(filters),
     (newVal) => {
+      if (applyingFromUrl) return
       const query: Record<string, string> = {}
       // Preserve any non-filter query keys (page=, etc. from other code paths)
       for (const [k, v] of Object.entries(route.query)) {
@@ -89,6 +107,17 @@ export function useFilters<T extends object>(
       void router.replace({ query })
     },
     { deep: true },
+  )
+
+  // External URL changes (browser back/forward, programmatic navigation) → filters.
+  // The flag prevents the filters watcher from echoing back to the URL.
+  watch(
+    () => route.query,
+    () => {
+      applyingFromUrl = true
+      applySeedFromUrl(filters)
+      void Promise.resolve().then(() => { applyingFromUrl = false })
+    },
   )
 
   function reset() {

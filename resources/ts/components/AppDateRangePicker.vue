@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from "vue"
+import { computed } from "vue"
 import dayjs from "@/utils/dayjs"
 
 export interface DateRange {
@@ -116,10 +116,9 @@ const errorMessages = computed(() => {
   return []
 })
 
-// If user picks an end before start, no auto-correct — let them see the message
-// and decide which one to change. Keep this watch as a hook for projects that
-// want to coerce: just override emit('update:modelValue').
-watch(errorMessages, () => { /* hook for parent override */ })
+// If user picks an end before start, no auto-correct — show the message and
+// let the user decide which one to change. Parents that want to coerce can
+// react to update:modelValue themselves.
 </script>
 
 <style lang="scss" scoped></style>

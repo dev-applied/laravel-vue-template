@@ -6,9 +6,9 @@ export interface UseSelectionReturn<K> {
   /** Reactive count for UX ("3 selected"). */
   count:        ComputedRef<number>
   /** Whether ALL items in the current page are selected. */
-  allSelected:  (items: { key: K }[] | K[]) => boolean
+  allSelected:  (items: K[]) => boolean
   /** Whether SOME items are selected (for the indeterminate checkbox state). */
-  someSelected: (items: { key: K }[] | K[]) => boolean
+  someSelected: (items: K[]) => boolean
   isSelected:   (key: K) => boolean
   toggle:       (key: K) => void
   /** Select every key from `items`. Does NOT clear existing selections. */
@@ -37,12 +37,6 @@ export interface UseSelectionReturn<K> {
 export function useSelection<K = number>(): UseSelectionReturn<K> {
   const selectedKeys = ref<Set<K>>(new Set()) as Ref<Set<K>>
 
-  function keyFor(x: { key: K } | K): K {
-    return typeof x === "object" && x !== null && "key" in (x as object)
-      ? (x as { key: K }).key
-      : (x as K)
-  }
-
   const count = computed(() => selectedKeys.value.size)
 
   function isSelected(key: K): boolean {
@@ -58,13 +52,13 @@ export function useSelection<K = number>(): UseSelectionReturn<K> {
 
   function selectAll(items: K[]) {
     const next = new Set(selectedKeys.value)
-    for (const k of items) next.add(keyFor(k))
+    for (const k of items) next.add(k)
     selectedKeys.value = next
   }
 
   function deselectAll(items: K[]) {
     const next = new Set(selectedKeys.value)
-    for (const k of items) next.delete(keyFor(k))
+    for (const k of items) next.delete(k)
     selectedKeys.value = next
   }
 
@@ -73,14 +67,14 @@ export function useSelection<K = number>(): UseSelectionReturn<K> {
     else selectAll(items)
   }
 
-  function allSelected(items: { key: K }[] | K[]): boolean {
+  function allSelected(items: K[]): boolean {
     if (!items.length) return false
-    return (items as K[]).every(k => selectedKeys.value.has(keyFor(k)))
+    return items.every(k => selectedKeys.value.has(k))
   }
 
-  function someSelected(items: { key: K }[] | K[]): boolean {
+  function someSelected(items: K[]): boolean {
     if (!items.length) return false
-    return (items as K[]).some(k => selectedKeys.value.has(keyFor(k)))
+    return items.some(k => selectedKeys.value.has(k))
   }
 
   function clear() {

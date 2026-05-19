@@ -49,12 +49,6 @@ export function useApi<T = unknown>(
     loading.value = true
     error.value   = null
     try {
-      const args: [string, AxiosRequestConfig?] =
-        method === "get" || method === "delete"
-          ? [endpoint, options.config]
-          // post/put/patch — config.data passed as body
-          : [endpoint, options.config]
-
       // axios signature differs for body vs no-body verbs; use the per-method
       // call so type narrowing works.
       let response
@@ -66,7 +60,6 @@ export function useApi<T = unknown>(
         case "patch":  response = await $http.patch (endpoint, options.config?.data, options.config); break
       }
 
-      void args
       data.value = response.data as T
       options.onSuccess?.(response.data as T)
       return response.data as T
