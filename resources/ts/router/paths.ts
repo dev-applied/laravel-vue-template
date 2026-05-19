@@ -11,6 +11,10 @@ export const ROUTES = {
 
   DASHBOARD: "dashboard",
   TEST: "test",
+
+  ITEMS_LIST:   "items.list",
+  ITEMS_CREATE: "items.create",
+  ITEMS_EDIT:   "items.edit",
 }
 
 RouteDesigner.setNotFound("Error404Page").layout('Empty')
@@ -29,6 +33,10 @@ RouteDesigner.group('', function () {
   // Authorized routes
   RouteDesigner.group('', function () {
     RouteDesigner.route("/dashboard", "DashboardPage", ROUTES.DASHBOARD)
+
+    RouteDesigner.route("/items",         "items/ItemListPage", ROUTES.ITEMS_LIST)
+    RouteDesigner.route("/items/new",     "items/ItemFormPage", ROUTES.ITEMS_CREATE)
+    RouteDesigner.route("/items/:id/edit","items/ItemFormPage", ROUTES.ITEMS_EDIT)
   })
     .layout("Default")
     .middleware([Authorization])
