@@ -73,7 +73,7 @@
         />
       </template>
 
-      <template #item="{ props: newProps, item }">
+      <template #item="{ props: newProps, internalItem: item }">
         <VListSubheader
           v-if="item?.raw?.type === 'subheader'"
           class="font-weight-bold"
