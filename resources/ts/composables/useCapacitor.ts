@@ -33,14 +33,23 @@ export function useCapacitor(): UseCapacitorReturn {
 
   const online = ref(true)
   let unlisten: (() => void) | null = null
+  let unmounted = false
 
   // Initialize online state and subscribe to changes. Both work on web (Network
   // plugin has a browser implementation that wraps navigator.onLine).
   void Network.getStatus().then((s: ConnectionStatus) => { online.value = s.connected })
   void Network.addListener("networkStatusChange", (s) => { online.value = s.connected })
-    .then(handle => { unlisten = () => { void handle.remove() } })
+    .then(handle => {
+      // If we already unmounted before this promise resolved, drop the handle
+      // immediately so the native listener doesn't outlive the component.
+      if (unmounted) { void handle.remove(); return }
+      unlisten = () => { void handle.remove() }
+    })
 
-  onBeforeUnmount(() => { unlisten?.() })
+  onBeforeUnmount(() => {
+    unmounted = true
+    unlisten?.()
+  })
 
   async function appInfo(): Promise<AppInfo | null> {
     if (cachedAppInfo !== undefined) return cachedAppInfo

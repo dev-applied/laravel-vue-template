@@ -34,18 +34,25 @@ export function useKeyboard(): UseKeyboardReturn {
   }
 
   const handles: Array<{ remove: () => Promise<void> }> = []
+  let unmounted = false
+
+  const track = (h: { remove: () => Promise<void> }): void => {
+    if (unmounted) void h.remove()
+    else handles.push(h)
+  }
 
   void Keyboard.addListener("keyboardWillShow", (info: KeyboardInfo) => {
     isOpen.value = true
     height.value = info.keyboardHeight
-  }).then(h => handles.push(h))
+  }).then(track)
 
   void Keyboard.addListener("keyboardWillHide", () => {
     isOpen.value = false
     height.value = 0
-  }).then(h => handles.push(h))
+  }).then(track)
 
   onBeforeUnmount(() => {
+    unmounted = true
     handles.forEach(h => { void h.remove() })
   })
 

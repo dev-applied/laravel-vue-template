@@ -67,7 +67,7 @@ const { isNative, platform, online } = useCapacitor()
 if (isNative.value) { /* … */ }
 ```
 
-**Persistent storage** — always use `useStorage`, never `localStorage`:
+**Persistent storage** — use `useStorage` for anything that needs to survive an app launch on native (auth tokens, user preferences, cached identifiers):
 
 ```ts
 import { useStorage } from "@/composables/useStorage"
@@ -77,7 +77,9 @@ await storage.set("settings.theme", "dark")
 const theme = await storage.get("settings.theme")
 ```
 
-iOS WebView can clear localStorage at any time; `useStorage` is backed by Capacitor Preferences on native, which persists across launches.
+iOS WebView can clear `localStorage` at any time; `useStorage` is backed by Capacitor Preferences on native, which persists across launches.
+
+Plain `localStorage` is fine for purely-cosmetic browser-only state that you can afford to lose (e.g. `LoginPage.vue`'s "remember email" checkbox). Anything the app depends on at boot should go through `useStorage`.
 
 **Auth tokens** — the existing flow handles native correctly out of the box. `plugins/authToken.ts` caches the token in-memory for sync axios reads and persists via `useStorage` for cross-launch survival.
 
@@ -112,7 +114,7 @@ const { isOpen, height } = useKeyboard()
 
 ## API base URL
 
-Web uses `VITE_API_BASE_URL` relative to the page origin (same-origin via Sanctum SPA cookie mode, or just a relative URL).
+Web composes an absolute base URL as `VITE_APP_URL + VITE_API_BASE_URL`. `VITE_APP_URL` points at the same origin the SPA is served from, so Sanctum SPA cookie auth still works — the absolute URL just makes it explicit.
 
 Native (Capacitor) uses `VITE_API_BASE_URL_NATIVE` — absolute URL of the backend. The bundle is loaded from `capacitor://` or `http://localhost`, so a relative URL would 404. `axios.ts` picks the right base automatically via `Capacitor.isNativePlatform()`.
 
@@ -177,6 +179,7 @@ The Capacitor primitives are designed to plug into the existing `DefaultLayout`.
 
 <script lang="ts">
 import { defineComponent } from "vue"
+import { useRouter } from "vue-router"
 import AppNetworkBanner from "@/components/AppNetworkBanner.vue"
 import { useCapacitor } from "@/composables/useCapacitor"
 import { useAppLifecycle } from "@/composables/useAppLifecycle"
@@ -185,6 +188,7 @@ import { useKeyboard } from "@/composables/useKeyboard"
 export default defineComponent({
   components: { AppNetworkBanner },
   setup() {
+    const router = useRouter()
     const { isNative } = useCapacitor()
     const { isOpen: keyboardOpen, height: keyboardHeight } = useKeyboard()
 
@@ -195,7 +199,7 @@ export default defineComponent({
       onUrlOpen: (event) => {
         const url = new URL(event.url)
         // Map your custom URL scheme paths to vue-router routes here.
-        this.$router.push(url.pathname).catch(() => {})
+        router.push(url.pathname).catch(() => {})
       },
     })
 

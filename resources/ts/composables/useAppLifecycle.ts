@@ -40,9 +40,17 @@ export function useAppLifecycle(opts: UseAppLifecycleOptions = {}): void {
 
   const router = useRouter()
   const handles: Array<{ remove: () => Promise<void> }> = []
+  let unmounted = false
 
-  void App.addListener("backButton", async () => {
-    const canGoBack = window.history.length > 1
+  // Track a handle returned by an async addListener(). If the component already
+  // unmounted before the promise resolved, remove the handle immediately so we
+  // don't leak a native listener past the component's lifetime.
+  const track = (h: { remove: () => Promise<void> }): void => {
+    if (unmounted) void h.remove()
+    else handles.push(h)
+  }
+
+  void App.addListener("backButton", async ({ canGoBack }) => {
     if (opts.onBackButton) {
       await opts.onBackButton(canGoBack)
       return
@@ -52,21 +60,22 @@ export function useAppLifecycle(opts: UseAppLifecycleOptions = {}): void {
     } else {
       await App.exitApp()
     }
-  }).then(h => handles.push(h))
+  }).then(track)
 
   if (opts.onAppStateChange) {
     void App.addListener("appStateChange", async ({ isActive }) => {
       await opts.onAppStateChange!(isActive)
-    }).then(h => handles.push(h))
+    }).then(track)
   }
 
   if (opts.onUrlOpen) {
     void App.addListener("appUrlOpen", async (event) => {
       await opts.onUrlOpen!(event)
-    }).then(h => handles.push(h))
+    }).then(track)
   }
 
   onBeforeUnmount(() => {
+    unmounted = true
     handles.forEach(h => { void h.remove() })
   })
 }

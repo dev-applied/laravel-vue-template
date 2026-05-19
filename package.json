@@ -17,6 +17,7 @@
     "fix": "cross-env NODE_ENV=production eslint resources/ts/ --fix --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-pattern .gitignore",
     "type-check": "vue-tsc --noEmit",
     "test": "vitest",
+    "test:ci": "vitest run",
     "prepare": "husky"
   },
   "type": "module",
@@ -89,6 +90,7 @@
     "@types/lodash.merge": "^4.6.9",
     "@types/lodash.omit": "^4.5.9",
     "@types/lodash.union": "^4.6.9",
-    "axios-logger": "^2.8.1"
+    "axios-logger": "^2.8.1",
+    "jsdom": "^25.0.0"
   }
 }

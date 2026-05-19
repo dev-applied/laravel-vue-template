@@ -1,6 +1,7 @@
 <template>
   <v-app>
     <app-messages />
+    <app-network-banner />
     <v-main>
       <v-slide-x-reverse-transition mode="out-in">
         <span class="transition-wrapper">
@@ -16,12 +17,14 @@
 import {defineComponent} from "vue"
 import UpdateDetector from "@/components/UpdateDetector.vue"
 import AppMessages from "@/components/AppMessages.vue"
+import AppNetworkBanner from "@/components/AppNetworkBanner.vue"
 
 
 export default defineComponent({
   components: {
     UpdateDetector,
-    AppMessages
+    AppMessages,
+    AppNetworkBanner,
   }
 })
 </script>

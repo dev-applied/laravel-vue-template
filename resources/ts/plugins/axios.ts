@@ -30,7 +30,9 @@ export interface AxiosPaginationResponse<ItemType> extends AxiosResponse {
 }
 
 /**
- * On web: same-origin relative API URL (cookies just work via Sanctum SPA mode).
+ * On web: absolute API URL composed from VITE_APP_URL + VITE_API_BASE_URL.
+ * Cookies still work because VITE_APP_URL points at the same origin Vite is
+ * served from under Sanctum SPA mode.
  * On native (Capacitor): absolute API URL from VITE_API_BASE_URL_NATIVE — the
  * bundle is loaded from capacitor:// or http://localhost so a relative URL
  * would 404.

@@ -81,6 +81,8 @@ jobs:
         run: npm run lint
       - name: vue-tsc type check
         run: npm run type-check
+      - name: Vitest
+        run: npm run test:ci
 
   capacitor-build:
     name: Capacitor build smoke
