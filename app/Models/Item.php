@@ -50,9 +50,12 @@ class Item extends Model
             ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
             ->when($filters['owner_id'] ?? null, fn ($q, $ownerId) => $q->where('owner_id', (int) $ownerId))
             ->when($filters['search'] ?? null, function ($q, $search) {
-                $q->where(function (Builder $sub) use ($search) {
-                    $sub->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
+                // Escape LIKE wildcards in user input so a search for "100%"
+                // doesn't degenerate into a "contains 100" match.
+                $escaped = addcslashes((string) $search, '%_\\');
+                $q->where(function (Builder $sub) use ($escaped) {
+                    $sub->where('name', 'like', "%{$escaped}%")
+                        ->orWhere('description', 'like', "%{$escaped}%");
                 });
             });
     }

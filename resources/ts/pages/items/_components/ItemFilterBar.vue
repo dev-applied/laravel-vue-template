@@ -51,6 +51,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue"
 import debounce from "lodash.debounce"
+import AppAutoComplete from "@/components/fields/AppAutoComplete/AppAutoComplete.vue"
 
 interface Filters {
   search:   string
@@ -60,6 +61,7 @@ interface Filters {
 
 export default defineComponent({
   name: "ItemFilterBar",
+  components: { AppAutoComplete },
   props: {
     modelValue: {
       type: Object as PropType<Filters>,

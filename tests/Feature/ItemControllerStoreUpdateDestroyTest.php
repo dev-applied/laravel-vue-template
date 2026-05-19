@@ -27,10 +27,10 @@ test('store creates an item with valid data', function () {
     $response = $this->postJson('/api/v1/items', $payload, $this->auth);
 
     $response->assertCreated()
-        ->assertJsonPath('name', 'New thing')
-        ->assertJsonPath('status', 'active')
-        ->assertJsonPath('priority', 4)
-        ->assertJsonPath('owner.id', $owner->id);
+        ->assertJsonPath('data.name', 'New thing')
+        ->assertJsonPath('data.status', 'active')
+        ->assertJsonPath('data.priority', 4)
+        ->assertJsonPath('data.owner.id', $owner->id);
 
     $this->assertDatabaseHas('items', [
         'name'          => 'New thing',
@@ -57,15 +57,15 @@ test('store rejects unknown status', function () {
 });
 
 test('update accepts partial payload', function () {
-    $item = Item::factory()->create(['name' => 'Original', 'priority' => 1]);
+    $item = Item::factory()->ownedBy($this->user->id)->create(['name' => 'Original', 'priority' => 1]);
 
     $response = $this->patchJson("/api/v1/items/{$item->id}", [
         'priority' => 5,
     ], $this->auth);
 
     $response->assertOk()
-        ->assertJsonPath('priority', 5)
-        ->assertJsonPath('name', 'Original');
+        ->assertJsonPath('data.priority', 5)
+        ->assertJsonPath('data.name', 'Original');
 
     $this->assertDatabaseHas('items', [
         'id'            => $item->id,
@@ -75,18 +75,38 @@ test('update accepts partial payload', function () {
 });
 
 test('update validates rules on provided fields', function () {
-    $item = Item::factory()->create();
+    $item = Item::factory()->ownedBy($this->user->id)->create();
 
     $this->patchJson("/api/v1/items/{$item->id}", [
         'priority' => 99,
     ], $this->auth)->assertUnprocessable()->assertJsonValidationErrors('priority');
 });
 
+test('update is forbidden for non-owner', function () {
+    $other = User::factory()->create();
+    $item  = Item::factory()->ownedBy($other->id)->create(['priority' => 1]);
+
+    $this->patchJson("/api/v1/items/{$item->id}", ['priority' => 5], $this->auth)
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('items', ['id' => $item->id, 'priority' => 1]);
+});
+
 test('destroy soft-deletes the item', function () {
-    $item = Item::factory()->create();
+    $item = Item::factory()->ownedBy($this->user->id)->create();
 
     $this->deleteJson("/api/v1/items/{$item->id}", [], $this->auth)
         ->assertNoContent();
 
     $this->assertSoftDeleted('items', ['id' => $item->id]);
+});
+
+test('destroy is forbidden for non-owner', function () {
+    $other = User::factory()->create();
+    $item  = Item::factory()->ownedBy($other->id)->create();
+
+    $this->deleteJson("/api/v1/items/{$item->id}", [], $this->auth)
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('items', ['id' => $item->id, 'deleted_at' => null]);
 });

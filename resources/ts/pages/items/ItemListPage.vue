@@ -20,6 +20,7 @@
     />
 
     <app-pagination-table
+      ref="table"
       endpoint="items"
       :headers="headers"
       :filters="filters"
@@ -66,10 +67,11 @@
 <script lang="ts">
 import { defineComponent } from "vue"
 import ItemFilterBar from "./_components/ItemFilterBar.vue"
+import AppPaginationTable from "@/components/AppPaginationTable.vue"
 import dayjs from "@/utils/dayjs"
 
 export default defineComponent({
-  components: { ItemFilterBar },
+  components: { ItemFilterBar, AppPaginationTable },
   data() {
     return {
       filters: {
@@ -112,8 +114,11 @@ export default defineComponent({
       )
       if (!ok) return
       await this.$http.delete(`/items/${item.id}`).catch(e => e)
-      // AppPaginationTable refetches on filter mutation; flip a key to force.
-      this.filters = { ...this.filters }
+      // AppPaginationTable.reload() is exposed via defineExpose; using a ref
+      // is more reliable than mutating filters, which short-circuits when the
+      // values are identical (deep-equal watcher in AppPaginationTable).
+      const table = this.$refs.table as { reload?: () => Promise<void> } | undefined
+      await table?.reload?.()
     },
   },
 })

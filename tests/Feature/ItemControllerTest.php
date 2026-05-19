@@ -66,9 +66,10 @@ test('show returns a single item with owner relation loaded', function () {
 
     $response = $this->getJson("/api/v1/items/{$item->id}", $this->auth);
 
+    // JsonResource wraps single-record responses in `data` by default.
     $response->assertOk()
-        ->assertJsonPath('name', 'Sample')
-        ->assertJsonPath('owner.email', 'owner@example.test');
+        ->assertJsonPath('data.name', 'Sample')
+        ->assertJsonPath('data.owner.email', 'owner@example.test');
 });
 
 test('show 404s for missing item', function () {

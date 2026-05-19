@@ -109,7 +109,7 @@
             <v-btn
               color="primary"
               :loading="submitting"
-              @click="submit"
+              @click="trySubmit(submit)"
             >
               {{ isEdit ? 'Save' : 'Create' }}
             </v-btn>
@@ -129,6 +129,9 @@
 <script lang="ts">
 import { defineComponent } from "vue"
 import validators from "@/mixins/validators"
+import AppServerValidationForm from "@/components/AppServerValidationForm.vue"
+import AppDateInput from "@/components/fields/AppDateInput.vue"
+import AppAutoComplete from "@/components/fields/AppAutoComplete/AppAutoComplete.vue"
 
 interface ItemForm {
   name:        string
@@ -149,6 +152,7 @@ const blankForm = (): ItemForm => ({
 })
 
 export default defineComponent({
+  components: { AppServerValidationForm, AppDateInput, AppAutoComplete },
   mixins: [validators],
   data() {
     return {
@@ -191,6 +195,13 @@ export default defineComponent({
         due_date:    data.due_date    ?? null,
         owner_id:    data.owner_id    ?? null,
       }
+    },
+    // AppServerValidationForm#submit throws on client-side validation failure
+    // (intentional, so the form can report invalid state). We don't want that
+    // to surface as an unhandled rejection from a button click — the form
+    // itself already shows the per-field errors.
+    async trySubmit(submit: () => Promise<void>) {
+      try { await submit() } catch { /* validation surfaced in form */ }
     },
     onSuccess() {
       this.$router.push(this.$routeTo(this.ROUTES.ITEMS_LIST))
