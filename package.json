@@ -51,7 +51,7 @@
     "eslint": "^9.0.0",
     "eslint-plugin-vue": "^10.0.0",
     "eslint-plugin-vuetify": "^2.4.0",
-    "heic-to": "^1.0.0",
+    "heic-to": "^1.5.2",
     "husky": "^9.1.7",
     "jiti": "^2.5.1",
     "laravel-vite-plugin": "^2.0.0",
