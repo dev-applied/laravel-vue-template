@@ -7,7 +7,7 @@
       >
         <v-card>
           <v-card-title>
-            <h3>
+            <h3 class="text-h3">
               {{ title }}
             </h3>
             <!--            <v-spacer />-->
