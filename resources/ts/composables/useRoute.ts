@@ -1,5 +1,5 @@
 import routeTo from '@/plugins/routeTo.ts'
-import {ROUTES} from "@/router/paths"
+import {ROUTES} from "@/router/route-names"
 
 export default function useAuth() {
   return {

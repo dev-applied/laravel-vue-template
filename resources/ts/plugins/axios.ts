@@ -5,7 +5,7 @@ import router from "@/router"
 import {useUserStore} from "@/stores/user"
 import {$error} from "@/plugins/errorHandler"
 import {getAuthToken} from "@/plugins/authToken"
-import {ROUTES} from "@/router/paths"
+import {ROUTES} from "@/router/route-names"
 import {type App} from "vue"
 import {errorLogger, requestLogger, responseLogger} from 'axios-logger'
 

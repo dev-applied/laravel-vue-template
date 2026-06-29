@@ -1,6 +1,6 @@
 import {Auth} from "@/plugins/auth"
 import {AxiosInstance} from "axios"
-import {ROUTES} from "@/router/paths"
+import {ROUTES} from "@/router/route-names"
 import type {Vuetify} from "vuetify"
 import type {
   LocationQueryRaw,

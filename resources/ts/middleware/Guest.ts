@@ -1,7 +1,7 @@
 import {$auth} from "@/plugins/auth"
 import type {NavigationGuardNext, RouteLocationNormalized, RouteLocationNormalizedLoaded} from "vue-router"
 import routeTo from "@/plugins/routeTo.ts"
-import {ROUTES} from "@/router/paths"
+import {ROUTES} from "@/router/route-names"
 
 export default class Guest implements App.Middleware.Instance {
   async handle(

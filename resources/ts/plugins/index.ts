@@ -7,7 +7,7 @@ import BreadCrumbs from "@/plugins/breadcrumbs/index"
 import axios from "@/plugins/axios"
 import auth from "@/plugins/auth"
 import Confirm from "@/plugins/confirm"
-import {ROUTES} from "@/router/paths"
+import {ROUTES} from "@/router/route-names"
 import {createHead, VueHeadMixin} from '@unhead/vue/client'
 
 export function usePlugins(app: App) {

@@ -1,6 +1,6 @@
 import {$auth} from "@/plugins/auth"
 import type {NavigationGuardNext, RouteLocationNormalized, RouteLocationNormalizedLoaded} from "vue-router"
-import {ROUTES} from "@/router/paths.ts"
+import {ROUTES} from "@/router/route-names"
 import routeTo from "@/plugins/routeTo.ts"
 
 export default class Authorization implements App.Middleware.Instance {

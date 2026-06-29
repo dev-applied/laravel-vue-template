@@ -3,19 +3,13 @@ import Authentication from "@/middleware/Authentication"
 import ForceTypes from "@/middleware/ForceTypes"
 import Guest from "@/middleware/Guest.ts"
 import Authorization from "@/middleware/Authorization.ts"
+import { ROUTES } from "@/router/route-names"
 
-export const ROUTES = {
-  LOGIN: "login",
-  REGISTER: "register",
-  SET_PASSWORD: "set-password",
-
-  DASHBOARD: "dashboard",
-  TEST: "test",
-
-  ITEMS_LIST:   "items.list",
-  ITEMS_CREATE: "items.create",
-  ITEMS_EDIT:   "items.edit",
-}
+// Names live in a dependency-free leaf so importing them never drags this
+// registration module into the early plugin graph (which compiled the table
+// empty -> blank app). Re-exported for any consumer that still imports `ROUTES`
+// from here. See ./route-names.ts.
+export { ROUTES }
 
 RouteDesigner.setNotFound("Error404Page").layout('Empty')
 
