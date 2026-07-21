@@ -16,6 +16,7 @@ Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / 
 - **Never silently swallow errors.** Surface to the user via `this.$error(...)` / `$messages` or report to Sentry. AppServerValidationForm handles 422 automatically; everything else should route through the errorHandler plugin.
 - **Never mix `<script setup>` with Options API in this codebase.** Every page/component uses `defineComponent` + Options API. A full migration is tracked as a separate XL effort — until then, match what's there.
 - **Never generate or guess URLs.** Read from `routes/api.php` or use the Wayfinder-generated TS types in `resources/ts/types/laravel/`.
+- **Never put a new compose service on the `default` (`nginx-proxy`) network unless it needs Traefik or the shared MySQL/Redis.** That network is shared by every stack on the machine, and each one registers its service names as DNS aliases there — so the generic names this template uses (`webserver`, `frontend`) resolve ambiguously and Docker round-robins between unrelated client projects. Put service-to-service traffic on the project-scoped `app` network instead. See the networking section in `README.md`.
 
 ## How this template works
 

@@ -77,7 +77,24 @@ After cloning this template into a new project directory:
 
 The `webserver` service runs Apache + PHP via `thecodingmachine/php` (Xdebug pre-wired). The `frontend` service runs Vite dev with HMR proxied through Traefik at `/hmr`.
 
-To enable the scheduler cron: uncomment lines 26–28 in `docker-compose.yml`. To enable Horizon: uncomment lines 49–65.
+Optional services in `docker-compose.yml` ship commented out — uncomment the block under the matching header to enable it:
+
+| Header comment | Enables |
+|----------------|---------|
+| `Uncomment the 3 lines below to enable the scheduler cron` | `php artisan schedule:run` every minute |
+| `Uncomment the service below to enable horizon` | Horizon queue worker |
+| `Uncomment the service below to enable the stripe webhook listener` | `stripe listen` forwarding webhooks to `webserver:80` |
+
+### Networking
+
+Two networks are declared:
+
+- **`default`** — the external, shared `nginx-proxy` network from [Traefik Dockerized](https://github.com/Devin345458/traefik-dockerized). Needed for Traefik routing and for the shared `mysqldb8` / `redis` containers.
+- **`app`** — created per compose project (as `<project>_app`). Private to this stack.
+
+Every stack on `nginx-proxy` registers its service names as DNS aliases there, and this template names its services `webserver` / `frontend`. That means `webserver` is **ambiguous on `nginx-proxy`** — Docker round-robins it across every project (and every git worktree of every project) currently up. The `app` network exists so service-to-service traffic resolves inside one project only.
+
+Rule of thumb for a new service: put it on `app`, and add `default` **only** if it needs Traefik or the shared MySQL/Redis. `stripe-cli` is the worked example — it is deliberately kept off `nginx-proxy` so `--forward-to webserver:80` cannot deliver webhooks into a different client project's app.
 
 ### Local AMP
 

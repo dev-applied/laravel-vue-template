@@ -32,6 +32,13 @@ services:
             - traefik.http.routers.$DOCKER_ROUTER.tls=true
             - traefik.http.routers.$DOCKER_ROUTER.entrypoints=https
             - traefik.http.services.$DOCKER_ROUTER.loadbalancer.server.port=80
+        networks:
+            # `default` (nginx-proxy) is required for Traefik routing and for the
+            # shared mysqldb8 / redis containers. `app` is project-scoped, so any
+            # sibling service resolves `webserver` to THIS stack's container
+            # rather than round-robining across every stack on nginx-proxy.
+            - default
+            - app
     frontend:
         image: node:$DOCKER_NODE_VERSION
         command: bash -c "npm install && npm run dev -- --host"
@@ -44,34 +51,54 @@ services:
             - traefik.http.routers.${DOCKER_ROUTER}-HMR.entrypoints=https
             - traefik.http.routers.${DOCKER_ROUTER}-HMR.tls=true
             - traefik.http.services.${DOCKER_ROUTER}-HMR.loadbalancer.server.port=8080
+        networks:
+            - default
+            - app
 
 
 # Uncomment the service below to enable horizon
-#  horizon:
-#    image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-cli-node16
-#    command: php artisan horizon
-#    volumes:
-#      - ./:/usr/src/app/
-#    environment:
-#      XDEBUG_CONFIG: remote_host=host.docker.internal
-#      PHP_EXTENSION_XDEBUG: 1
-#      PHP_EXTENSION_MYSQLI: 1
-#      PHP_INI_MEMORY_LIMIT: 4g
-#      PHP_EXTENSION_GD: 1
-#      PHP_EXTENSION_BZ2: 1
-#      PHP_EXTENSION_IMAGICK: 1
-#      PHP_INI_XDEBUG__REMOTE_START: 1
-#      PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
-#      PHP_IDE_CONFIG: 'serverName=horizon'
+#    horizon:
+#        image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-cli-node16
+#        command: php artisan horizon
+#        volumes:
+#            - ./:/usr/src/app/
+#        environment:
+#            XDEBUG_CONFIG: remote_host=host.docker.internal
+#            PHP_EXTENSION_XDEBUG: 1
+#            PHP_EXTENSION_MYSQLI: 1
+#            PHP_INI_MEMORY_LIMIT: 4g
+#            PHP_EXTENSION_GD: 1
+#            PHP_EXTENSION_BZ2: 1
+#            PHP_EXTENSION_IMAGICK: 1
+#            PHP_INI_XDEBUG__REMOTE_START: 1
+#            PHP_INI_XDEBUG__START_WITH_REQUEST: 'yes'
+#            PHP_IDE_CONFIG: 'serverName=horizon'
+#        # `default` for the shared mysqldb8 / redis containers, `app` so it
+#        # resolves this stack's `webserver` and not a sibling project's.
+#        networks:
+#            - default
+#            - app
 
-# Uncomment the service below to enable stripe webhook listener remember to update webserver to the correct service name
+# Uncomment the service below to enable the stripe webhook listener.
 #    stripe-cli:
 #        image: stripe/stripe-cli
 #        command: "listen --api-key ${STRIPE_SECRET} --forward-to webserver:80 -a"
 #        env_file:
 #            - .env
+#        # Deliberately NOT on nginx-proxy: this container only needs to reach
+#        # its own webserver plus the Stripe API (outbound NAT). Joining the
+#        # shared network would make `webserver` ambiguous again — every stack
+#        # built from this template registers that same alias there, so Docker
+#        # would round-robin webhooks into another project's app.
+#        networks:
+#            - app
 
 networks:
     default:
         external: true
         name: nginx-proxy
+    # Created per compose project (as <project>_app), so each project — and each
+    # git worktree of it — gets its own DNS namespace for service-to-service
+    # traffic. Not `internal:` — stripe-cli needs outbound access to the Stripe API.
+    app:
+        driver: bridge
