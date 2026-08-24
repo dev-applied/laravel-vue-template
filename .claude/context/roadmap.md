@@ -14,7 +14,8 @@ GitHub **variables** are readable by every repo collaborator and are not masked 
 
 - [~] `secrets: inherit` on the four deploy callers, + secrets-fallback and log-safe env handling in `deploy-lambda.yml` — feature/deploy-secrets-inherit
 - [ ] Per-repo migration: create environment secrets → confirm one deploy → delete the variables → **rotate** (values that lived in variables are presumed disclosed) — depends-on: visilaunch/Vaultwarden GitHub-secrets sync
-- [ ] Rotation tiering rule + migration playbook in the `client-deploy` runbook
+- [x] Rotation tiering rule + migration playbook in the `client-deploy` runbook — 2026-08-24
+- [x] Truth-up: runbook named the decommissioned Infisical as canonical store; corrected to visilaunch/Vaultwarden — 2026-08-24
 
 ## Modules — CI + distribution harness
 
