@@ -45,12 +45,12 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 
 - [x] **Notifications** — feed, unread count, mark-read/all, dismiss, ExampleNotification, bell + wired container + page + polling composable, 10 tests — 2026-08-24
 - [x] **Exports** — registry allow-list, queued streaming job, CSV native + XLSX option, export button + history page, 14 tests — 2026-08-24
-- [ ] **Otp** — one-time-code auth (email + SMS), vendor-swappable via module options. Ships its env-gated QA bypass per the qa-affordances rule.
+- [~] **Otp** — modules repo `main` (direct) — one-time-code auth. Channel is a seam (project binds the SMS driver), same pattern as AudienceResolver / SavedViewScope, so the open Twilio decision no longer blocks it. Ships its env-gated QA bypass per the qa-affordances rule.
 - [x] **SavedViews** — named filter sets per screen, opaque payload, default view, read-only sharing, 422 on duplicate names, SavedViewScope tenancy seam, 23 tests — 2026-08-24
 - [x] **Comments** — HasComments trait, CommentableRegistry allow-list, internal notes, explicit-token @mentions firing UserMentioned (event, not a notification), `threading` option, 29 tests — 2026-08-24
 - [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
 - [x] **Settings** — registry-declared typed settings, self-generating UI, secret masking, one-entry cache, 22 tests — 2026-08-24
-- [~] **Tags** — modules repo `main` (direct) — polymorphic tagging + filter integration.
+- [x] **Tags** — HasTags trait, TaggableRegistry, slug-as-identity normalisation, AND-by-default scopes, merge endpoint, tags:dedupe for legacy data, 29 tests — 2026-08-24
 - [ ] **Billing** — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
 - [ ] **Booking** — resource + availability scheduling.
 - [ ] **FormBuilder** — dynamic form definitions rendered through the field component library.
@@ -72,7 +72,7 @@ migrations across 44 local Laravel repos. Full report:
 ## Modules — decisions the research forced
 
 - [ ] **Tenancy sequencing** — SavedViews shipped with a `SavedViewScope` seam (bind once, whole module covered) — that is the pattern the remaining per-user modules should copy, and it makes this decision cheap to defer rather than free to ignore. Comments and Tasks are queued and both store per-user rows; AuditLog already shipped. If the firm wants tenant scoping, deciding late means retrofitting each. Not a blocker today (AuditLog reads through a project-defined gate, so a tenant-aware project scopes there), but it is Devin's call before the next per-user module.
-- [ ] **Otp depends on an SMS channel** — Twilio appears in 10 projects and levelup couples OtpController to it directly. Otp should take a vendor option rather than hardcoding, or an SmsChannel module should land first.
+- [x] **Otp depends on an SMS channel** — RESOLVED by the seam pattern three modules have now used (AudienceResolver, SavedViewScope, CommentableRegistry): Otp declares an `OtpChannel` contract and ships email; a project binds Twilio or anything else. No SmsChannel module has to land first, and nothing about Twilio is baked in — 2026-08-24
 - [ ] **SsoAuth should be an Auth option, not a module** — it is an auth strategy, and Auth already owns the option-variant pattern (sanctum | sanctum+oauth).
 
 ## Modules — candidate discovery
