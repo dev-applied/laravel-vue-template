@@ -18,9 +18,9 @@ After cloning this template into a new project directory:
 
 1. Set `APP_NAME`, `APP_DOMAIN`, `DOCKER_DOMAIN`, `DOCKER_ROUTER`, and `DB_DATABASE` in `.env` (copy from `.env.example` first).
 2. `docker compose up -d` — boots PHP/Apache + Vite dev server on Traefik.
-3. `docker compose exec <DOCKER_ROUTER> php artisan key:generate`
-4. `docker compose exec <DOCKER_ROUTER> php artisan migrate`
-5. `docker compose exec <DOCKER_ROUTER> php artisan db:seed`
+3. `docker compose exec webserver php artisan key:generate`
+4. `docker compose exec webserver php artisan migrate`
+5. `docker compose exec webserver php artisan db:seed`
 6. Update `.github/CODEOWNERS` and `.github/workflows/*` for the new project.
 7. If the project needs roles/permissions: `composer require spatie/laravel-permission && php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"` (the template ships without it — Dec 2025 L12 upgrade removed it deliberately).
 
@@ -102,31 +102,31 @@ Point Apache/Nginx at `public/` if you can't use Docker. Not recommended — the
 
 ## Common commands
 
-All artisan/composer/npm commands run inside the webserver container. The container name is whatever you set `DOCKER_ROUTER` to in `.env`.
+All artisan/composer/npm commands run inside the `webserver` container. That is the compose **service** name from `docker-compose.yml` — it is not `DOCKER_ROUTER`, which is only the Traefik router label.
 
 ```sh
 # Tests
-docker compose exec $DOCKER_ROUTER composer ci                # pint --test + pest --parallel
-docker compose exec $DOCKER_ROUTER ./vendor/bin/pest --filter=Auth
+docker compose exec webserver composer ci                # pint --test + pest --parallel
+docker compose exec webserver ./vendor/bin/pest --filter=Auth
 
 # Code style
-docker compose exec $DOCKER_ROUTER composer format            # pint --parallel (auto-fix)
+docker compose exec webserver composer format            # pint --parallel (auto-fix)
 
 # DB
-docker compose exec $DOCKER_ROUTER php artisan migrate
-docker compose exec $DOCKER_ROUTER php artisan migrate:fresh --seed
+docker compose exec webserver php artisan migrate
+docker compose exec webserver php artisan migrate:fresh --seed
 
 # Regenerate frontend types from Laravel routes/models
-docker compose exec $DOCKER_ROUTER composer typescript        # runs wayfinder:generate
+docker compose exec webserver composer typescript        # runs wayfinder:generate
 
 # Scaffold a new Vue page (uses stubs/vue-make-page.stub)
-docker compose exec $DOCKER_ROUTER php artisan vue:make-page
+docker compose exec webserver php artisan vue:make-page
 
 # Create a user from the CLI
-docker compose exec $DOCKER_ROUTER php artisan create:user
+docker compose exec webserver php artisan create:user
 
 # Add a module from the firm modules repo (prompts its options)
-docker compose exec $DOCKER_ROUTER php artisan module:add
+docker compose exec webserver php artisan module:add
 ```
 
 `npm run dev` / `npm run build` run on the host (or in the `frontend` service if you'd rather).
@@ -154,7 +154,7 @@ GitHub Actions, via the [`dev-applied/deploy-action`](https://github.com/dev-app
 
 Claude Code agents working in this repo should also read `CLAUDE.md` at the project root and the area-specific `CLAUDE.md` files under `resources/ts/`, `app/`, and `database/`. Key rules:
 
-- Never run artisan / composer / npm on the host — always `docker compose exec $DOCKER_ROUTER …`.
+- Never run artisan / composer / npm on the host — always `docker compose exec webserver …`.
 - Never hardcode hex / rgba colors in SCSS — use Vuetify CSS vars / theme tokens.
 - Never mock the DB in integration tests — use a real DB (Sqlite in-memory is fine for `tests/Unit`).
 - When changing a route or controller, run `composer typescript` so frontend types stay in sync.

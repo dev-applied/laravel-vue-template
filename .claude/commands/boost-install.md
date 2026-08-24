@@ -5,11 +5,11 @@ allowed-tools: Bash
 
 Laravel Boost is in `composer.json` (`require-dev`) but the per-project install step (writes `.mcp.json` and publishes config) has to be run manually.
 
-1. Make sure dependencies are installed: `docker compose exec $DOCKER_ROUTER composer install`
+1. Make sure dependencies are installed: `docker compose exec webserver composer install`
 2. Run the Boost installer interactively (it asks which MCP tools to enable):
 
    ```sh
-   docker compose exec -it $DOCKER_ROUTER php artisan boost:install
+   docker compose exec -it webserver php artisan boost:install
    ```
 
 3. After the installer finishes, commit:

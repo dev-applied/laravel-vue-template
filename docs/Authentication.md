@@ -87,11 +87,11 @@ discovery documents MCP clients probe. **Off by default.**
 ### Turning it on
 
 ```sh
-docker compose exec $DOCKER_ROUTER php artisan auth:enable-oauth   # migrations + signing keys
+docker compose exec webserver php artisan auth:enable-oauth   # migrations + signing keys
 # then set in .env:
 AUTH_OAUTH_ENABLED=true
-docker compose exec $DOCKER_ROUTER php artisan config:clear
-docker compose exec $DOCKER_ROUTER php artisan route:clear
+docker compose exec webserver php artisan config:clear
+docker compose exec webserver php artisan route:clear
 ```
 
 What flips on:

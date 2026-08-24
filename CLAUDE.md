@@ -8,7 +8,7 @@ Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / 
 
 ## Things to NEVER do
 
-- **Never run `artisan`, `composer`, or `npm` on the host.** Always `docker compose exec $DOCKER_ROUTER <cmd>`. MySQL and Redis live on the Traefik network and host commands can't see them.
+- **Never run `artisan`, `composer`, or `npm` on the host.** Always `docker compose exec webserver <cmd>`. MySQL and Redis live on the Traefik network and host commands can't see them.
 - **Never hardcode hex / rgba colors in SCSS or templates.** Use Vuetify theme tokens (`rgb(var(--v-theme-primary))` etc.) so brand themes work.
 - **Never mock the database in integration / Feature tests.** Use a real DB. Sqlite-in-memory is fine for `tests/Unit`; `RefreshDatabase` against the project's mysql in `tests/Feature`.
 - **Never run `migrate:fresh` without verifying it targets a test database.** It will wipe dev data otherwise.
@@ -33,24 +33,24 @@ Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / 
 
 ```sh
 # Tests
-docker compose exec $DOCKER_ROUTER composer ci                # pint --test + pest --parallel
-docker compose exec $DOCKER_ROUTER ./vendor/bin/pest modules/Auth/Tests/Feature/AuthTest.php
+docker compose exec webserver composer ci                # pint --test + pest --parallel
+docker compose exec webserver ./vendor/bin/pest modules/Auth/Tests/Feature/AuthTest.php
 
 # Code style (auto-fix)
-docker compose exec $DOCKER_ROUTER composer format            # pint --parallel
+docker compose exec webserver composer format            # pint --parallel
 
 # DB
-docker compose exec $DOCKER_ROUTER php artisan migrate
-docker compose exec $DOCKER_ROUTER php artisan migrate:fresh --seed   # ⚠️ wipes data
+docker compose exec webserver php artisan migrate
+docker compose exec webserver php artisan migrate:fresh --seed   # ⚠️ wipes data
 
 # Frontend type-gen
-docker compose exec $DOCKER_ROUTER composer typescript
+docker compose exec webserver composer typescript
 
 # Scaffold a Vue page (writes resources/ts/pages/<Name>.vue from stub)
-docker compose exec $DOCKER_ROUTER php artisan vue:make-page
+docker compose exec webserver php artisan vue:make-page
 
 # Create a user
-docker compose exec $DOCKER_ROUTER php artisan create:user
+docker compose exec webserver php artisan create:user
 ```
 
 ## Modules
@@ -82,3 +82,58 @@ auto-registered by `ModuleLoaderServiceProvider`, frontend half in
 ## When in doubt
 
 If this file disagrees with the code, trust the code. Open a PR fixing this file.
+
+## Project Context
+
+Context docs in `.claude/context/`. Index: `.claude/context/index.md`.
+
+**Read before feature work:**
+- `.claude/context/roadmap.md` — in-flight work + integration points (parallel-session sync)
+- `.claude/context/features/<area>/<feature>.md` — feature spec + per-persona matrix
+- `.claude/context/personas/index.md` — affected personas
+
+**Persona × feature split:** Feature file = spec (matrix). Persona file = narrative (why). Read both.
+
+**Decisions:** Use supersession. New ADR with `supersedes:` frontmatter; old ADR set `status: Superseded` + `superseded-by:`. Never edit history.
+
+**Roadmap format (status must stay scannable at a glance):**
+
+The roadmap groups work **by concept** — one `##` heading per initiative / area / standalone item — NOT by status. Status lives entirely in a per-leaf marker:
+
+- `- [x]` **done** — append `— YYYY-MM-DD`
+- `- [~]` **in progress** — append its `branch` / `worktree` (a parallel session greps this to avoid collisions; never omit it)
+- `- [ ]` **queued** / not started
+- `- [!]` **blocked** — append the reason / `blocked-on:`
+
+**One line carries one status. Never encode status in prose, and never mix statuses in the same bullet.** A queued leaf may carry one *why-not* qualifier (`depends-on:` / `awaiting:`) but never a completion claim.
+
+❌ Never (done + pending crammed into one prose bullet):
+`P1 · Customer forms: F-15/F-16 done 2026-06-24. Remaining: F-23`
+
+✅ Always (one status per line — scan the left gutter):
+```
+- [x] F-15 launcher presence cue — 2026-06-24
+- [~] F-16 phone-optional-on-Video — feature/phone-optional
+- [ ] F-23 retain name/email/phone on cancel
+```
+
+**Heat-ordering is load-bearing** (it replaces a status `In Progress` section): a concept with any `[~]` leaf sorts to the **top** of the file; fully-queued concepts sit below. This is how a fresh parallel session finds what's hot at a glance.
+
+**Recently Done (last 30 days)** is the one status-named section — keep it at the bottom as a time-bounded shipping log with merge detail. A concept whose every leaf is `[x]` collapses to a one-line entry there and drops off the active list. A substantial `[x]` leaf may carry a `*(detail in Recently Done)*` pointer; small leaves just stay `[x]` in place. Never duplicate a leaf's full detail in both places. Trim entries older than 30 days.
+
+**Roadmap status transitions (load-bearing for parallel sessions):**
+
+The roadmap is the bridge between parallel Claude sessions — keep it accurate. **The only maintenance action is flipping a leaf's marker in place. Leaves never move between concepts**, and there are no status sections to move them into.
+
+- **Starting work** on a leaf (brainstorming or first edit): flip it `[ ]`→`[~]` and append its `branch` / `worktree`. Re-sort its concept to the top if it isn't already there. If the work isn't in the roadmap at all, ADD its concept (a new `##` group) with the started leaf `[~]`.
+- **Mid-flight**: keep the `[~]` leaf's `branch` / `worktree` current; append newly-discovered sub-leaves or integration points to the concept.
+- **Stopping work** (paused): flip the leaf `[~]`→`[ ]`, or `[!]` with a reason if it's blocked. Done `[x]` leaves keep their state.
+- **Shipping work** (merged / `/ship` / `/finishing-a-development-branch`): flip the leaf `[~]`→`[x]` + ship date, in place. Add a Recently Done entry **only** for a substantial ship or a now-fully-done concept (then collapse that concept into Recently Done). Never double-book the same item in two places. Trim Recently Done past 30 days.
+
+**Detecting the work item:**
+If the user mentions a ticket ID (e.g., `ZKL-279`, `LIN-123`, `#456`), use it as the roadmap entry identifier. Fetch full details via the appropriate MCP (Jira: `mcp__plugin_atlassian_atlassian__getJiraIssue`).
+
+**Before `/ship`:**
+- Change touches code referenced in `.claude/context/features/<x>` → prompt to update that doc.
+- Change is part of a roadmap leaf → apply the "Shipping work" transition above (flip `[~]`→`[x]` + date in place).
+- Always flip any shipped leaf in `.claude/context/roadmap.md` to `[x]` + date before the final commit, and re-sort / collapse its concept if it changes the file's heat-order.

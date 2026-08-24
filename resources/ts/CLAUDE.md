@@ -86,7 +86,7 @@ Modules under `modules/<Name>/resources/ts/` plug into this app via globs in
 After changing routes or controllers backend-side:
 
 ```sh
-docker compose exec $DOCKER_ROUTER composer typescript
+docker compose exec webserver composer typescript
 ```
 
 Emits TS into `resources/ts/types/laravel/`. Use those types when calling APIs — don't `any` your way through it.
