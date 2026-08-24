@@ -1,5 +1,10 @@
 ## Authentication
 
+> **Auth is a module.** A bare template has no login. Add it with
+> `php artisan module:add Auth` (or via `project:init`) and choose **Sanctum**
+> (bearer PAT for the MCP endpoint) or **Sanctum + Passport OAuth** (adds the
+> OAuth 2.1 layer). Everything below describes the module once added.
+
 Authentication lives in the **Auth module** (`modules/Auth/`), not in the app
 kernel. It ships as a module so it travels between projects and can be
 customized per client (see [modules.md](modules.md)). Removing the module

@@ -31,9 +31,7 @@ After cloning this template into a new project directory:
 | Package                            | Purpose                                                       |
 | ---------------------------------- | ------------------------------------------------------------- |
 | `laravel/framework ^12`            | App framework (PHP ^8.4)                                      |
-| `laravel/sanctum ^4.3`             | API token + SPA cookie auth (Auth module)                     |
-| `laravel/mcp ^0.9`                 | MCP server endpoint (`/mcp`) for AI agents (Auth module)      |
-| `laravel/passport ^13.7`           | Optional OAuth 2.1 layer for MCP clients (dormant by default) |
+| `laravel/sanctum ^4.3`             | API token + SPA cookie auth (used by the Auth module)         |
 | `sentry/sentry-laravel ^4.20`      | Error & log monitoring                                        |
 | `imagine/imagine ^1.3`             | Image manipulation (used by file pipeline)                    |
 | `league/flysystem-aws-s3-v3 ^3.29` | S3 disk for uploaded files                                    |
@@ -127,15 +125,15 @@ docker compose exec $DOCKER_ROUTER php artisan vue:make-page
 # Create a user from the CLI
 docker compose exec $DOCKER_ROUTER php artisan create:user
 
-# Enable the optional OAuth 2.1 layer for MCP clients (migrations + keys)
-docker compose exec $DOCKER_ROUTER php artisan auth:enable-oauth
+# Add a module from the firm modules repo (prompts its options)
+docker compose exec $DOCKER_ROUTER php artisan module:add
 ```
 
 `npm run dev` / `npm run build` run on the host (or in the `frontend` service if you'd rather).
 
 ## Architecture notes
 
-- **Auth** (`modules/Auth/`): Sanctum. SPA cookie auth for web; bearer PATs for mobile/Capacitor. `POST /api/v1/auth` issues a token, `GET` returns the current user, `DELETE` logs out; impersonation via `POST /auth/impersonate`. The module also serves `POST /mcp` (MCP server, Sanctum-auth) and an optional Passport OAuth 2.1 layer (`AUTH_OAUTH_ENABLED`). See `docs/Authentication.md`.
+- **Auth** is a **module**, not baked into the template — add it with `php artisan module:add Auth` (choose Sanctum, or Sanctum + Passport OAuth for OAuth-speaking MCP clients). It provides login/me/logout + impersonation + forgot-password, the `/mcp` server endpoint, and the optional OAuth 2.1 layer. A fresh template has no login until the module is added (usually via `project:init`). See `docs/Authentication.md` + `docs/modules.md`.
 - **File pipeline**: `app/Models/File.php` + `app/Http/Controllers/FileController.php` handle upload, sized variant URLs, signed download, view, and destroy. S3-backed in non-local envs.
 - **WhoDidIt audit trail**: `app/Traits/WhoDidIt.php` + `WhoDidItMixin` adds `created_by` / `updated_by` to any model that uses the trait. Schema helper available via `$table->whoDidIt()`.
 - **Router DSL**: `resources/ts/router/` has a custom `RouteDesigner` + `RouteBuilder` + `RouteGroup` API on top of vue-router. See `router/index.ts` for examples.

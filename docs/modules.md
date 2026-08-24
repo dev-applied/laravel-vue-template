@@ -71,9 +71,10 @@ A traveling module may assume ONLY what every template project has:
   router middleware (`Authentication`, `Authorization`, `Guest`, `ForceTypes`),
   layouts `Default` / `Empty`.
 - NOT `spatie/laravel-permission` (removed from the template), NOT any
-  per-project package. If a module needs a package, `module.json` declares it
-  in `composer_requires` and `scripts/module-add.sh` will surface it (the
-  human runs the composer require — visible, not magic).
+  per-project package. A module declares the packages it always needs in
+  `module.json` `composer_requires` (and option-specific packages under an
+  option choice's `require` — see Options below); `module:add` runs the
+  `composer require` for it.
 
 Anything else the module carries itself.
 
@@ -103,8 +104,11 @@ the app `ROUTES`.
     "harvested_from": "<repo the code was extracted from>",
     "template_version_tested": "2026-08",
     "description": "…",
-    "installed_from_commit": "<stamped by module-add.sh>",
-    "installed_at": "<stamped by module-add.sh>"
+    "composer_requires": ["vendor/pkg:^1.0"],
+    "options": { "…": "see Options below" },
+    "installed_from_commit": "<stamped by module:add>",
+    "installed_at": "<stamped by module:add>",
+    "installed_options": { "…": "the choices made at install (stamped by module:add)" }
 }
 ```
 
@@ -113,22 +117,78 @@ The stamps are the three-way-merge base pointer: an update is
 client's (possibly customized) copy. Conflicts surface only where the client
 actually diverged — that conflict resolution is the billable part of a module
 update, and it's exactly what retainer/upgrade engagements price.
+`installed_options` records the option answers so an update replays them (and
+`module:configure` can change them) — see Options.
+
+## Options (variants)
+
+A module can offer install-time choices — "Sanctum or Sanctum + OAuth?",
+"which OTP vendor?" — so one module covers variants that mostly overlap. An
+option's answer **prunes files, adds only the composer deps it needs, sets
+`.env` keys, and runs post-install commands**. The chosen answers are stamped
+into the installed `module.json` as `installed_options`.
+
+Authoring — `module.json` `options`:
+
+```jsonc
+"options": {
+  "<key>": {
+    "prompt": "Human question",
+    "type": "select" | "multiselect" | "confirm",
+    "default": "<choiceKey>" | ["<choiceKey>", …] | true,
+    "choices": {                       // select / multiselect
+      "<choiceKey>": {
+        "label": "Human label",
+        "drop":        ["glob", …],    // files/dirs removed when this choice is active
+        "require":     ["pkg:^ver"],   // composer require (auto-run)
+        "require_dev": ["pkg:^ver"],
+        "env":         {"KEY": "value"},
+        "run":         ["artisan cmd"] // post-install, run as a fresh subprocess
+      }
+    }
+  }
+}
+```
+
+- `type: confirm` uses `choices: {"true": {…}, "false": {…}}`.
+- `drop` globs: `Dir/**` (whole tree), `Dir/*.php` (one level), or a literal
+  path. Drop the *other* variants; there is no `keep`.
+- **select** applies one choice's effects; **multiselect** the union.
+- `modules/Auth` is the reference: `auth = sanctum | sanctum+oauth`, where the
+  oauth choice requires `laravel/passport`, sets `AUTH_OAUTH_ENABLED`, and runs
+  `auth:enable-oauth`, while the sanctum choice drops the OAuth files.
+
+## Workflows
 
 ## Workflows
 
 - **Add**: `php artisan module:add` (in the container, like every artisan
   command). With no arguments it multiselects from every module in the firm
-  modules repo; pass names to skip the prompt (`module:add Otp Billing`).
-  Source resolution: `--from=<local checkout>` wins; otherwise the GitHub API
-  with `MODULES_GITHUB_TOKEN` (or `GITHUB_TOKEN`) from `.env` — a fine-grained
-  PAT with read access to the modules repo. The command copies the module in,
-  stamps `module.json` (`installed_from_commit`, `installed_at`), and runs
+  modules repo (`dev-applied/laravel-vue-modules`); pass names to skip the
+  prompt (`module:add Otp Billing`). Source resolution: `--from=<local
+  checkout>` wins; otherwise the GitHub API with `MODULES_GITHUB_TOKEN` (or
+  `GITHUB_TOKEN`) from `.env` — a fine-grained PAT with read access to the
+  modules repo. The command copies the module in, prompts any `options`
+  (`--option key=value` presets a choice; `--no-interaction` takes defaults),
+  installs the module's composer deps (base + the chosen options' — `composer
+  require` runs automatically; `--no-install-deps` prints it instead), runs the
+  options' post-install hooks, stamps `module.json`
+  (`installed_from_commit`, `installed_at`, `installed_options`), and runs
   `composer dump-autoload`; it prints the migrate / `route:clear` /
   `composer typescript` follow-ups.
+- **Reconfigure**: `php artisan module:configure <Name>` — re-prompts an
+  installed module's options (pre-filled with the current answers) and makes
+  the file set match: files a newly-selected choice needs are fetched back
+  from a pristine source copy, files it drops are removed, composer deps and
+  `.env` are swapped, hooks run. Existing files are never overwritten, so
+  customizations survive. Needs source access (`--from` / token), same as add.
 - **Check drift**: `php artisan module:outdated` — notify-only table of local
   vs upstream versions. Applying updates is deliberate work, never automatic;
   do it on retainer touches and Laravel-major upgrades (upstream ports the
-  module once, every client upgrade pulls the port).
+  module once, every client upgrade pulls the port). Updates replay the
+  module's `installed_options` so a pruned variant stays scoped. (The automated
+  update/merge command itself is not built yet — updates today are the manual
+  three-way merge described above.)
 - **Harvest** (feeds the modules repo): when a project builds something
   module-worthy — or the quote skill's Prior Art Check matches a family with
   2+ prior builds and no module — extract it as the FIRST build task of the

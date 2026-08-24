@@ -22,10 +22,6 @@
     </coverage>
     <php>
         <env name="APP_ENV" value="testing"/>
-        <!-- Exercise the full auth feature set in CI: OAuth on loads Passport
-             migrations + routes and widens the /mcp guard to sanctum,api
-             (which still covers the sanctum-bearer default path). -->
-        <env name="AUTH_OAUTH_ENABLED" value="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>

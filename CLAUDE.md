@@ -20,7 +20,7 @@ Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / 
 
 ## How this template works
 
-- **Auth**: lives in `modules/Auth/` (Sanctum). SPA cookie/token auth for browser; bearer PAT for mobile/Capacitor. Backend routes in `modules/Auth/Routes/api.php`; frontend flow in `resources/ts/plugins/auth.ts` exposed as `this.$auth`. Also ships the `/mcp` endpoint (Sanctum-auth) and an optional Passport OAuth 2.1 layer (`AUTH_OAUTH_ENABLED`). See `docs/Authentication.md`.
+- **Auth**: a **module**, not in the template by default — `php artisan module:add Auth` (Sanctum, or Sanctum + Passport OAuth). It provides login/me/logout + impersonation + forgot-password, the `/mcp` endpoint (Sanctum-auth), and the optional OAuth 2.1 layer. Frontend flow is `resources/ts/plugins/auth.ts` (`this.$auth`); the kernel's `LOGIN` route name is registered by the module (see `resources/ts/router/kernel-routes.ts`). A bare template has no login until the module is added. See `docs/Authentication.md`.
 - **HTTP**: axios wrapped in `resources/ts/plugins/axios.ts`, exposed as `this.$http`. Auto-injects auth header, handles 401 → logout, surfaces validation errors via the message store.
 - **Routing (frontend)**: Custom DSL on top of vue-router in `resources/ts/router/`. `RouteDesigner` / `RouteBuilder` / `RouteGroup` define routes with middleware pipelines (Authentication / Authorization / Guest / ForceTypes). Use `this.$routeTo(this.ROUTES.X)` to navigate.
 - **Type generation**: `composer typescript` runs `wayfinder:generate` to emit TS types into `resources/ts/types/laravel/` from Laravel routes/controllers. Re-run after backend changes.

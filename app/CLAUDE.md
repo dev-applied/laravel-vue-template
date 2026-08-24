@@ -15,7 +15,7 @@ Backend (Laravel) conventions for this template. Read after the root `CLAUDE.md`
 | ----------------- | ------------------------------------------------------------------------------------------------ |
 | `Console/Commands/` | Custom artisan commands. `MigrateCommand`, `UserCommand`, `Vue\MakePageCommand`, `Vue\RouteListCommand`. |
 | `Exceptions/`     | `AppException` (user-facing 4xx errors), `Sentry` (handler hook).                                 |
-| `Http/Controllers/` | Thin — delegate to Services / FormRequests / Resources. `FileController`, `UserController`. (Auth + forgot-password controllers live in `modules/Auth`.) |
+| `Http/Controllers/` | Thin — delegate to Services / FormRequests / Resources. `FileController`, `UserController`. (Auth + forgot-password controllers ship in the **Auth module**, added via `php artisan module:add Auth`.) |
 | `Http/Resources/` | API response shape. `AuthUserResource`.                                                           |
 | `Interfaces/`     | Contracts. `WithSelected`.                                                                        |
 | `Mail/`           | Mailables. (Empty by default — `ForgotPasswordMail` moved to `modules/Auth`.)                     |
@@ -28,9 +28,9 @@ Backend (Laravel) conventions for this template. Read after the root `CLAUDE.md`
 
 ## Auth
 
-- **Auth lives in `modules/Auth/`, not the kernel** (see `docs/Authentication.md`). Login, me, logout, impersonation, forgot/reset password, the `/mcp` endpoint, and the optional Passport OAuth layer are all there. `modules/Auth/Routes/api.php` registers the auth routes under `api/v1`; `routes/api.php` holds only users/items/files.
+- **Auth is a module, not in the template by default.** `php artisan module:add Auth` pulls it from the firm modules repo (choose Sanctum, or Sanctum + Passport OAuth). It provides login/me/logout/impersonation/forgot-password, the `/mcp` endpoint, and the optional OAuth layer; its routes register under `api/v1`. The bare `routes/api.php` holds only users/items/files, so a fresh template has no login until the module is added. See `docs/Authentication.md`.
 - Sanctum. SPA cookie auth (web) + bearer tokens (mobile/Capacitor). **The default guard is `web`** — routes outside `auth:sanctum` middleware must resolve users via `$request->user('sanctum')` or bearer tokens read as guests (this bit `AuthController::me()` once; fixed 2026-08-24).
-- The `User` model keeps Sanctum's `HasApiTokens`. When the OAuth layer is on, Passport issues its own tokens (own tables, `api` guard) — do NOT add Passport's `HasApiTokens` to `User`; the traits collide and the OAuth flow doesn't need it.
+- The `User` model keeps Sanctum's `HasApiTokens`. If the Auth module's OAuth option is chosen, Passport issues its own tokens (own tables, the dormant `api` guard defined in `config/auth.php`) — do NOT add Passport's `HasApiTokens` to `User`; the traits collide and the OAuth flow doesn't need it.
 - `App\Models\User` does NOT use `Spatie\Permission\Traits\HasRoles` — the package was deliberately removed Dec 2025. If a project needs roles, re-add per project.
 
 ## Controllers
@@ -59,7 +59,7 @@ Backend (Laravel) conventions for this template. Read after the root `CLAUDE.md`
 ## Tests
 
 - Pest 4 (`pestphp/pest` + `pestphp/pest-plugin-type-coverage`).
-- `modules/Auth/Tests/Feature/AuthTest.php` is the canonical example (module tests run via the `Modules` testsuite in `phpunit.xml`). `tests/CreatesApplication.php` + `tests/Pest.php` configure the suite.
+- `modules/Example/Tests/Feature/ExampleNotesTest.php` is the in-repo canonical example (module tests run via the `Modules` testsuite in `phpunit.xml`); the Auth module carries `AuthTest`/`McpTest`/`OAuthTest` once added. `tests/CreatesApplication.php` + `tests/Pest.php` configure the suite.
 - `composer ci` runs `pint --test && pest --parallel`. Run it before opening a PR.
 - Don't mock the DB in Feature tests. Use `RefreshDatabase`.
 
@@ -73,4 +73,4 @@ Backend (Laravel) conventions for this template. Read after the root `CLAUDE.md`
 1. Define the route in `routes/api.php` under the appropriate middleware group.
 2. Generate controller + FormRequest + Resource.
 3. Run `composer typescript` to regenerate the Wayfinder TS types.
-4. Write the Feature test using `modules/Auth/Tests/Feature/AuthTest.php` as the template.
+4. Write the Feature test using an existing module's `Tests/Feature` as the template.
