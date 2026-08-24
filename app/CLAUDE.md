@@ -28,7 +28,7 @@ Backend (Laravel) conventions for this template. Read after the root `CLAUDE.md`
 
 ## Auth
 
-- Sanctum. SPA cookie auth (web) + bearer tokens (mobile/Capacitor). Default guard set to `sanctum`.
+- Sanctum. SPA cookie auth (web) + bearer tokens (mobile/Capacitor). **The default guard is `web`** — routes outside `auth:sanctum` middleware must resolve users via `$request->user('sanctum')` or bearer tokens read as guests (this bit `AuthController::me()` once; fixed 2026-08-24).
 - `routes/api.php` is the source of truth. Middleware: `auth:sanctum` on everything that isn't login / forgot-password.
 - `App\Models\User` does NOT use `Spatie\Permission\Traits\HasRoles` — the package was deliberately removed Dec 2025. If a project needs roles, re-add per project.
 
