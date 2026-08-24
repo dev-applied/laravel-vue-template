@@ -51,7 +51,7 @@ Counts are DISTINCT projects, machine-derived from 1,074 controllers and 2,828
 migrations across 44 local Laravel repos. Full report:
 `scratchpad/module-candidates.md`. These outrank the speculative queue below.
 
-- [ ] **RolesPermissions** (17 projects) — role/permission CRUD, `permission:` middleware, `can()` composable. 14 repos pull spatie, 3 hand-rolled it. The kernel deliberately dropped spatie, so this is exactly what a module is for.
+- [x] **RolesPermissions** (17 projects) — spatie-backed role CRUD + permission matrix UI, HasAccessControl trait supplying the `all_permissions` / `role` the kernel frontend already read, middleware aliases, grant-admin bootstrap, 16 tests — 2026-08-24
 - [ ] **Support** (13) — contact form, option-gated up to full ticketing.
 - [ ] **Invitations** (13) — tokenized invite/accept. One appcando thread documents three client-visible bugs in a single hand-rolled invite flow.
 - [ ] **Dashboard** (13) — KPI row, action queue, activity feed. Ship the shell with NO chart dependency and a named slot; the firm has no standard charting library.
