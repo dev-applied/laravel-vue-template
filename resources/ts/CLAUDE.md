@@ -4,7 +4,8 @@ Frontend conventions for this template. Read after the root `CLAUDE.md`.
 
 ## Style
 
-- **Vue 3 + Options API + `defineComponent`.** Every page and component uses `<script lang="ts">` + `defineComponent({...})`. Don't mix `<script setup>` until the full migration is decided template-wide.
+- **Pages and layouts: Options API.** Every page and layout uses `<script lang="ts">` + `defineComponent({...})` — they lean on the `this.$*` globals (`$http`, `$auth`, `$routeTo`, `$confirm`), which `<script setup>` cannot reach.
+- **Leaf components: `<script setup>`.** Most of `components/` is `<script lang="ts" setup>` with typed `defineProps` / `defineEmits`. Presentational components take props and emit events rather than touching the globals, so they don't need the Options instance. Never mix both styles in one file.
 - **Composition-API code only lives in composables (`composables/`) and shared inner-component logic (e.g. `AppAutoComplete/use*.ts`).** Pages and most components consume composables imperatively through `this.$*` plugins or via `setup()` returning into the Options API instance.
 - **TypeScript everywhere**: `lang="ts"` on every `<script>`, `tsconfig.json` is strict. Run `vue-tsc --noEmit` before committing if touching shared types.
 

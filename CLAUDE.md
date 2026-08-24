@@ -4,7 +4,7 @@ Project-level instructions for AI agents (Claude Code primarily) working in this
 
 ## Project type
 
-Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / PHP 8.4 / Sanctum / Pest 4. Frontend: Vue 3 (Options API) / Vuetify 3 / Pinia / Vite 7. Designed to be re-bootstrapped per client project, then customized.
+Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / PHP 8.4 / Sanctum / Pest 4. Frontend: Vue 3 / Vuetify 4 / Pinia / Vite 7. Designed to be re-bootstrapped per client project, then customized.
 
 ## Things to NEVER do
 
@@ -14,7 +14,7 @@ Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / 
 - **Never run `migrate:fresh` without verifying it targets a test database.** It will wipe dev data otherwise.
 - **Never use `v-if` / `v-else` on elements with pointer or drag listeners** — they tear down and re-create the DOM node, breaking event listeners mid-interaction. Use `v-show`.
 - **Never silently swallow errors.** Surface to the user via `this.$error(...)` / `$messages` or report to Sentry. AppServerValidationForm handles 422 automatically; everything else should route through the errorHandler plugin.
-- **Never mix `<script setup>` with Options API in this codebase.** Every page/component uses `defineComponent` + Options API. A full migration is tracked as a separate XL effort — until then, match what's there.
+- **Pages and layouts are Options API; leaf components are `<script setup>`.** This is the actual split in the codebase — all 9 pages/layouts use `defineComponent`, and 28 of 48 components use `<script setup>`. Match the file you are in: a new page gets `defineComponent`, a new presentational component gets `<script setup>`. Never mix the two styles inside one file.
 - **Never generate or guess URLs.** Read from `routes/api.php` or use the Wayfinder-generated TS types in `resources/ts/types/laravel/`.
 - **Never put a new compose service on the `default` (`nginx-proxy`) network unless it needs Traefik or the shared MySQL/Redis.** That network is shared by every stack on the machine, and each one registers its service names as DNS aliases there — so the generic names this template uses (`webserver`, `frontend`) resolve ambiguously and Docker round-robins between unrelated client projects. Put service-to-service traffic on the project-scoped `app` network instead. See the networking section in `README.md`.
 

@@ -211,8 +211,10 @@ Authoring — `module.json` `options`:
 
 ## Authoring rules
 
-1. **Options API only**, like every page in the template. Composition API only
-   in composables.
+1. **Pages and layouts use the Options API** (`defineComponent`), like every
+   page in the template — they depend on the `this.$*` globals. Leaf
+   components may use `<script setup>`, which is what most of the kernel
+   component library does. Never mix both styles in one file.
 2. **One root Vite build, forever.** Module frontends ride the app build via
    the globs. Never a per-module build, never a second output dir — that
    breaks the Vuetify singleton and Capacitor's static webDir.
