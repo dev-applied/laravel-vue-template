@@ -40,7 +40,7 @@
     "@types/node": "^24.0.0",
     "@unhead/addons": "^2.1.13",
     "@unhead/vue": "^2.1.13",
-    "@vitejs/plugin-vue": "^6.0.0",
+    "@vitejs/plugin-vue": "^6.0.7",
     "@vue/compiler-sfc": "^3.0.0",
     "@vue/eslint-config-typescript": "^14.0.0",
     "@vue/tsconfig": "^0.7.0",
