@@ -12,7 +12,7 @@ export default class RouteDesigner {
 
   private static notFound?: Route
 
-  public static route(uri: string, page: string | { template: string }, name?: string): Route {
+  public static route(uri: string, page: App.Router.Page, name?: string): Route {
     if (this.activeRoute) {
       // Active route takes priority over active group
       return this.activeRoute._route(uri, page, name)

@@ -66,6 +66,21 @@ Field components live in `components/fields/`. Use them by default over raw Vuet
 - **Cross-cutting state?** → Pinia store in `stores/`.
 - **Cross-cutting effect?** → composable in `composables/`.
 
+## Modules (frontend half)
+
+Modules under `modules/<Name>/resources/ts/` plug into this app via globs in
+`router/paths.ts` — see `docs/modules.md`. Rules that differ from app pages:
+
+- Module `routes.ts` registers on RouteDesigner with **lazy-import pages**
+  (`() => import("@modules/…/pages/X.vue")`) — string page names only resolve
+  against `resources/ts/pages/`.
+- Module routes declare their **own** layout + middleware stack; they inherit
+  nothing from the core groups.
+- Module pages/components follow every rule in this file (Options API,
+  App* kernel components, no hex colors). One root Vite build only — never a
+  per-module build.
+- `@modules/*` alias maps to `modules/*` (vite + tsconfig).
+
 ## Type generation
 
 After changing routes or controllers backend-side:
