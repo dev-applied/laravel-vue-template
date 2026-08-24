@@ -50,8 +50,24 @@ docker compose exec $DOCKER_ROUTER composer typescript
 docker compose exec $DOCKER_ROUTER php artisan vue:make-page
 
 # Create a user
-docker compose exec $DOCKER_ROUTER php artisan user:create
+docker compose exec $DOCKER_ROUTER php artisan create:user
 ```
+
+## Modules
+
+Full-stack vertical slices in `modules/<Name>/`, copy-in vendored from the
+firm modules repo — **never composer-required**. Read `docs/modules.md` before
+authoring or touching one. The short version: PSR-4 `Modules\`, providers
+auto-registered by `ModuleLoaderServiceProvider`, frontend half in
+`modules/<Name>/resources/ts/` registered via router globs, pages passed as
+**lazy imports never strings**, modules declare their own middleware/layout,
+`module.json` carries the version stamps the update flow depends on. Add with
+`php artisan module:add` (interactive multiselect with no args; needs
+`MODULES_GITHUB_TOKEN` in .env or `--from=<local checkout>`); check drift with
+`php artisan module:outdated`. After adding/removing a module:
+`composer dump-autoload`, `php artisan route:clear` **before** any build
+(Wayfinder reads the cached route table), `composer typescript`, restart vite.
+`modules/Example` is the living reference — copy its shape.
 
 ## Where to look
 

@@ -55,14 +55,21 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        // Resolve via the sanctum guard explicitly: this route is deliberately
+        // outside auth:sanctum middleware (it must answer {user: null} for
+        // guests), and the default guard is web — $request->user() would
+        // ignore bearer tokens entirely, so mobile/token sessions read as
+        // logged out even with a valid token attached.
+        $user = $request->user('sanctum');
+
         return response()->json([
-            'user' => $request->user() ? new AuthUserResource($request->user()) : null,
+            'user' => $user ? new AuthUserResource($user) : null,
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()?->currentAccessToken()?->delete();
+        $request->user('sanctum')?->currentAccessToken()?->delete();
 
         return response()->json(['message' => 'Logged out']);
     }

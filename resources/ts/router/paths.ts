@@ -19,6 +19,22 @@ export const ROUTES = {
 
 RouteDesigner.setNotFound("Error404Page").layout('Empty')
 
+// ─── Module routes ─────────────────────────────────────────────────────────
+// Every module ships modules/<Name>/resources/ts/routes.ts. Importing it
+// registers the module's routes against RouteDesigner (each module declares
+// its OWN layout + middleware — nothing is inherited from the core groups
+// below) and its exported ROUTES constants are merged into the app ROUTES so
+// `this.$routeTo(this.ROUTES.X)` works for module pages too. The glob is
+// build-time: dropping a module directory in (or deleting it) is picked up on
+// the next dev-server restart / build with zero config edits.
+const moduleRouteFiles = import.meta.glob<{ ROUTES?: Record<string, string> }>(
+  '/modules/*/resources/ts/routes.ts',
+  {eager: true}
+)
+for (const moduleRoutes of Object.values(moduleRouteFiles)) {
+  Object.assign(ROUTES, moduleRoutes.ROUTES ?? {})
+}
+
 RouteDesigner.group('', function () {
 
   // Guest Routes

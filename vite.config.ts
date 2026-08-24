@@ -58,6 +58,7 @@ export default defineConfig(({mode, command}) => {
         '@/scss': fileURLToPath(new URL('./resources/scss', import.meta.url)),
         '@/images': fileURLToPath(new URL('./resources/images', import.meta.url)),
         '@': fileURLToPath(new URL('./resources/ts', import.meta.url)),
+        '@modules': fileURLToPath(new URL('./modules', import.meta.url)),
       }
     },
     server: {
