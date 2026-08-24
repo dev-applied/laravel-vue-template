@@ -16,3 +16,4 @@ jobs:
     uses: dev-applied/deploy-action/.github/workflows/releases.yml@main
     with:
       ENVIRONMENT: DEV
+    secrets: inherit

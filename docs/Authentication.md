@@ -112,7 +112,17 @@ provider's `register()`) keeps the `/oauth/*` routes out of the app entirely.
 
 `auth:enable-oauth` writes `storage/oauth-{private,public}.key`. Don't ship the
 files — copy them into `PASSPORT_PRIVATE_KEY` / `PASSPORT_PUBLIC_KEY` env vars
-(see `.env.example`).
+(set as **environment secrets**, not variables) and the key never lands on disk.
+
+**If you do keep the key files, watch the ACL.** A recursive `setfacl` over
+`storage/` — which `dev-applied/deploy-action` ran until its PR #6 — adds a
+named-user ACL entry, which forces the ACL **mask** to `rwx`. PHP's
+`fileperms()` reports that mask in the group triad, so `oauth-private.key`,
+still mode `600` on disk, reads as `0670`. `league/oauth2-server` accepts only
+`400|440|600|640|660` and raises `E_USER_NOTICE` otherwise, which Laravel turns
+into a 500. The signature is an app that works locally and fails on OAuth
+endpoints **only after deploy**. Fixed in deploy-action; the env-var route above
+avoids the question entirely.
 
 ### The flow
 
