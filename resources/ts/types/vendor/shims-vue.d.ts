@@ -25,11 +25,6 @@ declare module '@vue/runtime-core' {
     $vuetify: Vuetify
     $router: Router
     $route: RouteLocationNormalizedLoaded
-    $file: {
-      url: (id: number, size: string = "thumbnail") => string,
-      download: (id: number, size: string = "thumbnail") => Promise<any>,
-      formatFileSize: (size: number) => string,
-    }
     $http: AxiosInstance & { download: (url: string, params = {}, method = "get") => void }
     $confirm: (message: string, title = "Confirm", options = {}) => Promise<boolean>
   }

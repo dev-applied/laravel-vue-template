@@ -33,6 +33,13 @@ use function Laravel\Prompts\spin;
  */
 class ModuleAddCommand extends Command
 {
+    /**
+     * The dependency/hook buckets an install plan accumulates. Named once so a
+     * new bucket cannot be added to the manifest and then silently dropped by
+     * one of the merge loops — which is exactly how npm_requires got lost.
+     */
+    private const PLAN_BUCKETS = ['require', 'require_dev', 'npm', 'npm_dev', 'run'];
+
     protected $signature = 'module:add
         {names?* : Module name(s) — omit to pick interactively}
         {--option=* : Preset a module option, key=value (repeatable); skips its prompt}
@@ -65,7 +72,7 @@ class ModuleAddCommand extends Command
         $names = $this->argument('names') ?: $this->pickModules($available);
 
         $failures = 0;
-        $plan     = ['require' => [], 'require_dev' => [], 'run' => []];
+        $plan     = array_fill_keys(self::PLAN_BUCKETS, []);
 
         foreach ($names as $name) {
             if (! isset($available[$name])) {
@@ -86,7 +93,7 @@ class ModuleAddCommand extends Command
 
             $modulePlan = $this->applyOptions($name);
 
-            foreach (['require', 'require_dev', 'run'] as $bucket) {
+            foreach (self::PLAN_BUCKETS as $bucket) {
                 $plan[$bucket] = [...$plan[$bucket], ...$modulePlan[$bucket]];
             }
 
@@ -109,6 +116,32 @@ class ModuleAddCommand extends Command
             NEXT);
 
         return $failures === 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * json_encode's PRETTY_PRINT is hardcoded to four spaces, which would
+     * reformat every line of a package.json that uses two — a ~200 line diff
+     * for a one-line dependency add. Re-indent to match what the file already
+     * uses so the diff stays honest.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private static function encodeJsonPreservingIndent(array $data, string $original): string
+    {
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        preg_match('/\n(\h+)"/', $original, $m);
+        $indent = $m[1] ?? '    ';
+
+        if ($indent === '    ') {
+            return (string) $json;
+        }
+
+        return (string) preg_replace_callback(
+            '/^(?: {4})+/m',
+            fn (array $match): string => str_repeat($indent, (int) (mb_strlen($match[0]) / 4)),
+            (string) $json,
+        );
     }
 
     /**
@@ -146,7 +179,7 @@ class ModuleAddCommand extends Command
      * Resolve + apply this module's options, persist the choices, and return the
      * composer/run plan (base deps + the chosen options' deps).
      *
-     * @return array{require: array<int,string>, require_dev: array<int,string>, run: array<int,string>}
+     * @return array{require: array<int,string>, require_dev: array<int,string>, npm: array<int,string>, npm_dev: array<int,string>, run: array<int,string>}
      */
     private function applyOptions(string $name): array
     {
@@ -156,6 +189,8 @@ class ModuleAddCommand extends Command
         $plan = [
             'require'     => $manifest->composerRequires(),
             'require_dev' => $manifest->composerRequiresDev(),
+            'npm'         => $manifest->npmRequires(),
+            'npm_dev'     => $manifest->npmRequiresDev(),
             'run'         => [],
         ];
 
@@ -173,8 +208,8 @@ class ModuleAddCommand extends Command
 
         $applied = (new ModuleOptionApplier)->apply($dir, $schema, $resolved, base_path('.env'));
 
-        foreach (['require', 'require_dev', 'run'] as $bucket) {
-            $plan[$bucket] = [...$plan[$bucket], ...$applied[$bucket]];
+        foreach (self::PLAN_BUCKETS as $bucket) {
+            $plan[$bucket] = [...$plan[$bucket], ...($applied[$bucket] ?? [])];
         }
 
         $manifest->persist(['installed_options' => $resolved]);
@@ -208,12 +243,17 @@ class ModuleAddCommand extends Command
     }
 
     /**
-     * @param  array{require: array<int,string>, require_dev: array<int,string>, run: array<int,string>}  $plan
+     * @param  array{require: array<int,string>, require_dev: array<int,string>, npm: array<int,string>, npm_dev: array<int,string>, run: array<int,string>}  $plan
      */
     private function installDependencies(array $plan): void
     {
         $require    = array_values(array_unique($plan['require']));
         $requireDev = array_values(array_unique($plan['require_dev']));
+
+        $this->installNpmDependencies(
+            array_values(array_unique($plan['npm'] ?? [])),
+            array_values(array_unique($plan['npm_dev'] ?? [])),
+        );
 
         if ($require === [] && $requireDev === []) {
             return;
@@ -242,6 +282,85 @@ class ModuleAddCommand extends Command
         }
 
         $this->components->info('Module composer dependencies installed');
+    }
+
+    /**
+     * Install the module frontend's npm dependencies.
+     *
+     * artisan runs in the PHP container, which has no node — so when npm is not
+     * on PATH we still record the dependency by writing it straight into
+     * package.json, and tell the caller to run the install where node lives.
+     * Recording it matters: the module's Vue half will not compile without it.
+     *
+     * @param  array<int, string>  $npm
+     * @param  array<int, string>  $npmDev
+     */
+    private function installNpmDependencies(array $npm, array $npmDev): void
+    {
+        if ($npm === [] && $npmDev === []) {
+            return;
+        }
+
+        if ($this->option('no-install-deps')) {
+            $this->components->warn('Skipped npm install (--no-install-deps). Run:');
+            $npm !== [] && $this->line('  npm install '.implode(' ', $npm));
+            $npmDev !== [] && $this->line('  npm install --save-dev '.implode(' ', $npmDev));
+
+            return;
+        }
+
+        $hasNpm = Process::path(base_path())->run('npm --version')->successful();
+
+        if ($hasNpm) {
+            $npm !== [] && spin(
+                fn () => Process::path(base_path())->timeout(600)->run('npm install '.implode(' ', $npm))->throw(),
+                'npm install '.implode(' ', $npm),
+            );
+            $npmDev !== [] && spin(
+                fn () => Process::path(base_path())->timeout(600)->run('npm install --save-dev '.implode(' ', $npmDev))->throw(),
+                'npm install --save-dev '.implode(' ', $npmDev),
+            );
+
+            $this->components->info('Module npm dependencies installed');
+
+            return;
+        }
+
+        $this->recordNpmDependencies($npm, 'dependencies');
+        $this->recordNpmDependencies($npmDev, 'devDependencies');
+
+        $this->components->warn('No npm on PATH (artisan runs in the PHP container) — recorded in package.json.');
+        $this->line('  Run where node lives, e.g.:  docker compose exec frontend npm install');
+    }
+
+    /**
+     * Merge `pkg@range` specs into a package.json section, preserving key order.
+     *
+     * @param  array<int, string>  $specs
+     */
+    private function recordNpmDependencies(array $specs, string $section): void
+    {
+        if ($specs === []) {
+            return;
+        }
+
+        $path     = base_path('package.json');
+        $original = (string) file_get_contents($path);
+        /** @var array<string, mixed> $package */
+        $package = json_decode($original, true);
+
+        foreach ($specs as $spec) {
+            // Split on the LAST @ so scoped names like @vueuse/core@^13 survive.
+            $at      = mb_strrpos($spec, '@');
+            $name    = $at > 0 ? mb_substr($spec, 0, $at) : $spec;
+            $version = $at > 0 ? mb_substr($spec, $at + 1) : '*';
+
+            $package[$section][$name] = $version;
+        }
+
+        ksort($package[$section]);
+
+        file_put_contents($path, self::encodeJsonPreservingIndent($package, $original).PHP_EOL);
     }
 
     /**

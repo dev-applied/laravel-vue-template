@@ -52,6 +52,13 @@ with `resources/` (frontend) on macOS's case-insensitive filesystem.
 - **Frontend**: `router/paths.ts` eager-globs `/modules/*/resources/ts/routes.ts`.
   Importing a module's routes file registers its routes on RouteDesigner and
   merges its exported `ROUTES` constants into the app `ROUTES`.
+- **Plugins**: a module MAY ship `resources/ts/plugin.ts` with a default export
+  taking the Vue app. `plugins/index.ts` eager-globs
+  `/modules/*/resources/ts/plugin.ts` and calls each one AFTER the kernel
+  plugins, so a module can register a global property, a Vue plugin, or a mixin
+  and still rely on `$http` / `$auth` / `$error`. `modules/Files` registers
+  `$file` this way. A module that needs to augment the global property types
+  ships its own `.d.ts` — `tsconfig.json` already globs `modules/**/*.ts`.
 - **Pages are lazy imports, never strings** — the string resolver only sees
   `resources/ts/pages/`. `() => import("@modules/X/resources/ts/pages/XPage.vue")`
   also code-splits per module.
@@ -65,13 +72,16 @@ with `resources/` (frontend) on macOS's case-insensitive filesystem.
 A traveling module may assume ONLY what every template project has:
 
 - The base `Controller`, the response envelope, `AppException`, `WhoDidIt`,
-  `vuetifyPaginate`, the File pipeline.
+  `vuetifyPaginate`.
 - Frontend: the `App*` component library, `components/fields/*`, the `$auth` /
   `$http` / `$error` / `$routeTo` / `$confirm` / `$messages` globals, the
   router middleware (`Authentication`, `Authorization`, `Guest`, `ForceTypes`),
   layouts `Default` / `Empty`.
-- NOT `spatie/laravel-permission` (removed from the template), NOT any
-  per-project package. A module declares the packages it always needs in
+- NOT `spatie/laravel-permission` (removed from the template), NOT the File
+  pipeline (extracted to `modules/Files` 2026-08-24 — a module that uploads
+  files must say so, and a project needs `module:add Files` for
+  `AppFileUpload` / `AppFileDropzone` / `AppLightBoxImage` / `$file` to exist),
+  NOT any per-project package. A module declares the packages it always needs in
   `module.json` `composer_requires` (and option-specific packages under an
   option choice's `require` — see Options below); `module:add` runs the
   `composer require` for it.
@@ -105,6 +115,7 @@ the app `ROUTES`.
     "template_version_tested": "2026-08",
     "description": "…",
     "composer_requires": ["vendor/pkg:^1.0"],
+    "npm_requires": ["some-pkg@^1.0.0"],
     "options": { "…": "see Options below" },
     "installed_from_commit": "<stamped by module:add>",
     "installed_at": "<stamped by module:add>",
@@ -142,6 +153,8 @@ Authoring — `module.json` `options`:
         "drop":        ["glob", …],    // files/dirs removed when this choice is active
         "require":     ["pkg:^ver"],   // composer require (auto-run)
         "require_dev": ["pkg:^ver"],
+        "npm":         ["pkg@^ver"],   // npm install (auto-run where node exists)
+        "npm_dev":     ["pkg@^ver"],
         "env":         {"KEY": "value"},
         "run":         ["artisan cmd"] // post-install, run as a fresh subprocess
       }
@@ -198,8 +211,10 @@ Authoring — `module.json` `options`:
 
 ## Authoring rules
 
-1. **Options API only**, like every page in the template. Composition API only
-   in composables.
+1. **Pages and layouts use the Options API** (`defineComponent`), like every
+   page in the template — they depend on the `this.$*` globals. Leaf
+   components may use `<script setup>`, which is what most of the kernel
+   component library does. Never mix both styles in one file.
 2. **One root Vite build, forever.** Module frontends ride the app build via
    the globs. Never a per-module build, never a second output dir — that
    breaks the Vuetify singleton and Capacitor's static webDir.

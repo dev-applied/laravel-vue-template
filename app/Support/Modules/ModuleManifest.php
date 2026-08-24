@@ -68,6 +68,18 @@ class ModuleManifest
         return array_values((array) ($this->data['composer_requires_dev'] ?? []));
     }
 
+    /** @return array<int, string> Base npm packages the module's frontend always needs. */
+    public function npmRequires(): array
+    {
+        return array_values((array) ($this->data['npm_requires'] ?? []));
+    }
+
+    /** @return array<int, string> Base npm dev packages the module's frontend always needs. */
+    public function npmRequiresDev(): array
+    {
+        return array_values((array) ($this->data['npm_requires_dev'] ?? []));
+    }
+
     /**
      * Merge a patch into the manifest and write it back (pretty, stable order).
      *

@@ -24,6 +24,8 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 - [x] Drop `COMPOSER_AUTH` — nothing in composer.lock resolves from the private registry — 2026-08-24
 - [x] Build the frontend in CI so module Vue halves are actually compiled — 2026-08-24
 - [x] Clear template-bundled module copies before `module:add` (Example collision) — 2026-08-24
+- [x] Module plugin glob — modules can now ship `resources/ts/plugin.ts` to register globals / Vue plugins — 2026-08-24
+- [x] `npm_requires` — modules can declare npm deps; recorded in package.json when node is off PATH — 2026-08-24
 - [ ] `module:update` — the automated three-way merge described in docs/modules.md but not built
 - [ ] Module scaffolding command (`module:make`) so new modules start from the Example shape
 
@@ -31,7 +33,7 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 
 Pulling shipped verticals out of the kernel and into the modules repo. Decision 2026-08-24: **true extraction** — deleted from the template, projects run `module:add`. Kernel contract in `docs/modules.md` shrinks accordingly. Items stays in the template as the worked example; Example stays as the reference module.
 
-- [ ] **Files** — File model, FileController, sized variants, signed view/download, plus the whole frontend vertical (AppFileUpload, AppFileDropzone, AppFileUploadBtn, AppLightBoxImage, useFile, useFileUpload, plugins/file.ts). Removes "the File pipeline" from the kernel contract.
+- [x] **Files** — whole vertical moved to `modules/Files`, four latent bugs fixed, 17 tests added, `storage` option (local | s3-presigned) — 2026-08-24
 - [ ] **Users** — UserController, user-management CRUD + pages. User *model* stays kernel (Auth depends on it).
 
 ## Modules — generic verticals (built fresh, washwerk as design reference only)
