@@ -29,6 +29,7 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 - [x] `npm_requires` — modules can declare npm deps; recorded in package.json when node is off PATH — 2026-08-24
 - [x] `module:add` prunes directories an option drop leaves empty — an empty `Mail/` reads as a broken install — 2026-08-24
 - [ ] `module:update` — the automated three-way merge described in docs/modules.md but not built
+- [x] `bin/lint` in the modules repo — pint the whole repo from a template checkout in ONE direction, so a later rsync cannot silently revert the fixes (it did, twice, and CI caught it) — 2026-08-24
 - [ ] Module scaffolding command (`module:make`) so new modules start from the Example shape
 
 ## Modules — extraction from the template
