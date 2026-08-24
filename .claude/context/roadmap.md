@@ -48,8 +48,8 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [x] **SavedViews** — named filter sets per screen, opaque payload, default view, read-only sharing, 422 on duplicate names, SavedViewScope tenancy seam, 23 tests — 2026-08-24
 - [x] **Comments** — HasComments trait, CommentableRegistry allow-list, internal notes, explicit-token @mentions firing UserMentioned (event, not a notification), `threading` option, 29 tests — 2026-08-24
 - [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
-- [~] **Settings** — modules repo `main` (direct) — typed key/value app settings with a management UI.
-- [ ] **Tags** — polymorphic tagging + filter integration.
+- [x] **Settings** — registry-declared typed settings, self-generating UI, secret masking, one-entry cache, 22 tests — 2026-08-24
+- [~] **Tags** — modules repo `main` (direct) — polymorphic tagging + filter integration.
 - [ ] **Billing** — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
 - [ ] **Booking** — resource + availability scheduling.
 - [ ] **FormBuilder** — dynamic form definitions rendered through the field component library.
