@@ -18,9 +18,9 @@ After cloning this template into a new project directory:
 
 1. Set `APP_NAME`, `APP_DOMAIN`, `DOCKER_DOMAIN`, `DOCKER_ROUTER`, and `DB_DATABASE` in `.env` (copy from `.env.example` first).
 2. `docker compose up -d` — boots PHP/Apache + Vite dev server on Traefik.
-3. `docker compose exec <DOCKER_ROUTER> php artisan key:generate`
-4. `docker compose exec <DOCKER_ROUTER> php artisan migrate`
-5. `docker compose exec <DOCKER_ROUTER> php artisan db:seed`
+3. `docker compose exec webserver php artisan key:generate`
+4. `docker compose exec webserver php artisan migrate`
+5. `docker compose exec webserver php artisan db:seed`
 6. Update `.github/CODEOWNERS` and `.github/workflows/*` for the new project.
 7. If the project needs roles/permissions: `composer require spatie/laravel-permission && php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"` (the template ships without it — Dec 2025 L12 upgrade removed it deliberately).
 
@@ -31,7 +31,7 @@ After cloning this template into a new project directory:
 | Package                            | Purpose                                                       |
 | ---------------------------------- | ------------------------------------------------------------- |
 | `laravel/framework ^12`            | App framework (PHP ^8.4)                                      |
-| `laravel/sanctum ^4.3`             | API token + SPA cookie auth                                   |
+| `laravel/sanctum ^4.3`             | API token + SPA cookie auth (used by the Auth module)         |
 | `sentry/sentry-laravel ^4.20`      | Error & log monitoring                                        |
 | `imagine/imagine ^1.3`             | Image manipulation (used by file pipeline)                    |
 | `league/flysystem-aws-s3-v3 ^3.29` | S3 disk for uploaded files                                    |
@@ -40,7 +40,7 @@ After cloning this template into a new project directory:
 | `pestphp/pest ^4`                  | Test runner (parallel; type-coverage plugin installed)        |
 | `laravel/pint ^1.24`               | Code style — config in `pint.json`                            |
 | `laravel/wayfinder ^0.1.13`        | Generates TS types from Laravel routes/controllers            |
-| `laravel/boost ^1.0`               | AI agent enablement (Laravel introspection MCP tools)         |
+| `laravel/boost ^2.5`               | AI agent enablement (Laravel introspection MCP tools)         |
 | `scrumble-nl/laravel-model-ts-type ^10.5` | Generates TS types from Eloquent models                |
 | `spatie/laravel-ray ^1.40`         | Dev-time debugger                                             |
 
@@ -60,9 +60,11 @@ After cloning this template into a new project directory:
 | `vite ^7`, `vitest ^3`   | Build + tests                                        |
 
 **Component library** (`resources/ts/components/`):
-`AppDialog`, `AppListTable`, `AppPaginationTable`, `AppTable`, `AppLoader`, `AppMessages`, `AppPasswordValidation`, `AppServerValidationForm`, `AppLightBoxImage`, `UpdateDetector`, plus form fields: `AppAddressField`, `AppAutoComplete` (own folder), `AppCombobox`, `AppDateInput`, `AppFileDropzone`, `AppFileUpload`, `AppFileUploadBtn`, `AppMaskField`.
+`AppDialog`, `AppListTable`, `AppPaginationTable`, `AppTable`, `AppLoader`, `AppMessages`, `AppPasswordValidation`, `AppServerValidationForm`, `UpdateDetector`, plus form fields: `AppAddressField`, `AppAutoComplete` (own folder), `AppCombobox`, `AppDateInput`, `AppMaskField`.
 
-**Composables** (`resources/ts/composables/`): `useAuth`, `useFile`, `useFileUpload`, `useHttp`, `usePaginationData`, `useProxy`, `useRoute`, `useTime`, `useValidators`.
+The file components — `AppFileUpload`, `AppFileUploadBtn`, `AppFileDropzone`, `AppLightBoxImage` — moved into `modules/Files`. Run `php artisan module:add Files` to get them.
+
+**Composables** (`resources/ts/composables/`): `useAuth`, `useHttp`, `usePaginationData`, `useProxy`, `useRoute`, `useTime`, `useValidators`. (`useFile` / `useFileUpload` ship with `modules/Files`.)
 
 **Plugins** (`resources/ts/plugins/`): `auth`, `axios`, `backButton`, `breadcrumbs`, `confirm`, `errorHandler`, `file`, `routeTo`, `versioning`, `vuetify`. Plugins register `this.$auth`, `this.$http`, `this.$error`, `this.$routeTo`, etc. as global properties — pages use the Options API style throughout.
 
@@ -102,36 +104,39 @@ Point Apache/Nginx at `public/` if you can't use Docker. Not recommended — the
 
 ## Common commands
 
-All artisan/composer/npm commands run inside the webserver container. The container name is whatever you set `DOCKER_ROUTER` to in `.env`.
+All artisan/composer/npm commands run inside the `webserver` container. That is the compose **service** name from `docker-compose.yml` — it is not `DOCKER_ROUTER`, which is only the Traefik router label.
 
 ```sh
 # Tests
-docker compose exec $DOCKER_ROUTER composer ci                # pint --test + pest --parallel
-docker compose exec $DOCKER_ROUTER ./vendor/bin/pest --filter=Auth
+docker compose exec webserver composer ci                # pint --test + pest --parallel
+docker compose exec webserver ./vendor/bin/pest --filter=Auth
 
 # Code style
-docker compose exec $DOCKER_ROUTER composer format            # pint --parallel (auto-fix)
+docker compose exec webserver composer format            # pint --parallel (auto-fix)
 
 # DB
-docker compose exec $DOCKER_ROUTER php artisan migrate
-docker compose exec $DOCKER_ROUTER php artisan migrate:fresh --seed
+docker compose exec webserver php artisan migrate
+docker compose exec webserver php artisan migrate:fresh --seed
 
 # Regenerate frontend types from Laravel routes/models
-docker compose exec $DOCKER_ROUTER composer typescript        # runs wayfinder:generate
+docker compose exec webserver composer typescript        # runs wayfinder:generate
 
 # Scaffold a new Vue page (uses stubs/vue-make-page.stub)
-docker compose exec $DOCKER_ROUTER php artisan vue:make-page
+docker compose exec webserver php artisan vue:make-page
 
 # Create a user from the CLI
-docker compose exec $DOCKER_ROUTER php artisan user:create
+docker compose exec webserver php artisan create:user
+
+# Add a module from the firm modules repo (prompts its options)
+docker compose exec webserver php artisan module:add
 ```
 
 `npm run dev` / `npm run build` run on the host (or in the `frontend` service if you'd rather).
 
 ## Architecture notes
 
-- **Auth**: Sanctum. SPA cookie auth for web; bearer tokens (personal access tokens) for mobile/Capacitor. `/api/v1/auth` POST issues a token, GET returns the current user, DELETE logs out. Impersonation is supported via `POST /auth/impersonate`.
-- **File pipeline**: `app/Models/File.php` + `app/Http/Controllers/FileController.php` handle upload, sized variant URLs, signed download, view, and destroy. S3-backed in non-local envs.
+- **Auth** is a **module**, not baked into the template — add it with `php artisan module:add Auth` (choose Sanctum, or Sanctum + Passport OAuth for OAuth-speaking MCP clients). It provides login/me/logout + impersonation + forgot-password, the `/mcp` server endpoint, and the optional OAuth 2.1 layer. A fresh template has no login until the module is added (usually via `project:init`). See `docs/Authentication.md` + `docs/modules.md`.
+- **File pipeline**: ships as `modules/Files`, not in the kernel — `php artisan module:add Files`. Handles upload, sized variant URLs, signed download, view and destroy, and carries its own Vue half. Its `storage` option picks direct multipart upload or presigned PUT straight to S3.
 - **WhoDidIt audit trail**: `app/Traits/WhoDidIt.php` + `WhoDidItMixin` adds `created_by` / `updated_by` to any model that uses the trait. Schema helper available via `$table->whoDidIt()`.
 - **Router DSL**: `resources/ts/router/` has a custom `RouteDesigner` + `RouteBuilder` + `RouteGroup` API on top of vue-router. See `router/index.ts` for examples.
 - **Wayfinder TS types**: Backend route/controller signatures are converted to TS at `resources/ts/types/laravel/` via `composer typescript`. Run after changing routes/controllers; frontend calls then have proper typings.
@@ -151,7 +156,7 @@ GitHub Actions, via the [`dev-applied/deploy-action`](https://github.com/dev-app
 
 Claude Code agents working in this repo should also read `CLAUDE.md` at the project root and the area-specific `CLAUDE.md` files under `resources/ts/`, `app/`, and `database/`. Key rules:
 
-- Never run artisan / composer / npm on the host — always `docker compose exec $DOCKER_ROUTER …`.
+- Never run artisan / composer / npm on the host — always `docker compose exec webserver …`.
 - Never hardcode hex / rgba colors in SCSS — use Vuetify CSS vars / theme tokens.
 - Never mock the DB in integration tests — use a real DB (Sqlite in-memory is fine for `tests/Unit`).
 - When changing a route or controller, run `composer typescript` so frontend types stay in sync.

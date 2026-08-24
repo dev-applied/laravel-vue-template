@@ -13,16 +13,21 @@ import versioningPlugin from "./resources/ts/plugins/versioning/viteVersioningPl
 // https://vitejs.dev/config/
 export default defineConfig(({mode, command}) => {
   process.env = {...process.env, ...loadEnv(mode, process.cwd())}
+  const isVitest = !!process.env.VITEST
   let options: UserConfig = {
     base: command === 'serve' ? '/hmr' : undefined,
     build: {
       sourcemap: true,
     },
     plugins: [
-      laravel({
+      // The Laravel plugin owns public/hot. Under Vitest it loads in non-serve
+      // mode and its cleanup hook DELETES public/hot — which silently drops the
+      // running dev server back to the stale public/build bundle (the "old
+      // dashboard" bug). It isn't needed for jsdom unit tests, so skip it there.
+      ...(isVitest ? [] : [laravel({
         input: ['resources/scss/main.scss', 'resources/ts/main.ts'],
         refresh: true,
-      }),
+      })]),
       UnheadVite(),
       vue({
         template: {
@@ -58,6 +63,9 @@ export default defineConfig(({mode, command}) => {
         '@/scss': fileURLToPath(new URL('./resources/scss', import.meta.url)),
         '@/images': fileURLToPath(new URL('./resources/images', import.meta.url)),
         '@': fileURLToPath(new URL('./resources/ts', import.meta.url)),
+        // Module halves import each other through this alias — without it every
+        // modules/<Name>/resources/ts import fails to resolve at build time.
+        '@modules': fileURLToPath(new URL('./modules', import.meta.url)),
       }
     },
     server: {

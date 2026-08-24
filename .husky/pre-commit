@@ -2,23 +2,25 @@
 
 npm run fix
 
-# Container name derived from DOCKER_ROUTER (set in .env). Falls back to the
-# directory name so it still works in projects that haven't set DOCKER_ROUTER.
-if [ -f .env ]; then
-  set -a; . ./.env; set +a
-fi
-CONTAINER_NAME="${DOCKER_ROUTER:-$(basename "$PWD")}"
+# `webserver` is the compose SERVICE name (see docker-compose.yml).
+# It is deliberately NOT $DOCKER_ROUTER: that variable is the Traefik router
+# label (traefik.http.routers.$DOCKER_ROUTER.*) and never resolves as a
+# `docker compose exec` target. Using it here sent every commit down the host
+# fallback, where a Docker-only machine has no php and the hook died with a
+# bare `env: php: No such file or directory`.
+SERVICE=webserver
 
-# Check if the container is running
-if docker compose ps -q "$CONTAINER_NAME" >/dev/null 2>&1 && \
-   [ -n "$(docker compose ps -q "$CONTAINER_NAME")" ] && \
-   docker inspect -f '{{.State.Running}}' "$(docker compose ps -q "$CONTAINER_NAME")" 2>/dev/null | grep -q true; then
+CID="$(docker compose ps -q "$SERVICE" 2>/dev/null)"
 
-  echo "🛠 Running in Docker container: $CONTAINER_NAME"
-
-  docker compose exec -T "$CONTAINER_NAME" ./vendor/bin/pint --test --parallel || exit 1
+if [ -n "$CID" ] && docker inspect -f '{{.State.Running}}' "$CID" 2>/dev/null | grep -q true; then
+  echo "🛠  pint — docker compose service: $SERVICE"
+  docker compose exec -T "$SERVICE" ./vendor/bin/pint --test --parallel || exit 1
+elif command -v php >/dev/null 2>&1; then
+  echo "⚙️  '$SERVICE' not running — falling back to host php"
+  ./vendor/bin/pint --test --parallel || exit 1
 else
-  echo "⚙️ Running locally on host"
-
-  eval "./vendor/bin/pint --test --parallel"
+  echo "✖ pre-commit: '$SERVICE' isn't running and there is no php on the host."
+  echo "  Start the stack:   docker compose up -d"
+  echo "  Skip this commit:  git commit --no-verify"
+  exit 1
 fi

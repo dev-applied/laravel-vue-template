@@ -7,7 +7,9 @@
         "resources/ts/**/*.d.ts",
         "resources/ts/**/*.vue",
         "stories/**/*.ts",
-        "vite.config.ts"
+        "vite.config.ts",
+        "modules/**/*.ts",
+        "modules/**/*.vue"
     ],
     "exclude": [
         "resources/ts/**/__tests__/*"
@@ -22,6 +24,9 @@
             ],
             "@/*": [
                 "./resources/ts/*"
+            ],
+            "@modules/*": [
+                "./modules/*"
             ]
         }
     }

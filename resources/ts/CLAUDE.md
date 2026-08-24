@@ -4,7 +4,8 @@ Frontend conventions for this template. Read after the root `CLAUDE.md`.
 
 ## Style
 
-- **Vue 3 + Options API + `defineComponent`.** Every page and component uses `<script lang="ts">` + `defineComponent({...})`. Don't mix `<script setup>` until the full migration is decided template-wide.
+- **Pages and layouts: Options API.** Every page and layout uses `<script lang="ts">` + `defineComponent({...})` — they lean on the `this.$*` globals (`$http`, `$auth`, `$routeTo`, `$confirm`), which `<script setup>` cannot reach.
+- **Leaf components: `<script setup>`.** Most of `components/` is `<script lang="ts" setup>` with typed `defineProps` / `defineEmits`. Presentational components take props and emit events rather than touching the globals, so they don't need the Options instance. Never mix both styles in one file.
 - **Composition-API code only lives in composables (`composables/`) and shared inner-component logic (e.g. `AppAutoComplete/use*.ts`).** Pages and most components consume composables imperatively through `this.$*` plugins or via `setup()` returning into the Options API instance.
 - **TypeScript everywhere**: `lang="ts"` on every `<script>`, `tsconfig.json` is strict. Run `vue-tsc --noEmit` before committing if touching shared types.
 
@@ -36,7 +37,7 @@ These come from plugins in `plugins/` and are available on every component via `
 | `$routeTo`        | `plugins/routeTo.ts`| Build a route object from a `ROUTES` enum.                               |
 | `$confirm`        | `plugins/confirm`   | Promisified confirmation dialog.                                         |
 | `$messages`       | `stores/message.ts` | Surface a snackbar message.                                              |
-| `ROUTES`          | `router/paths.ts`   | Route name constants — use with `$routeTo`, never inline strings.        |
+| `ROUTES`          | `router/paths.ts`   | Route name constants — use with `$routeTo`, never inline strings. Names the kernel navigates to (`LOGIN`, `DASHBOARD`) live in `router/kernel-routes.ts`; `LOGIN`'s route is registered by `modules/Auth`. |
 
 ## Forms
 
@@ -54,8 +55,6 @@ Field components live in `components/fields/`. Use them by default over raw Vuet
 | `AppCombobox`         | Tags / multi-select with free-text.                                |
 | `AppDateInput`        | Dates — standardizes display format and parsing.                   |
 | `AppMaskField`        | Phone, SSN, anything with a mask.                                  |
-| `AppFileDropzone`     | Drag-and-drop upload area.                                         |
-| `AppFileUpload[Btn]`  | Single-button upload.                                              |
 | `AppAddressField`     | Google Places-backed address autocomplete.                         |
 | `AppPasswordValidation` | Password input with strength + rules display.                    |
 
@@ -66,12 +65,27 @@ Field components live in `components/fields/`. Use them by default over raw Vuet
 - **Cross-cutting state?** → Pinia store in `stores/`.
 - **Cross-cutting effect?** → composable in `composables/`.
 
+## Modules (frontend half)
+
+Modules under `modules/<Name>/resources/ts/` plug into this app via globs in
+`router/paths.ts` — see `docs/modules.md`. Rules that differ from app pages:
+
+- Module `routes.ts` registers on RouteDesigner with **lazy-import pages**
+  (`() => import("@modules/…/pages/X.vue")`) — string page names only resolve
+  against `resources/ts/pages/`.
+- Module routes declare their **own** layout + middleware stack; they inherit
+  nothing from the core groups.
+- Module pages/components follow every rule in this file (Options API,
+  App* kernel components, no hex colors). One root Vite build only — never a
+  per-module build.
+- `@modules/*` alias maps to `modules/*` (vite + tsconfig).
+
 ## Type generation
 
 After changing routes or controllers backend-side:
 
 ```sh
-docker compose exec $DOCKER_ROUTER composer typescript
+docker compose exec webserver composer typescript
 ```
 
 Emits TS into `resources/ts/types/laravel/`. Use those types when calling APIs — don't `any` your way through it.

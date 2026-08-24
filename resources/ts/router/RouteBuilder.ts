@@ -129,7 +129,7 @@ export abstract class RouteBuilder {
    * @param page
    * @param name
    */
-  public _route(uri: string, page: string | { template: string }, name?: string): Route {
+  public _route(uri: string, page: App.Router.Page, name?: string): Route {
     const route = new Route(uri, page, name)
     route._setAttributes(this._getAttributes())
     this.routes.push(route)

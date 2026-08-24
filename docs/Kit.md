@@ -17,7 +17,7 @@ Catalog of the small-but-everywhere components and composables shipped in the te
 | `AppFilterChips` | Active filters rendered as removable chips with "Clear all". | Top of any list page using filters. |
 | `AppConfirmActionButton` | Button that opens `$confirm` then runs the action with loading state. | Every destructive action. |
 | `AppImpersonationBanner` | Sticky "Stop impersonating" banner; pairs with existing backend impersonation endpoints. | Admin areas where staff acts as users. |
-| `AppNotificationsBell` | Bell + unread badge + dropdown of recent notifications. | App-bar slot. |
+| `AppNotificationsBell` | Bell + unread badge + dropdown of recent notifications. Ships with `modules/Notifications` (`module:add Notifications`), which also provides the wired `NotificationsBell` container. | App-bar slot. |
 | `AppWizardSteps` | Multi-step form scaffold with valid-per-step gating. | Onboarding, CSV import, checkout, multi-section forms. |
 | `AppInlineEditField` | Click value to edit; Enter/blur saves, Escape cancels; async save support. | Editable cells / quick admin tweaks. |
 | `AppDateRangePicker` | Start + end date inputs + preset chips (Today / Last 30 / YTD / etc.). | Reports, log views, transaction filters. |

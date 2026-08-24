@@ -17,7 +17,9 @@ return [
     |
     */
 
-    'default' => env('CACHE_DRIVER', 'file'),
+    // CACHE_STORE is the Laravel 12 name; CACHE_DRIVER kept as a fallback
+    // because every deployed environment still sets the old name.
+    'default' => env('CACHE_STORE', env('CACHE_DRIVER', 'file')),
 
     /*
     |--------------------------------------------------------------------------
