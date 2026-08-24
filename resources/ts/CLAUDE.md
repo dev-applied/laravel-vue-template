@@ -36,7 +36,7 @@ These come from plugins in `plugins/` and are available on every component via `
 | `$routeTo`        | `plugins/routeTo.ts`| Build a route object from a `ROUTES` enum.                               |
 | `$confirm`        | `plugins/confirm`   | Promisified confirmation dialog.                                         |
 | `$messages`       | `stores/message.ts` | Surface a snackbar message.                                              |
-| `ROUTES`          | `router/paths.ts`   | Route name constants — use with `$routeTo`, never inline strings.        |
+| `ROUTES`          | `router/paths.ts`   | Route name constants — use with `$routeTo`, never inline strings. Names the kernel navigates to (`LOGIN`, `DASHBOARD`) live in `router/kernel-routes.ts`; `LOGIN`'s route is registered by `modules/Auth`. |
 
 ## Forms
 

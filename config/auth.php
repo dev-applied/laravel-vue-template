@@ -42,6 +42,14 @@ return [
             'driver'   => 'session',
             'provider' => 'users',
         ],
+
+        // Passport-backed OAuth guard. Dormant until the Auth module's OAuth
+        // layer is enabled (AUTH_OAUTH_ENABLED=true) — the /mcp endpoint then
+        // accepts OAuth access tokens through it alongside Sanctum PATs.
+        'api' => [
+            'driver'   => 'passport',
+            'provider' => 'users',
+        ],
     ],
 
     /*
@@ -108,5 +116,26 @@ return [
     */
 
     'password_timeout' => 10800,
+
+    /*
+    |--------------------------------------------------------------------------
+    | MCP + OAuth (Auth module)
+    |--------------------------------------------------------------------------
+    |
+    | The Auth module registers the /mcp endpoint and an optional OAuth 2.1
+    | layer. Endpoint auth is `auth:sanctum` (bearer PAT) until oauth.enabled,
+    | which adds Passport OAuth and widens the guard to `auth:sanctum,api`.
+    | See docs/Authentication.md.
+    |
+    */
+
+    'mcp' => [
+        'enabled' => env('AUTH_MCP_ENABLED', true),
+        'path'    => env('AUTH_MCP_PATH', 'mcp'),
+    ],
+
+    'oauth' => [
+        'enabled' => env('AUTH_OAUTH_ENABLED', false),
+    ],
 
 ];

@@ -31,7 +31,7 @@ After cloning this template into a new project directory:
 | Package                            | Purpose                                                       |
 | ---------------------------------- | ------------------------------------------------------------- |
 | `laravel/framework ^12`            | App framework (PHP ^8.4)                                      |
-| `laravel/sanctum ^4.3`             | API token + SPA cookie auth                                   |
+| `laravel/sanctum ^4.3`             | API token + SPA cookie auth (used by the Auth module)         |
 | `sentry/sentry-laravel ^4.20`      | Error & log monitoring                                        |
 | `imagine/imagine ^1.3`             | Image manipulation (used by file pipeline)                    |
 | `league/flysystem-aws-s3-v3 ^3.29` | S3 disk for uploaded files                                    |
@@ -40,7 +40,7 @@ After cloning this template into a new project directory:
 | `pestphp/pest ^4`                  | Test runner (parallel; type-coverage plugin installed)        |
 | `laravel/pint ^1.24`               | Code style — config in `pint.json`                            |
 | `laravel/wayfinder ^0.1.13`        | Generates TS types from Laravel routes/controllers            |
-| `laravel/boost ^1.0`               | AI agent enablement (Laravel introspection MCP tools)         |
+| `laravel/boost ^2.5`               | AI agent enablement (Laravel introspection MCP tools)         |
 | `scrumble-nl/laravel-model-ts-type ^10.5` | Generates TS types from Eloquent models                |
 | `spatie/laravel-ray ^1.40`         | Dev-time debugger                                             |
 
@@ -124,13 +124,16 @@ docker compose exec $DOCKER_ROUTER php artisan vue:make-page
 
 # Create a user from the CLI
 docker compose exec $DOCKER_ROUTER php artisan create:user
+
+# Add a module from the firm modules repo (prompts its options)
+docker compose exec $DOCKER_ROUTER php artisan module:add
 ```
 
 `npm run dev` / `npm run build` run on the host (or in the `frontend` service if you'd rather).
 
 ## Architecture notes
 
-- **Auth**: Sanctum. SPA cookie auth for web; bearer tokens (personal access tokens) for mobile/Capacitor. `/api/v1/auth` POST issues a token, GET returns the current user, DELETE logs out. Impersonation is supported via `POST /auth/impersonate`.
+- **Auth** is a **module**, not baked into the template — add it with `php artisan module:add Auth` (choose Sanctum, or Sanctum + Passport OAuth for OAuth-speaking MCP clients). It provides login/me/logout + impersonation + forgot-password, the `/mcp` server endpoint, and the optional OAuth 2.1 layer. A fresh template has no login until the module is added (usually via `project:init`). See `docs/Authentication.md` + `docs/modules.md`.
 - **File pipeline**: `app/Models/File.php` + `app/Http/Controllers/FileController.php` handle upload, sized variant URLs, signed download, view, and destroy. S3-backed in non-local envs.
 - **WhoDidIt audit trail**: `app/Traits/WhoDidIt.php` + `WhoDidItMixin` adds `created_by` / `updated_by` to any model that uses the trait. Schema helper available via `$table->whoDidIt()`.
 - **Router DSL**: `resources/ts/router/` has a custom `RouteDesigner` + `RouteBuilder` + `RouteGroup` API on top of vue-router. See `router/index.ts` for examples.

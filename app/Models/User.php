@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Mail\ForgotPasswordMail;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -18,7 +17,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
@@ -74,17 +72,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 $user->password = Hash::make($user->password);
             }
         });
-    }
-
-    /**
-     * sendPasswordResetNotification
-     *
-     * @param  mixed  $token
-     */
-    public function sendPasswordResetNotification($token): void
-    {
-        Mail::to($this)
-            ->send(new ForgotPasswordMail($token, $this));
     }
 
     protected function fullName(): Attribute
