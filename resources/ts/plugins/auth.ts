@@ -5,9 +5,9 @@ import type {App} from "vue"
 
 export interface Auth {
   user: App.Models.AuthUser | null
-  /*hasPermission: (permission: string) => boolean
+  hasPermission: (permission: string) => boolean
   hasAllPermissions: (permissions: string[] | string[][]) => boolean
-  hasAnyPermissions: (permissions: string[] | string[][]) => boolean*/
+  hasAnyPermissions: (permissions: string[] | string[][]) => boolean
   login: (form: LoginForm) => Promise<AxiosResponse<{ access_token: string }>>
   loadUser: (force?: boolean) => Promise<void>
   logout: () => Promise<void>
@@ -25,15 +25,19 @@ export const $auth: Auth = {
     const userStore = useUserStore()
     userStore.user = user
   },
-  /*hasPermission(permission: string): boolean {
+  hasPermission(permission: string): boolean {
     return this.hasAnyPermissions([permission])
   },
   hasAnyPermissions(permissions: string[] | string[][]): boolean {
-    return permissions.flat().some((p) => getPermissionsFromUser(this.user).includes(p))
+    const granted = getPermissionsFromUser(this.user)
+
+    return permissions.flat().some((p) => granted.includes(p))
   },
   hasAllPermissions(permissions: string[] | string[][]): boolean {
-    return permissions.flat().every((p) => getPermissionsFromUser(this.user).includes(p))
-  },*/
+    const granted = getPermissionsFromUser(this.user)
+
+    return permissions.flat().every((p) => granted.includes(p))
+  },
   async login(form: LoginForm) {
     const userStore = useUserStore()
     return await userStore.login(form)
@@ -59,19 +63,24 @@ export const $auth: Auth = {
   },
 }
 
-/*function getPermissionsFromUser(user: App.Models.AuthUser | null) {
-  let permissions: string[] = []
+/**
+ * Permission names granted to the user.
+ *
+ * `all_permissions` is contributed by the RolesPermissions module (it is
+ * spatie's getAllPermissions() shape: [{name: string}, ...]). A project without
+ * that module has no such key, so this returns [] and every permission check
+ * FAILS CLOSED rather than throwing — which is what the commented-out version
+ * used to do, since Authorization.ts calls these on every gated navigation.
+ */
+function getPermissionsFromUser(user: App.Models.AuthUser | null): string[] {
+  const granted = (user as { all_permissions?: { name: string }[] } | null)?.all_permissions
 
-  if (!user) {
-    return permissions
+  if (!Array.isArray(granted)) {
+    return []
   }
 
-  permissions = permissions.concat(user.all_permissions.map((p) => p.name))
-
-  permissions = [...new Set(permissions)]
-
-  return permissions
-}*/
+  return [...new Set(granted.map((p) => p.name))]
+}
 
 export default {
   install(app: App) {
