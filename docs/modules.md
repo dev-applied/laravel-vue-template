@@ -59,6 +59,19 @@ with `resources/` (frontend) on macOS's case-insensitive filesystem.
   and still rely on `$http` / `$auth` / `$error`. `modules/Files` registers
   `$file` this way. A module that needs to augment the global property types
   ships its own `.d.ts` — `tsconfig.json` already globs `modules/**/*.ts`.
+- **An option-pruned page must be registered through a glob, not a static
+  import.** `routes.ts` is not dropped by an option, but the pages it points at
+  may be — and a static `() => import(".../DroppedPage.vue")` fails the vite
+  build with an unresolved module. Use `import.meta.glob`, which only ever
+  contains files that exist at build time:
+
+  ```ts
+  const pages = import.meta.glob('./pages/Ticket*.vue')
+  if (pages['./pages/TicketsPage.vue']) {
+    RouteDesigner.route("/tickets", pages['./pages/TicketsPage.vue'] as never, ROUTES.TICKETS)
+  }
+  ```
+  `modules/Support` is the reference.
 - **Pages are lazy imports, never strings** — the string resolver only sees
   `resources/ts/pages/`. `() => import("@modules/X/resources/ts/pages/XPage.vue")`
   also code-splits per module.
@@ -224,8 +237,17 @@ Authoring — `module.json` `options`:
 4. **Route names are namespaced** (`example.notes`) and exported from
    routes.ts; pages/components prefix with the module name where collision is
    plausible.
-5. **Migrations are append-only** once a module has shipped anywhere.
-6. **The Wayfinder gotcha**: Wayfinder generates from the CACHED route table
+5. **Migrations are append-only** once a module has shipped anywhere, and a
+   migration that creates a table the kernel or another module might already own
+   must be **guarded** (`if (Schema::hasTable(...)) return;`). `modules/Files`
+   adopts an existing `files` table rather than colliding with it.
+6. **Never hardcode a guard name.** This template registers a `sanctum` guard,
+   and spatie-style guard inference reads `auth.providers.*.model` — a role or
+   permission created as `web` is invisible to a user resolved as `sanctum`.
+   `modules/RolesPermissions/Support/Guard.php` shows the derivation.
+7. **A module may not assume another module is installed.** Degrade instead:
+   `modules/Invitations` applies a role only `if (method_exists($user, 'assignRole'))`.
+8. **The Wayfinder gotcha**: Wayfinder generates from the CACHED route table
    when one exists. After adding/removing a module, run
    `php artisan route:clear` before any `npm run build` / `composer
    typescript`, or module routes silently vanish from the generated TS.
