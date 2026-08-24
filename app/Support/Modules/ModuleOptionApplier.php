@@ -142,8 +142,41 @@ class ModuleOptionApplier
      */
     private function drop(string $moduleDir, array $globs): void
     {
+        $parents = [];
+
         foreach ($this->matchGlobs($moduleDir, $globs) as $match) {
+            $parents[] = dirname($match);
             $this->deletePath($match);
+        }
+
+        $this->pruneEmptyDirectories($moduleDir, $parents);
+    }
+
+    /**
+     * Remove directories the drop just emptied.
+     *
+     * An installed module carrying an empty `Mail/` reads as a broken install —
+     * the option removed the mailable, not the concept of mail. Walks upward so
+     * dropping the only file in `resources/views/mail/` takes the now-empty
+     * `mail/` with it, and stops at the module root, which always stays.
+     *
+     * @param  list<string>  $directories
+     */
+    private function pruneEmptyDirectories(string $moduleDir, array $directories): void
+    {
+        $root = mb_rtrim((string) realpath($moduleDir), DIRECTORY_SEPARATOR);
+
+        foreach (array_unique($directories) as $directory) {
+            $current = (string) realpath($directory);
+
+            while ($current !== '' && $current !== $root && str_starts_with($current, $root.DIRECTORY_SEPARATOR)) {
+                if (! File::isDirectory($current) || File::files($current) !== [] || File::directories($current) !== []) {
+                    break;
+                }
+
+                File::deleteDirectory($current);
+                $current = dirname($current);
+            }
         }
     }
 
