@@ -3,11 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Support\Facades\RateLimiter;
 
 beforeEach(function () {
-    RateLimiter::clear('login:127.0.0.1');
-
     $this->user = User::factory()->create([
         'email'    => 'test@example.com',
         'password' => 'password',
@@ -56,25 +53,25 @@ test('user can logout', function () {
     // Reset the resolved guard so Sanctum re-checks the token
     app('auth')->forgetGuards();
 
-    // Token should be revoked
+    // Token should be revoked. /api/v1/auth is deliberately public (it must
+    // answer guests), so a revoked token gets 200 with user: null — never 401.
     $this->getJson('/api/v1/auth', [
         'Authorization' => "Bearer {$token}",
-    ])->assertUnauthorized();
+    ])->assertOk()->assertJsonPath('user', null);
 });
 
 test('login is rate limited', function () {
+    // throttle:6,1 on the login route: six attempts pass through (each a
+    // 422 for the wrong password), the seventh is throttled.
     for ($i = 0; $i < 6; $i++) {
         $this->postJson('/api/v1/auth', [
             'email'    => 'test@example.com',
             'password' => 'wrong',
-        ]);
+        ])->assertUnprocessable();
     }
 
-    $response = $this->postJson('/api/v1/auth', [
+    $this->postJson('/api/v1/auth', [
         'email'    => 'test@example.com',
         'password' => 'wrong',
-    ]);
-
-    $response->assertUnprocessable()
-        ->assertJsonValidationErrors('email');
+    ])->assertTooManyRequests();
 });
