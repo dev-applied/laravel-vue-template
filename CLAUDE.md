@@ -10,7 +10,7 @@ Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / 
 
 - **Never run `artisan`, `composer`, or `npm` on the host.** Always `docker compose exec webserver <cmd>`. MySQL and Redis live on the Traefik network and host commands can't see them.
 - **Never hardcode hex / rgba colors in SCSS or templates.** Use Vuetify theme tokens (`rgb(var(--v-theme-primary))` etc.) so brand themes work.
-- **Never mock the database in integration / Feature tests.** Use a real DB. Sqlite-in-memory is fine for `tests/Unit`; `RefreshDatabase` against the project's mysql in `tests/Feature`.
+- **Never mock the database in tests.** Use a real database — `RefreshDatabase`, real migrations, real queries. Note what the suite actually runs on today: `phpunit.xml` sets `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` for **every** suite including `tests/Feature`, not the project's mysql. That is fast and is what module CI uses, but it will not catch MySQL-specific behaviour (JSON column semantics, strict-mode errors, collation). Write portable queries, and reach for the mysql container when a change depends on engine behaviour.
 - **Never run `migrate:fresh` without verifying it targets a test database.** It will wipe dev data otherwise.
 - **Never use `v-if` / `v-else` on elements with pointer or drag listeners** — they tear down and re-create the DOM node, breaking event listeners mid-interaction. Use `v-show`.
 - **Never silently swallow errors.** Surface to the user via `this.$error(...)` / `$messages` or report to Sentry. AppServerValidationForm handles 422 automatically; everything else should route through the errorHandler plugin.

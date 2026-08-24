@@ -33,7 +33,7 @@ Pulling shipped verticals out of the kernel and into the modules repo. Decision 
 Decision 2026-08-24: read washwerk's 34 production modules for shape, write fresh generic code — no client code copied. Priority order; `docs/modules.md` explicitly names OTP / subscriptions / exports / booking as target verticals.
 
 - [x] **Notifications** — feed, unread count, mark-read/all, dismiss, ExampleNotification, bell + wired container + page + polling composable, 10 tests — 2026-08-24
-- [ ] **Exports** — queued CSV/XLSX export of any listing, with progress + signed download. Pairs with AppListTable / usePaginationData.
+- [~] **Exports** — `master` (direct), modules repo `main` — queued CSV/XLSX export of any listing, with progress + signed download. Pairs with AppListTable / usePaginationData.
 - [ ] **Otp** — one-time-code auth (email + SMS), vendor-swappable via module options. Ships its env-gated QA bypass per the qa-affordances rule.
 - [ ] **SavedViews** — per-user persisted table filters / column prefs. Pairs with useFilters + AppPaginationTable.
 - [ ] **Comments** — polymorphic comments/notes on any model, with mentions.

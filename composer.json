@@ -23,6 +23,7 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.9",
         "league/flysystem-aws-s3-v3": "^3.29",
+        "openspout/openspout": "^4.23",
         "sentry/sentry-laravel": "^4.20"
     },
     "require-dev": {
