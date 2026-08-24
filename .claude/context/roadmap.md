@@ -45,9 +45,29 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [ ] **FormBuilder** — dynamic form definitions rendered through the field component library.
 - [ ] **Tasks** — assignable tasks, due dates, status transitions.
 
+## Modules — evidence-ranked candidates (research 2026-08-24)
+
+Counts are DISTINCT projects, machine-derived from 1,074 controllers and 2,828
+migrations across 44 local Laravel repos. Full report:
+`scratchpad/module-candidates.md`. These outrank the speculative queue below.
+
+- [ ] **RolesPermissions** (17 projects) — role/permission CRUD, `permission:` middleware, `can()` composable. 14 repos pull spatie, 3 hand-rolled it. The kernel deliberately dropped spatie, so this is exactly what a module is for.
+- [ ] **Support** (13) — contact form, option-gated up to full ticketing.
+- [ ] **Invitations** (13) — tokenized invite/accept. One appcando thread documents three client-visible bugs in a single hand-rolled invite flow.
+- [ ] **Dashboard** (13) — KPI row, action queue, activity feed. Ship the shell with NO chart dependency and a named slot; the firm has no standard charting library.
+- [ ] **DataImport** (9) — the mirror of the shipped Exports module; washwerk's four-step CSV mapping wizard is liftable.
+- [ ] **Announcements** (5) — best size-to-evidence ratio of the small ones.
+
+## Modules — decisions the research forced
+
+- [ ] **Tenancy sequencing** — SavedViews, Comments and Tasks are queued and all store per-user rows; AuditLog already shipped. If the firm wants tenant scoping, deciding late means retrofitting each. Not a blocker today (AuditLog reads through a project-defined gate, so a tenant-aware project scopes there), but it is Devin's call before the next per-user module.
+- [ ] **Otp depends on an SMS channel** — Twilio appears in 10 projects and levelup couples OtpController to it directly. Otp should take a vendor option rather than hardcoding, or an SmsChannel module should land first.
+- [ ] **SsoAuth should be an Auth option, not a module** — it is an auth strategy, and Auth already owns the option-variant pattern (sanctum | sanctum+oauth).
+
 ## Modules — candidate discovery
 
-- [ ] Mine runbooks, `~/.claude` docs, and CSR conversation history for module candidates the roadmap is missing. Feeds this file rather than shipping code.
+- [x] Mine runbooks, `~/.claude` docs and CSR history for missing module candidates — 14 candidates, 13 explicit rejections — 2026-08-24
+- [x] Confirmed NOT to build: Impersonation (already in Auth — would have topped the list at 23 projects), ScheduledReports (0 evidence), ESignature (0), FeatureFlags (1) — 2026-08-24
 
 ## Project context docs
 
