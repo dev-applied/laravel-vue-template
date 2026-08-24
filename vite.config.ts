@@ -63,6 +63,9 @@ export default defineConfig(({mode, command}) => {
         '@/scss': fileURLToPath(new URL('./resources/scss', import.meta.url)),
         '@/images': fileURLToPath(new URL('./resources/images', import.meta.url)),
         '@': fileURLToPath(new URL('./resources/ts', import.meta.url)),
+        // Module halves import each other through this alias — without it every
+        // modules/<Name>/resources/ts import fails to resolve at build time.
+        '@modules': fileURLToPath(new URL('./modules', import.meta.url)),
       }
     },
     server: {
