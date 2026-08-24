@@ -27,6 +27,7 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 - [x] Clear template-bundled module copies before `module:add` (Example collision) — 2026-08-24
 - [x] Module plugin glob — modules can now ship `resources/ts/plugin.ts` to register globals / Vue plugins — 2026-08-24
 - [x] `npm_requires` — modules can declare npm deps; recorded in package.json when node is off PATH — 2026-08-24
+- [x] `module:add` prunes directories an option drop leaves empty — an empty `Mail/` reads as a broken install — 2026-08-24
 - [ ] `module:update` — the automated three-way merge described in docs/modules.md but not built
 - [ ] Module scaffolding command (`module:make`) so new modules start from the Example shape
 
@@ -44,7 +45,7 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [x] **Notifications** — feed, unread count, mark-read/all, dismiss, ExampleNotification, bell + wired container + page + polling composable, 10 tests — 2026-08-24
 - [x] **Exports** — registry allow-list, queued streaming job, CSV native + XLSX option, export button + history page, 14 tests — 2026-08-24
 - [ ] **Otp** — one-time-code auth (email + SMS), vendor-swappable via module options. Ships its env-gated QA bypass per the qa-affordances rule.
-- [ ] **SavedViews** — per-user persisted table filters / column prefs. Pairs with useFilters + AppPaginationTable.
+- [~] **SavedViews** — modules repo `main` (direct) — per-user persisted table filters / column prefs. Pairs with useFilters + AppPaginationTable.
 - [ ] **Comments** — polymorphic comments/notes on any model, with mentions.
 - [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
 - [ ] **Settings** — typed key/value app settings with a management UI.
@@ -64,7 +65,7 @@ migrations across 44 local Laravel repos. Full report:
 - [x] **Support** (13) — contact form option-gated up to full ticketing (threaded replies, assignment, status), 18 tests — 2026-08-24
 - [x] **Invitations** (13) — tokenized invite/accept, hashed-at-rest tokens, expiry + single-use, 16 tests. One appcando thread documented three client-visible bugs in a single hand-rolled invite flow — 2026-08-24
 - [x] **Dashboard** (13) — registry shell, batched endpoint, ability filtering, per-user cache, error isolation, named chart slot, 11 tests — 2026-08-24
-- [~] **Announcements** (5) — modules repo `main` (direct) — banner/modal announcements with audience targeting, scheduling and per-user dismissal.
+- [x] **Announcements** (5) — banner/modal, scheduling windows, per-user dismissal, acknowledgement, fail-closed AudienceResolver, `delivery` option (in-app | +email), 27 tests — 2026-08-24
 - [x] **DataImport** (9) — registry + queued job mirroring Exports, four-step CSV mapping wizard, 16 tests — 2026-08-24
 
 ## Modules — decisions the research forced
@@ -87,6 +88,8 @@ migrations across 44 local Laravel repos. Full report:
 - [ ] Phases 2-8, 10 — product, glossary, personas, features, workflows, infrastructure/SSH access, integrations, runbooks, ADRs. Several need Devin present (SSH keys, account owners, business model).
 
 ## Template health
+
+- [ ] **41 open Dependabot alerts, all npm** (2 critical, 22 high, 15 moderate, 2 low) — `chore/dependabot-sweep` IS merged, so these are advisories that landed since: axios <1.18, vitest <3.2.6, tar, vite <=7.3.4, brace-expansion, nanoid, js-yaml, ws, form-data, postcss, esbuild, immutable, @babel/core. Zero composer alerts. A template propagates every one of these into each project bootstrapped from it. Mostly transitive — likely an `npm audit fix` plus a lockfile refresh, but it has to clear `npm run build` + vitest before it lands.
 
 - [ ] Re-enable the template's own `.github/workflows/ci.yml` — currently `workflow_dispatch` only, everything else commented out
 - [ ] `vue-tsc --noEmit` type errors on master (73 recorded 2026-05-14) — never gated by CI
