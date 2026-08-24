@@ -47,7 +47,7 @@
     "@vueuse/core": "^13.0.0",
     "axios": "^1.15.2",
     "cross-env": "^7.0.3",
-    "dayjs": "^1.11.13",
+    "dayjs": "^1.11.21",
     "eslint": "^9.0.0",
     "eslint-plugin-vue": "^10.0.0",
     "eslint-plugin-vuetify": "^2.4.0",
