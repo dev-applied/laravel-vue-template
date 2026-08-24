@@ -45,7 +45,7 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 
 - [x] **Notifications** — feed, unread count, mark-read/all, dismiss, ExampleNotification, bell + wired container + page + polling composable, 10 tests — 2026-08-24
 - [x] **Exports** — registry allow-list, queued streaming job, CSV native + XLSX option, export button + history page, 14 tests — 2026-08-24
-- [~] **Otp** — modules repo `main` (direct) — one-time-code auth. Channel is a seam (project binds the SMS driver), same pattern as AudienceResolver / SavedViewScope, so the open Twilio decision no longer blocks it. Ships its env-gated QA bypass per the qa-affordances rule.
+- [x] **Otp** — passwordless sign-in + step-up, OtpChannel seam (email shipped, SMS bound by the project), hashed/single-use/attempt-capped codes, dual rate limiting, enumeration-safe responses, env-gated QA bypass, 30 tests — 2026-08-24
 - [x] **SavedViews** — named filter sets per screen, opaque payload, default view, read-only sharing, 422 on duplicate names, SavedViewScope tenancy seam, 23 tests — 2026-08-24
 - [x] **Comments** — HasComments trait, CommentableRegistry allow-list, internal notes, explicit-token @mentions firing UserMentioned (event, not a notification), `threading` option, 29 tests — 2026-08-24
 - [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
@@ -54,7 +54,7 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [ ] **Billing** — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
 - [ ] **Booking** — resource + availability scheduling.
 - [ ] **FormBuilder** — dynamic form definitions rendered through the field component library.
-- [ ] **Tasks** — assignable tasks, due dates, status transitions.
+- [~] **Tasks** — modules repo `main` (direct) — assignable tasks, due dates, status transitions.
 
 ## Modules — evidence-ranked candidates (research 2026-08-24)
 
