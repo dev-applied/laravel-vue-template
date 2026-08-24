@@ -123,7 +123,7 @@ docker compose exec $DOCKER_ROUTER composer typescript        # runs wayfinder:g
 docker compose exec $DOCKER_ROUTER php artisan vue:make-page
 
 # Create a user from the CLI
-docker compose exec $DOCKER_ROUTER php artisan user:create
+docker compose exec $DOCKER_ROUTER php artisan create:user
 ```
 
 `npm run dev` / `npm run build` run on the host (or in the `frontend` service if you'd rather).

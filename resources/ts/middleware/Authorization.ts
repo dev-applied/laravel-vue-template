@@ -11,7 +11,11 @@ export default class Authorization implements App.Middleware.Instance {
     cancel: NavigationGuardNext
   ): Promise<void> {
     if (!$auth.user) {
-      return cancel("/")
+      // Send guests to login with a deep link back — LoginPage already
+      // restores `?to=` after auth (same pattern as the axios 401 handler).
+      // Cancelling to "/" (the old behaviour) landed on the 404 page: no "/"
+      // route exists.
+      return cancel(routeTo(ROUTES.LOGIN, {}, {to: (to as RouteLocationNormalizedLoaded).fullPath}))
     }
 
     if (to.meta.permissions_all.length && !$auth.hasAllPermissions(to.meta.permissions_all)) {

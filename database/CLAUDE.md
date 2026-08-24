@@ -16,7 +16,7 @@ Database conventions for this template. Read after the root `CLAUDE.md`.
 
 ## Seeders
 
-- `DatabaseSeeder` is intentionally minimal — most projects bootstrap with a `php artisan user:create` instead of seeded users. Real seeding belongs in project-specific seeders.
+- `DatabaseSeeder` is intentionally minimal — most projects bootstrap with a `php artisan create:user` instead of seeded users. Real seeding belongs in project-specific seeders.
 - If you need QA-friendly seeded users at multiple permission tiers, write a `QaSeeder` class and invoke it with `php artisan db:seed --class=QaSeeder` rather than auto-running on every fresh.
 - Use factories from seeders — don't rebuild user data inline.
 
