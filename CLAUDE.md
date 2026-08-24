@@ -25,7 +25,7 @@ Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / 
 - **Routing (frontend)**: Custom DSL on top of vue-router in `resources/ts/router/`. `RouteDesigner` / `RouteBuilder` / `RouteGroup` define routes with middleware pipelines (Authentication / Authorization / Guest / ForceTypes). Use `this.$routeTo(this.ROUTES.X)` to navigate.
 - **Type generation**: `composer typescript` runs `wayfinder:generate` to emit TS types into `resources/ts/types/laravel/` from Laravel routes/controllers. Re-run after backend changes.
 - **WhoDidIt**: `app/Traits/WhoDidIt.php` + `WhoDidItMixin` adds `created_by` / `updated_by` to any model. Use `$table->whoDidIt()` in migrations to add the columns.
-- **File pipeline**: `app/Models/File.php` + `FileController.php` handle upload, sized variants, signed download/view. Frontend wrappers: `AppFileUpload`, `AppFileDropzone`, `useFileUpload`.
+- **File pipeline**: not in the kernel — ships as `modules/Files` (`php artisan module:add Files`). Upload, sized variants, signed download/view, plus its own Vue half (`AppFileUpload`, `AppFileDropzone`, `AppFileUploadBtn`, `AppLightBoxImage`, `useFileUpload`, `$file`). Its `storage` option picks direct upload or presigned S3.
 - **Form validation**: `AppServerValidationForm` wraps `<v-form>`, auto-displays 422 server errors per field. Use it for every form that hits a Laravel endpoint with a FormRequest.
 - **Sentry**: wired both sides. `sentry_logs` log channel in `config/logging.php`. `app/Exceptions/Sentry.php` hooks the exception handler.
 

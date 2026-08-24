@@ -18,11 +18,11 @@ class ModuleOptionApplier
     /**
      * @param  array<string, mixed>  $schema  module.json "options"
      * @param  array<string, string|array<int, string>|bool>  $resolved  selections from the resolver
-     * @return array{require: array<int,string>, require_dev: array<int,string>, run: array<int,string>}
+     * @return array{require: array<int,string>, require_dev: array<int,string>, npm: array<int,string>, npm_dev: array<int,string>, run: array<int,string>}
      */
     public function apply(string $moduleDir, array $schema, array $resolved, string $envPath): array
     {
-        $plan = ['require' => [], 'require_dev' => [], 'run' => []];
+        $plan = ['require' => [], 'require_dev' => [], 'npm' => [], 'npm_dev' => [], 'run' => []];
 
         foreach ($schema as $key => $def) {
             if (! array_key_exists($key, $resolved)) {
@@ -37,12 +37,16 @@ class ModuleOptionApplier
 
                 $plan['require']     = [...$plan['require'], ...array_values((array) ($effects['require'] ?? []))];
                 $plan['require_dev'] = [...$plan['require_dev'], ...array_values((array) ($effects['require_dev'] ?? []))];
+                $plan['npm']         = [...$plan['npm'], ...array_values((array) ($effects['npm'] ?? []))];
+                $plan['npm_dev']     = [...$plan['npm_dev'], ...array_values((array) ($effects['npm_dev'] ?? []))];
                 $plan['run']         = [...$plan['run'], ...array_values((array) ($effects['run'] ?? []))];
             }
         }
 
         $plan['require']     = array_values(array_unique($plan['require']));
         $plan['require_dev'] = array_values(array_unique($plan['require_dev']));
+        $plan['npm']         = array_values(array_unique($plan['npm']));
+        $plan['npm_dev']     = array_values(array_unique($plan['npm_dev']));
         $plan['run']         = array_values(array_unique($plan['run']));
 
         return $plan;

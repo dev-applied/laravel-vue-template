@@ -54,8 +54,6 @@ Field components live in `components/fields/`. Use them by default over raw Vuet
 | `AppCombobox`         | Tags / multi-select with free-text.                                |
 | `AppDateInput`        | Dates — standardizes display format and parsing.                   |
 | `AppMaskField`        | Phone, SSN, anything with a mask.                                  |
-| `AppFileDropzone`     | Drag-and-drop upload area.                                         |
-| `AppFileUpload[Btn]`  | Single-button upload.                                              |
 | `AppAddressField`     | Google Places-backed address autocomplete.                         |
 | `AppPasswordValidation` | Password input with strength + rules display.                    |
 

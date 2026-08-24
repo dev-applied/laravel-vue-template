@@ -60,9 +60,11 @@ After cloning this template into a new project directory:
 | `vite ^7`, `vitest ^3`   | Build + tests                                        |
 
 **Component library** (`resources/ts/components/`):
-`AppDialog`, `AppListTable`, `AppPaginationTable`, `AppTable`, `AppLoader`, `AppMessages`, `AppPasswordValidation`, `AppServerValidationForm`, `AppLightBoxImage`, `UpdateDetector`, plus form fields: `AppAddressField`, `AppAutoComplete` (own folder), `AppCombobox`, `AppDateInput`, `AppFileDropzone`, `AppFileUpload`, `AppFileUploadBtn`, `AppMaskField`.
+`AppDialog`, `AppListTable`, `AppPaginationTable`, `AppTable`, `AppLoader`, `AppMessages`, `AppPasswordValidation`, `AppServerValidationForm`, `UpdateDetector`, plus form fields: `AppAddressField`, `AppAutoComplete` (own folder), `AppCombobox`, `AppDateInput`, `AppMaskField`.
 
-**Composables** (`resources/ts/composables/`): `useAuth`, `useFile`, `useFileUpload`, `useHttp`, `usePaginationData`, `useProxy`, `useRoute`, `useTime`, `useValidators`.
+The file components — `AppFileUpload`, `AppFileUploadBtn`, `AppFileDropzone`, `AppLightBoxImage` — moved into `modules/Files`. Run `php artisan module:add Files` to get them.
+
+**Composables** (`resources/ts/composables/`): `useAuth`, `useHttp`, `usePaginationData`, `useProxy`, `useRoute`, `useTime`, `useValidators`. (`useFile` / `useFileUpload` ship with `modules/Files`.)
 
 **Plugins** (`resources/ts/plugins/`): `auth`, `axios`, `backButton`, `breadcrumbs`, `confirm`, `errorHandler`, `file`, `routeTo`, `versioning`, `vuetify`. Plugins register `this.$auth`, `this.$http`, `this.$error`, `this.$routeTo`, etc. as global properties — pages use the Options API style throughout.
 
@@ -134,7 +136,7 @@ docker compose exec webserver php artisan module:add
 ## Architecture notes
 
 - **Auth** is a **module**, not baked into the template — add it with `php artisan module:add Auth` (choose Sanctum, or Sanctum + Passport OAuth for OAuth-speaking MCP clients). It provides login/me/logout + impersonation + forgot-password, the `/mcp` server endpoint, and the optional OAuth 2.1 layer. A fresh template has no login until the module is added (usually via `project:init`). See `docs/Authentication.md` + `docs/modules.md`.
-- **File pipeline**: `app/Models/File.php` + `app/Http/Controllers/FileController.php` handle upload, sized variant URLs, signed download, view, and destroy. S3-backed in non-local envs.
+- **File pipeline**: ships as `modules/Files`, not in the kernel — `php artisan module:add Files`. Handles upload, sized variant URLs, signed download, view and destroy, and carries its own Vue half. Its `storage` option picks direct multipart upload or presigned PUT straight to S3.
 - **WhoDidIt audit trail**: `app/Traits/WhoDidIt.php` + `WhoDidItMixin` adds `created_by` / `updated_by` to any model that uses the trait. Schema helper available via `$table->whoDidIt()`.
 - **Router DSL**: `resources/ts/router/` has a custom `RouteDesigner` + `RouteBuilder` + `RouteGroup` API on top of vue-router. See `router/index.ts` for examples.
 - **Wayfinder TS types**: Backend route/controller signatures are converted to TS at `resources/ts/types/laravel/` via `composer typescript`. Run after changing routes/controllers; frontend calls then have proper typings.
