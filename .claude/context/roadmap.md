@@ -46,9 +46,9 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [x] **Exports** — registry allow-list, queued streaming job, CSV native + XLSX option, export button + history page, 14 tests — 2026-08-24
 - [ ] **Otp** — one-time-code auth (email + SMS), vendor-swappable via module options. Ships its env-gated QA bypass per the qa-affordances rule.
 - [x] **SavedViews** — named filter sets per screen, opaque payload, default view, read-only sharing, 422 on duplicate names, SavedViewScope tenancy seam, 23 tests — 2026-08-24
-- [~] **Comments** — modules repo `main` (direct) — polymorphic comments/notes on any model, with mentions.
+- [x] **Comments** — HasComments trait, CommentableRegistry allow-list, internal notes, explicit-token @mentions firing UserMentioned (event, not a notification), `threading` option, 29 tests — 2026-08-24
 - [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
-- [ ] **Settings** — typed key/value app settings with a management UI.
+- [~] **Settings** — modules repo `main` (direct) — typed key/value app settings with a management UI.
 - [ ] **Tags** — polymorphic tagging + filter integration.
 - [ ] **Billing** — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
 - [ ] **Booking** — resource + availability scheduling.
