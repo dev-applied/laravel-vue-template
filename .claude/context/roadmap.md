@@ -64,7 +64,7 @@ migrations across 44 local Laravel repos. Full report:
 - [ ] **Support** (13) — contact form, option-gated up to full ticketing.
 - [~] **Invitations** (13) — `master` (direct), modules repo `main` — — tokenized invite/accept. One appcando thread documents three client-visible bugs in a single hand-rolled invite flow.
 - [ ] **Dashboard** (13) — KPI row, action queue, activity feed. Ship the shell with NO chart dependency and a named slot; the firm has no standard charting library.
-- [ ] **DataImport** (9) — the mirror of the shipped Exports module; washwerk's four-step CSV mapping wizard is liftable.
+- [~] **DataImport** (9) — `master` (direct), modules repo `main` — — the mirror of the shipped Exports module; washwerk's four-step CSV mapping wizard is liftable.
 - [ ] **Announcements** (5) — best size-to-evidence ratio of the small ones.
 
 ## Modules — decisions the research forced
