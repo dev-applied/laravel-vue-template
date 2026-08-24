@@ -61,7 +61,7 @@ migrations across 44 local Laravel repos. Full report:
 `scratchpad/module-candidates.md`. These outrank the speculative queue below.
 
 - [x] **RolesPermissions** (17 projects) — spatie-backed role CRUD + permission matrix UI, HasAccessControl trait supplying the `all_permissions` / `role` the kernel frontend already read, middleware aliases, grant-admin bootstrap, 16 tests — 2026-08-24
-- [ ] **Support** (13) — contact form, option-gated up to full ticketing.
+- [~] **Support** (13) — `master` (direct), modules repo `main` — — contact form, option-gated up to full ticketing.
 - [~] **Invitations** (13) — `master` (direct), modules repo `main` — — tokenized invite/accept. One appcando thread documents three client-visible bugs in a single hand-rolled invite flow.
 - [ ] **Dashboard** (13) — KPI row, action queue, activity feed. Ship the shell with NO chart dependency and a named slot; the firm has no standard charting library.
 - [~] **DataImport** (9) — `master` (direct), modules repo `main` — — the mirror of the shipped Exports module; washwerk's four-step CSV mapping wizard is liftable.
