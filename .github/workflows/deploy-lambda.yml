@@ -15,13 +15,41 @@ jobs:
     name: Deploy To Lambda
     environment: //github_environment//
     runs-on: ubuntu-latest
+
+    # Prefer environment SECRETS, fall back to variables — same contract as
+    # dev-applied/deploy-action. Variables are readable by any collaborator and
+    # are not masked in logs, so every sensitive value below should live as a
+    # secret; the `|| vars.X` fallback only exists so un-migrated projects keep
+    # deploying. Resolved once here and consumed as $ENV / $DB_PASSWORD / … so
+    # the values are never interpolated into a `run:` script (which would print
+    # them into the log when they come from a variable).
+    env:
+      ENV: ${{ secrets.ENV || vars.ENV }}
+      VPC_ID: ${{ secrets.VPC_ID || vars.VPC_ID }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD || vars.DB_PASSWORD }}
+      SSL_ARN: ${{ secrets.SSL_ARN || vars.SSL_ARN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID || vars.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY || vars.AWS_SECRET_ACCESS_KEY }}
+
     steps:
-      - name: Check for variables
+      - name: Check for required configuration
         run: |
-          if [ -z "${{ vars.VPC_ID }}" ] || [ -z "${{ vars.DB_PASSWORD }}" ] || [ -z "${{ vars.SSL_ARN }}" ] || [ -z "${{ vars.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ vars.AWS_SECRET_ACCESS_KEY }}" ]; then
-            echo "Error: Required variables VPC_ID or DB_PASSWORD or SSL_ARN or AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY are missing." >&2
+          # Reports every missing name at once instead of failing on the first.
+          # Uses `if` rather than `[ … ] && missing=…`: GitHub runs `run:` under
+          # `bash -e`, where an AND-list that short-circuits false as the LAST
+          # line of the script fails the step. `if` has no such edge.
+          missing=""
+          for name in VPC_ID DB_PASSWORD SSL_ARN AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY ENV; do
+            if [ -z "${!name}" ]; then
+              missing="$missing $name"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "Error: missing required configuration:$missing" >&2
+            echo "Set each as an environment secret (preferred) or variable." >&2
             exit 1
           fi
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -32,8 +60,6 @@ jobs:
           cache: 'npm'
 
       - name: Compile CSS and Javascript
-        env:
-          ENV: ${{ vars.ENV }}
         run: |
           printf "%s" "$ENV" > ".env"
           npm install
@@ -57,8 +83,6 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        env:
-          ENV: ${{ vars.ENV }}
         run: |
           printf "%s" "$ENV" > ".env"
           composer install --prefer-dist --optimize-autoloader --no-dev
@@ -66,9 +90,5 @@ jobs:
       - name: Deploy to AWS Lambda
         run: |
           printf "%s" "$ENV" > ".env"
-          npx serverless deploy --stage=\\stage\\ --param='VPC_ID=${{ vars.VPC_ID }}' --param='DB_PASSWORD=${{ vars.DB_PASSWORD }}' --param='SSL_ARN=${{ vars.SSL_ARN }}'
-          npx serverless bref:cli --stage=\\stage\\ --args="migrate --force" --function artisan --param='VPC_ID=${{ vars.VPC_ID }}' --param='DB_PASSWORD=${{ vars.DB_PASSWORD }}' --param='SSL_ARN=${{ vars.SSL_ARN }}'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ vars.AWS_SECRET_ACCESS_KEY }}
-          ENV: ${{ vars.ENV }}
+          npx serverless deploy --stage=\\stage\\ --param="VPC_ID=$VPC_ID" --param="DB_PASSWORD=$DB_PASSWORD" --param="SSL_ARN=$SSL_ARN"
+          npx serverless bref:cli --stage=\\stage\\ --args="migrate --force" --function artisan --param="VPC_ID=$VPC_ID" --param="DB_PASSWORD=$DB_PASSWORD" --param="SSL_ARN=$SSL_ARN"
