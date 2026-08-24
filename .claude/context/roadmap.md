@@ -33,11 +33,11 @@ Pulling shipped verticals out of the kernel and into the modules repo. Decision 
 Decision 2026-08-24: read washwerk's 34 production modules for shape, write fresh generic code — no client code copied. Priority order; `docs/modules.md` explicitly names OTP / subscriptions / exports / booking as target verticals.
 
 - [x] **Notifications** — feed, unread count, mark-read/all, dismiss, ExampleNotification, bell + wired container + page + polling composable, 10 tests — 2026-08-24
-- [~] **Exports** — `master` (direct), modules repo `main` — queued CSV/XLSX export of any listing, with progress + signed download. Pairs with AppListTable / usePaginationData.
+- [x] **Exports** — registry allow-list, queued streaming job, CSV native + XLSX option, export button + history page, 14 tests — 2026-08-24
 - [ ] **Otp** — one-time-code auth (email + SMS), vendor-swappable via module options. Ships its env-gated QA bypass per the qa-affordances rule.
 - [ ] **SavedViews** — per-user persisted table filters / column prefs. Pairs with useFilters + AppPaginationTable.
 - [ ] **Comments** — polymorphic comments/notes on any model, with mentions.
-- [ ] **AuditLog** — activity trail over any model; natural extension of the kernel's WhoDidIt.
+- [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
 - [ ] **Settings** — typed key/value app settings with a management UI.
 - [ ] **Tags** — polymorphic tagging + filter integration.
 - [ ] **Billing** — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
