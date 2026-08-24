@@ -23,14 +23,19 @@ modules/Example/
 │   ├── Requests/                # FormRequests — all validation lives here
 │   └── Resources/               # API resources (envelope conventions apply)
 ├── Models/                      # models point at their factory via newFactory()
+├── Mail/                        # Mailables the module sends (optional)
+├── Mcp/                         # MCP server + tools (optional; see the Auth module)
+├── Console/Commands/            # module artisan commands (optional)
 ├── Database/
 │   ├── Migrations/              # loaded by the provider; reversible; never edited post-merge
 │   └── Factories/               # Modules\Example\Database\Factories\*
 ├── Routes/api.php               # registered by the provider under api/v1
 ├── Tests/Feature/               # Pest, real DB — wired via phpunit.xml + tests/Pest.php
-└── resources/ts/                # the Vue half (lowercase — mirrors the app root)
-    ├── routes.ts                # registers routes + exports ROUTES constants
-    └── pages/                   # Options API pages, lazy-imported by routes.ts
+├── resources/
+│   ├── views/                   # Blade (mail, server-rendered pages) — loadViewsFrom('<slug>')
+│   └── ts/                      # the Vue half (lowercase — mirrors the app root)
+│       ├── routes.ts            # registers routes + exports ROUTES constants
+│       └── pages/               # Options API pages, lazy-imported by routes.ts
 ```
 
 Naming: PHP dirs mirror `app/` (`Http/Controllers`, not washwerk's flat
@@ -71,6 +76,23 @@ A traveling module may assume ONLY what every template project has:
   human runs the composer require — visible, not magic).
 
 Anything else the module carries itself.
+
+### Route-name contract
+
+The kernel navigates to a few routes **by name** but does not register them
+itself — a module must. These live in `resources/ts/router/kernel-routes.ts`
+(an import-free file, so both `paths.ts` and a module's `routes.ts` can import
+it without the eager-glob import cycle):
+
+- **`LOGIN`** — `Authorization.ts` bounces guests here with a deep link,
+  `axios.ts` redirects 401s here, `Guest.ts` sends logged-in users to
+  `DASHBOARD`. The **Auth module registers it.** A project without the Auth
+  module must register a route named `KERNEL_ROUTES.LOGIN` itself.
+- **`DASHBOARD`** — registered by the kernel (`paths.ts`).
+
+A module that satisfies a kernel route-name contract re-exports the constant
+from its `routes.ts` (Auth exports `LOGIN`) so `paths.ts` merges it back into
+the app `ROUTES`.
 
 ## module.json
 

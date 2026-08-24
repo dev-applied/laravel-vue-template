@@ -3,13 +3,13 @@ import Authentication from "@/middleware/Authentication"
 import ForceTypes from "@/middleware/ForceTypes"
 import Guest from "@/middleware/Guest.ts"
 import Authorization from "@/middleware/Authorization.ts"
+import {KERNEL_ROUTES} from "@/router/kernel-routes"
 
 export const ROUTES = {
-  LOGIN: "login",
-  REGISTER: "register",
-  SET_PASSWORD: "set-password",
+  // LOGIN + DASHBOARD — names the kernel navigates to; see kernel-routes.ts.
+  // LOGIN's route itself is registered by modules/Auth.
+  ...KERNEL_ROUTES,
 
-  DASHBOARD: "dashboard",
   TEST: "test",
 
   ITEMS_LIST:   "items.list",
@@ -37,11 +37,9 @@ for (const moduleRoutes of Object.values(moduleRouteFiles)) {
 
 RouteDesigner.group('', function () {
 
-  // Guest Routes
+  // Guest Routes (login / set-password moved to modules/Auth)
   RouteDesigner.group('', function () {
-    RouteDesigner.route("/login", "LoginPage", ROUTES.LOGIN)
     RouteDesigner.route("/test", "TestPage", ROUTES.TEST)
-    RouteDesigner.route("/set-password", "SetPasswordPage", ROUTES.SET_PASSWORD)
   })
     .layout("Empty")
     .middleware([Guest])

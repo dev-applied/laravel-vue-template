@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Mail;
+namespace Modules\Auth\Mail;
 
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -44,7 +44,7 @@ class ForgotPasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.forgot-password',
+            markdown: 'auth::mail.forgot-password',
         );
     }
 

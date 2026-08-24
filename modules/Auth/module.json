@@ -1,0 +1,7 @@
+{
+    "name": "Auth",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (extracted from the kernel 2026-08-25)",
+    "template_version_tested": "2026-08",
+    "description": "Credential flows for the template: email + password login issuing Sanctum tokens, me / logout, impersonation, forgot + reset password (mail, blade view, SPA pages), the MCP server endpoint (auth:sanctum by default), and the optional Passport OAuth 2.1 layer for MCP clients that need OAuth. Registers the kernel's LOGIN route-name contract."
+}

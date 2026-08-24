@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace Modules\Auth\Http\Controllers;
+
+use App\Http\Controllers\Controller;
 
 use App\Http\Resources\AuthUserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
@@ -47,6 +50,14 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token');
 
+        // With the OAuth layer on, also open a web session so this same browser
+        // can approve /oauth/authorize without logging in a second time. The
+        // route only carries session middleware when oauth is enabled.
+        if (config('auth.oauth.enabled', false) && $request->hasSession()) {
+            Auth::guard('web')->login($user, true);
+            $request->session()->regenerate();
+        }
+
         return response()->json([
             'access_token' => $token->plainTextToken,
             'token_type'   => 'bearer',
@@ -70,6 +81,12 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $request->user('sanctum')?->currentAccessToken()?->delete();
+
+        if (config('auth.oauth.enabled', false) && $request->hasSession()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return response()->json(['message' => 'Logged out']);
     }
