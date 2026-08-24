@@ -61,11 +61,11 @@ migrations across 44 local Laravel repos. Full report:
 `scratchpad/module-candidates.md`. These outrank the speculative queue below.
 
 - [x] **RolesPermissions** (17 projects) — spatie-backed role CRUD + permission matrix UI, HasAccessControl trait supplying the `all_permissions` / `role` the kernel frontend already read, middleware aliases, grant-admin bootstrap, 16 tests — 2026-08-24
-- [~] **Support** (13) — `master` (direct), modules repo `main` — — contact form, option-gated up to full ticketing.
-- [~] **Invitations** (13) — `master` (direct), modules repo `main` — — tokenized invite/accept. One appcando thread documents three client-visible bugs in a single hand-rolled invite flow.
-- [~] **Dashboard** (13) — `master` (direct), modules repo `main` — — KPI row, action queue, activity feed. Ship the shell with NO chart dependency and a named slot; the firm has no standard charting library.
-- [~] **DataImport** (9) — `master` (direct), modules repo `main` — — the mirror of the shipped Exports module; washwerk's four-step CSV mapping wizard is liftable.
-- [ ] **Announcements** (5) — best size-to-evidence ratio of the small ones.
+- [x] **Support** (13) — contact form option-gated up to full ticketing (threaded replies, assignment, status), 18 tests — 2026-08-24
+- [x] **Invitations** (13) — tokenized invite/accept, hashed-at-rest tokens, expiry + single-use, 16 tests. One appcando thread documented three client-visible bugs in a single hand-rolled invite flow — 2026-08-24
+- [x] **Dashboard** (13) — registry shell, batched endpoint, ability filtering, per-user cache, error isolation, named chart slot, 11 tests — 2026-08-24
+- [~] **Announcements** (5) — modules repo `main` (direct) — banner/modal announcements with audience targeting, scheduling and per-user dismissal.
+- [x] **DataImport** (9) — registry + queued job mirroring Exports, four-step CSV mapping wizard, 16 tests — 2026-08-24
 
 ## Modules — decisions the research forced
 
