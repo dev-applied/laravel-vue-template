@@ -37,7 +37,7 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 Pulling shipped verticals out of the kernel and into the modules repo. Decision 2026-08-24: **true extraction** — deleted from the template, projects run `module:add`. Kernel contract in `docs/modules.md` shrinks accordingly. Items stays in the template as the worked example; Example stays as the reference module.
 
 - [x] **Files** — whole vertical moved to `modules/Files`, four latent bugs fixed, 17 tests added, `storage` option (local | s3-presigned) — 2026-08-24
-- [ ] **Users** — UserController, user-management CRUD + pages. User *model* stays kernel (Auth depends on it).
+- [~] **Users** — modules repo `main` (direct) — UserController, user-management CRUD + pages. User *model* stays kernel (Auth depends on it).
 
 ## Modules — generic verticals (built fresh, washwerk as design reference only)
 
