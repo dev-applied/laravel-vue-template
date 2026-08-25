@@ -120,4 +120,20 @@ else
   esac
 fi
 
+echo "── unimported components ──"
+# A <script setup> component resolves a child ONLY if the file imports it. Miss
+# the import and Vue logs "Failed to resolve component" as a WARNING, then
+# renders nothing where the child belongs. Nothing else notices: eslint sees a
+# tag, vue-tsc sees a tag, the build succeeds, the tests pass.
+#
+# AppDateRangePicker shipped this way — its preset chips rendered and both date
+# fields were silently absent. It was found by mounting the component and
+# looking at it, which is not a thing CI can do.
+if python3 bin/find-unimported-components.py "$SRC"; then
+  echo "ok  every component used in a script-setup template is imported"
+else
+  echo "x  a component is used but never imported — it renders as nothing." >&2
+  status=1
+fi
+
 exit "$status"
