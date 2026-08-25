@@ -22,7 +22,20 @@ declare module '@vue/runtime-core' {
       notify = true
     ) => boolean
     $routeTo: (name: string, params?: RouteParamsGeneric, query?: LocationQueryRaw) => RouteLocationRaw
-    ROUTES: typeof ROUTES
+    /**
+     * Kernel route names, plus whatever the installed modules merged in.
+     *
+     * The intersection is the point. `typeof ROUTES` alone is the kernel's
+     * static object literal, so every module route name — which paths.ts adds
+     * at runtime via Object.assign over the routes.ts glob — was a type error
+     * at every call site, in a codebase whose rule is "never inline a route
+     * string". The Record half accepts those; the typeof half keeps
+     * autocomplete and typo-checking for the kernel's own names.
+     *
+     * It does NOT make a missing name safe: $routeTo throws on a name it
+     * cannot resolve, so a typo still fails loudly at runtime.
+     */
+    ROUTES: typeof ROUTES & Record<string, string>
     $vuetify: Vuetify
     $router: Router
     $route: RouteLocationNormalizedLoaded

@@ -35,6 +35,25 @@ for (const moduleRoutes of Object.values(moduleRouteFiles)) {
   Object.assign(ROUTES, moduleRoutes.ROUTES ?? {})
 }
 
+/**
+ * Does an installed module already register this route name?
+ *
+ * The kernel ships fallback pages for the routes it depends on (DASHBOARD), and
+ * a module is entitled to replace one — that is the point of a vertical slice.
+ * It cannot do so by simply registering the same name, though: Vite compiles an
+ * eager `import.meta.glob` into STATIC imports, which are hoisted, so every
+ * module's routes.ts runs before a single line of this file. The kernel's own
+ * registration therefore always lands second and wins the name map, which is
+ * how the whole Dashboard module came to be inert — its page was registered,
+ * then immediately shadowed by the placeholder below.
+ *
+ * So the kernel yields instead of racing: if a module exports the name, the
+ * module owns the route.
+ */
+const moduleProvides = (name: string): boolean =>
+  Object.values(moduleRouteFiles)
+    .some((mod) => Object.values(mod.ROUTES ?? {}).includes(name))
+
 RouteDesigner.group('', function () {
 
   // Guest Routes (login / set-password moved to modules/Auth)
@@ -46,7 +65,11 @@ RouteDesigner.group('', function () {
 
   // Authorized routes
   RouteDesigner.group('', function () {
-    RouteDesigner.route("/dashboard", "DashboardPage", ROUTES.DASHBOARD)
+    // Fallback only. modules/Dashboard replaces this with the real thing;
+    // without the guard the placeholder shadowed it. See moduleProvides above.
+    if (!moduleProvides(ROUTES.DASHBOARD)) {
+      RouteDesigner.route("/dashboard", "DashboardPage", ROUTES.DASHBOARD)
+    }
 
     RouteDesigner.route("/items",         "items/ItemListPage", ROUTES.ITEMS_LIST)
     RouteDesigner.route("/items/new",     "items/ItemFormPage", ROUTES.ITEMS_CREATE)

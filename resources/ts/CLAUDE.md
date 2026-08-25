@@ -36,8 +36,17 @@ These come from plugins in `plugins/` and are available on every component via `
 | `$error`          | `errorHandler.ts`   | `(status, message, errors, surface = true) => boolean` — true if errored.|
 | `$routeTo`        | `plugins/routeTo.ts`| Build a route object from a `ROUTES` enum.                               |
 | `$confirm`        | `plugins/confirm`   | Promisified confirmation dialog.                                         |
-| `$messages`       | `stores/message.ts` | Surface a snackbar message.                                              |
 | `ROUTES`          | `router/paths.ts`   | Route name constants — use with `$routeTo`, never inline strings. Names the kernel navigates to (`LOGIN`, `DASHBOARD`) live in `router/kernel-routes.ts`; `LOGIN`'s route is registered by `modules/Auth`. |
+
+**There is no `$messages` global** — this table used to claim one, and two
+modules wrote `this.$messages.success(...)` against it. Nothing registers it, so
+those calls were `undefined` at runtime. Snackbars come from the store directly:
+`useMessageStore().addSuccess(msg)` (also `addError`, `addWarning`).
+
+`$routeTo` only BUILDS a location object; it does not navigate. Always
+`this.$router.push(this.$routeTo(ROUTES.X))`. It also THROWS on an unknown name,
+so `$routeTo(ROUTES.MISSING ?? "/")` is worse than useless — the fallback asks
+for a route literally named `/`.
 
 ## Forms
 
