@@ -84,11 +84,14 @@ const setPlace = async (suggestion: Suggestion | null) => {
 <template>
   <!-- `return-object` means the emitted value really is the whole Suggestion,
        but Vuetify infers the emit type from item-value ("description") and so
-       declares it a string. The cast on @update:model-value states that. -->
+       declares it a string. The cast on @update:model-value states that.
+       The same inference runs the other way on :model-value — with
+       `return-object` Vuetify wants a Suggestion, while we deliberately bind
+       the raw query string that item-title/item-value resolve against. -->
   <v-autocomplete
     v-bind="$attrs"
     v-model:search="query"
-    :model-value="query"
+    :model-value="(query as any)"
     return-object
     auto-complete="off"
     :items="suggestions"
