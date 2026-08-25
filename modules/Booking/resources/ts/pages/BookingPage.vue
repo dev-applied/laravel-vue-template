@@ -83,6 +83,7 @@ export default defineComponent({
         <AppSlotPicker
           :by-day="byDay"
           :day-label="dayLabel"
+          :window-days="days"
           :loading="loading"
           :selected="selected"
           :time-label="timeLabel"

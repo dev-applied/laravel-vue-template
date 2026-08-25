@@ -16,6 +16,14 @@ export default defineComponent({
     dayLabel:  {type: Function as PropType<(key: string) => string>, required: true},
     timezone:  {type: String, default: 'UTC'},
     loading:   {type: Boolean, default: false},
+    /**
+     * How many days of availability the caller asked for, purely so the empty
+     * state can name it. The old copy said "in this range", which implies a
+     * range the visitor can change — this page loads a fixed window from today
+     * and has no date navigation, so that was a dead end on a public,
+     * unauthenticated page.
+     */
+    windowDays: {type: Number, default: 0},
   },
   emits: ['select'],
   computed: {
@@ -73,7 +81,8 @@ export default defineComponent({
       type="info"
       variant="tonal"
     >
-      No times available in this range.
+      {{ windowDays ? `No times are available in the next ${windowDays} days.` : 'No times are available.' }}
+      Please check back later.
     </v-alert>
   </div>
 </template>

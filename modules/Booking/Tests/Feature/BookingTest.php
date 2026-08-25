@@ -427,3 +427,39 @@ test('approving an already-confirmed booking is idempotent, not a second confirm
     expect($service->approve($booking)->status)->toBe(Booking::STATUS_CONFIRMED)
         ->and($service->approve($booking->fresh())->status)->toBe(Booking::STATUS_CONFIRMED);
 });
+
+test('the resource block names the RESOURCE, not the person who booked', function () {
+    // Booking has a relation called `resource`, and JsonResource has its own
+    // $resource property holding the wrapped model. Every other field in
+    // BookingResource reaches the model through @mixin magic, so
+    // `$this->resource->name` reads as "the related resource's name" and is not
+    // — it returned the BOOKER'S name, with null slug and null timezone,
+    // because a booking row has no such columns.
+    //
+    // The public confirmation page rendered it as "Where: Dana Visitor". Found
+    // by booking a slot in a browser, with the suite green.
+    $booking = Booking::factory()->create([
+        'bookable_resource_id' => $this->resource->getKey(),
+        'name'                 => 'Dana Visitor',
+        'email'                => 'dana@example.com',
+    ]);
+
+    $payload = (new Modules\Booking\Http\Resources\BookingResource($booking->load('resource')))
+        ->toArray(request());
+
+    expect($payload['name'])->toBe('Dana Visitor')
+        ->and($payload['resource']['name'])->toBe($this->resource->name)
+        ->and($payload['resource']['name'])->not->toBe('Dana Visitor')
+        ->and($payload['resource']['slug'])->toBe('room-a')
+        ->and($payload['resource']['timezone'])->not->toBeNull();
+});
+
+test('the resource block is omitted when the relation was not loaded', function () {
+    // The other half: fixing the collision must not turn `when(...)` into
+    // something that always fires and lazy-loads a query per serialized row.
+    $booking = Booking::factory()->create(['bookable_resource_id' => $this->resource->getKey()]);
+
+    $payload = (new Modules\Booking\Http\Resources\BookingResource($booking))->toArray(request());
+
+    expect($payload['resource'])->toBeInstanceOf(Illuminate\Http\Resources\MissingValue::class);
+});
