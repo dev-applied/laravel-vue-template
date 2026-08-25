@@ -102,6 +102,20 @@ defaults back after an insert, so without `$attributes` a freshly created task
 has a null status and anything reading it gets null — which is exactly how the
 resource 500'd before the tests caught it.
 
+**The board is drag-only, and that is a deliberate accessibility boundary.**
+Dragging a card is a pointer gesture with no keyboard equivalent, so the board
+is not the only way to move a task: `TasksPage` sets status from per-row
+buttons, and the two views link to each other, so a keyboard-only user has a
+complete path. Say this out loud in a client build rather than discovering it
+in an audit.
+
+Cards do NOT advertise a click by default. `AppTaskCard` used to emit `open`
+and render as `v-card--link` unconditionally, while `TaskBoardPage` never bound
+the listener and no task detail route exists — so the card had pointer-cursor
+link styling and clicking it did nothing. Adding a detail view means binding
+`@open` AND passing `:clickable`, which together turn on the role, the tab stop
+and Enter/Space activation.
+
 **The board never uses `v-if` on a draggable subtree.** `v-show` throughout:
 tearing out the element the pointer is over kills the drag mid-gesture. The
 column grid stays mounted for the same reason.

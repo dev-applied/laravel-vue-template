@@ -14,6 +14,8 @@ export default defineComponent({
     tasks:  {type: Array as PropType<Task[]>, default: () => []},
     /** The card currently being dragged, so the column can refuse it up front. */
     dragging: {type: Object as PropType<Task | null>, default: null},
+    /** Passed through to the cards — see AppTaskCard's `clickable`. */
+    clickable: {type: Boolean, default: false},
   },
   emits: ['drop', 'dragstart', 'open'],
   data() {
@@ -72,6 +74,7 @@ export default defineComponent({
     </div>
 
     <AppTaskCard
+      :clickable="clickable"
       v-for="task in tasks"
       :key="task.id"
       draggable

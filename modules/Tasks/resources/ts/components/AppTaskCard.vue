@@ -9,9 +9,48 @@ export default defineComponent({
   props: {
     task:      {type: Object as PropType<Task>, required: true},
     draggable: {type: Boolean, default: false},
+    /**
+     * Whether opening the card does anything.
+     *
+     * The card emitted `open` and rendered as `v-card--link` unconditionally,
+     * so on the board it had pointer-cursor link styling and clicking it did
+     * NOTHING — TaskBoardPage never bound the listener, and there is no task
+     * detail route for it to reach. A control that looks interactive and is
+     * not is worse than no control.
+     *
+     * A project that adds a detail view sets this and binds @open; that also
+     * turns on the keyboard path, because a mouse-only card is not a control
+     * either.
+     */
+    clickable: {type: Boolean, default: false},
   },
   emits: ['open', 'dragstart'],
   computed: {
+    /**
+     * Bound with `v-on` rather than `@click`, because Vuetify infers
+     * `v-card--link` — pointer cursor, hover elevation — from a click listener
+     * EXISTING. An inert handler (`@click="clickable && ..."`) still counts, so
+     * the card kept advertising a click it would not perform. Absent, not inert.
+     */
+    openListeners(): Record<string, (e: Event) => void> {
+      if (! this.clickable) {
+        return {}
+      }
+
+      const open = () => this.$emit('open', this.task)
+
+      return {
+        click: open,
+        keydown: (e: Event) => {
+          const key = (e as KeyboardEvent).key
+
+          if (key === 'Enter' || key === ' ') {
+            e.preventDefault()
+            open()
+          }
+        },
+      }
+    },
     priorityColor(): string {
       return PRIORITY_COLORS[this.task.priority] ?? 'default'
     },
@@ -28,7 +67,9 @@ export default defineComponent({
     class="app-task-card mb-2"
     :draggable="draggable"
     :variant="task.isClosed ? 'tonal' : 'elevated'"
-    @click="$emit('open', task)"
+    :role="clickable ? 'button' : undefined"
+    :tabindex="clickable ? 0 : undefined"
+    v-on="openListeners"
     @dragstart="$emit('dragstart', task, $event)"
   >
     <v-card-text class="pa-3">

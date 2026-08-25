@@ -228,10 +228,16 @@
             <div
               v-if="!file.src"
               class="img-details"
+              role="button"
+              tabindex="0"
+              :aria-label="`Preview ${file.name}`"
               @click="handleFilePreviewClick(file)"
+              @keydown.enter.prevent="handleFilePreviewClick(file)"
+              @keydown.space.prevent="handleFilePreviewClick(file)"
             >
               <v-btn
                 class="img-remove"
+                :aria-label="`Remove ${file.name}`"
                 @click.prevent.stop="removeFile(file)"
               >
                 <svg
