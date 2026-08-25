@@ -1,0 +1,36 @@
+{
+    "name": "Announcements",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; 5 of 44 local client repos ship an in-app announcement/banner surface, every one hand-rolled)",
+    "template_version_tested": "2026-08",
+    "description": "Scheduled in-app announcements shown as a dismissible banner or a modal, with per-user dismissal that survives a reload and a project-defined audience resolver. Optionally emails the announcement when it is published.",
+    "composer_requires": [],
+    "options": {
+        "delivery": {
+            "prompt": "Should publishing an announcement also email it?",
+            "type": "select",
+            "default": "in-app",
+            "choices": {
+                "in-app": {
+                    "label": "In-app only \u2014 banner and modal, nothing leaves the app",
+                    "drop": [
+                        "Database/Migrations/2026_08_25_030000_create_announcement_deliveries_table.php",
+                        "Jobs/SendAnnouncementEmails.php",
+                        "Mail/AnnouncementMail.php",
+                        "resources/views/mail/announcement.blade.php",
+                        "Tests/Feature/AnnouncementEmailTest.php"
+                    ],
+                    "env": {
+                        "ANNOUNCEMENTS_EMAIL": "false"
+                    }
+                },
+                "in-app+email": {
+                    "label": "In-app and email \u2014 publishing queues a mail to the resolved audience",
+                    "env": {
+                        "ANNOUNCEMENTS_EMAIL": "true"
+                    }
+                }
+            }
+        }
+    }
+}
