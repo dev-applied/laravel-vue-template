@@ -6,7 +6,6 @@ import type {
   LocationQueryRaw,
   RouteLocationNormalizedLoaded,
   RouteLocationRaw,
-  RouteParamsGeneric,
   Router
 } from "vue-router"
 import type {VBtn} from "vuetify/lib/components/VBtn"
@@ -21,7 +20,19 @@ declare module '@vue/runtime-core' {
       errors: boolean | any = false,
       notify = true
     ) => boolean
-    $routeTo: (name: string, params?: RouteParamsGeneric, query?: LocationQueryRaw) => RouteLocationRaw
+    /**
+     * BUILDS a location — it does not navigate. Always `$router.push($routeTo(…))`.
+     *
+     * The params type matches routeTo.ts, which accepts numbers. The narrower
+     * RouteParamsGeneric declared here before did not, so passing a record id
+     * (`{id: ticket.id}`) was an error at every call site that did the natural
+     * thing. It also throws on a name it cannot resolve.
+     */
+    $routeTo: (
+      name: string,
+      params?: Record<string, string | string[] | number | number[]>,
+      query?: LocationQueryRaw
+    ) => RouteLocationRaw
     /**
      * Kernel route names, plus whatever the installed modules merged in.
      *
