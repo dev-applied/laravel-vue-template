@@ -39,7 +39,7 @@
             }
         }
     },
-    "installed_from_commit": "4b88a97f56f8acb4dc037d34e169b8efb72e4061",
+    "installed_from_commit": "66f8a49a0f429bf4a9c909bd671a8cfb9241032e",
     "installed_at": "2026-08-25",
     "installed_options": {
         "storage": "local"

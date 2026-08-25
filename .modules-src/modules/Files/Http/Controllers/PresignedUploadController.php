@@ -47,7 +47,10 @@ class PresignedUploadController extends Controller
         $refusal = $quota->refuse($request->user()?->getKey(), (int) ($sizeBytes / 1000));
 
         if ($refusal !== null) {
-            throw new AppException($refusal, 422);
+            // 413, the same as the direct path in FileController. The condition
+            // is identical, so the status has to be — a client cannot handle
+            // "over quota" uniformly if it arrives as 422 here and 413 there.
+            throw new AppException($refusal, 413);
         }
 
         $disk = Storage::disk();
@@ -136,13 +139,20 @@ class PresignedUploadController extends Controller
         // the bytes never to land at bucket-level scanning instead.
         $uploaderId = $file->getAttribute($file->getCreatedByColumn());
 
-        $reason = $scanner->refuse($this->localCopyOf($disk, $path, $file->name))
-            ?? $quota->refuse($uploaderId, $sizeKb);
-
-        if ($reason !== null) {
+        // Separate statuses because these are separate refusals: the scanner
+        // rejects the CONTENT (422), the quota rejects the SIZE (413). Lumping
+        // them meant an over-quota upload answered 413 on the direct path and
+        // 422 here, for the same reason.
+        if ($reason = $scanner->refuse($this->localCopyOf($disk, $path, $file->name))) {
             $file->delete();   // File::deleting unlinks the object too.
 
             throw new AppException($reason, 422);
+        }
+
+        if ($reason = $quota->refuse($uploaderId, $sizeKb)) {
+            $file->delete();
+
+            throw new AppException($reason, 413);
         }
 
         $file->forceFill(['size' => $sizeKb])->save();

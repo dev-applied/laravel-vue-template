@@ -199,6 +199,27 @@ return [
 ];
 ```
 
-Counted per uploader against `files.created_by_id`, and refused with **413**.
+Counted per uploader against `files.created_by_id`, and refused with **413** on
+BOTH storage paths. The scanner refuses with 422 instead — the quota rejects the
+size, the scanner rejects the content, and a client needs to tell them apart.
+
+**When each path checks.** `local` checks before the write, because the file is
+in the request. `s3-presigned` checks twice, and the first one matters most:
+
+| Point | Path | What it catches |
+|---|---|---|
+| `POST /files/generate-presigned-url` | s3-presigned | The declared `file_size`, before anything is signed and before a File row is reserved. |
+| `PUT /files/process/{file}` | s3-presigned | The REAL size once the object has landed. |
+
+`file_size` is required on generate and capped at the same figure the direct
+path uses, so both variants refuse the same file. It is also signed into the
+PUT as `ContentLength`, which is what stops a caller declaring 1 KB and then
+writing a gigabyte with the URL they were handed — server-side validation alone
+would only be as good as the client's honesty.
+
+The second check still exists because the first one trusts a number: it deletes
+the object it just found to be over quota. That is the honest limit of a
+presigned design, the same one the scanner has.
+
 Off by default, because a cap appearing on install would break every project
 that never asked for one.

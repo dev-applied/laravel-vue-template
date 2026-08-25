@@ -85,7 +85,7 @@ test('an over-quota upload is refused before a row is reserved', function () {
             'file_type' => 'image/jpeg',
             'file_size' => 200 * 1000,
         ])
-        ->assertStatus(422);
+        ->assertStatus(413);
 
     // Still just the seeded row — nothing was reserved for the refused upload.
     expect(File::query()->count())->toBe(1);
@@ -226,4 +226,28 @@ test('a refused object is deleted from the bucket, not just rejected', function 
 
     expect(File::find($file->id))->toBeNull()
         ->and(Storage::disk($file->disk)->exists($path))->toBeFalse();
+});
+
+test('both storage paths refuse an over-quota upload with the same status', function () {
+    // The same condition answered 413 on the direct path (FileController) and
+    // 422 here, so a client could not handle "over quota" in one place. The
+    // codes carry different meanings and the module has to pick one per reason:
+    // the quota rejects the SIZE (413), the scanner rejects the CONTENT (422).
+    config()->set('files.quota_mb', 1);
+    File::factory()->create(['created_by_id' => $this->user->id, 'size' => 900]);
+
+    $presigned = $this->actingAs($this->user)
+        ->postJson('/api/v1/files/generate-presigned-url', [
+            'file_name' => 'photo.jpg',
+            'file_type' => 'image/jpeg',
+            'file_size' => 200 * 1000,
+        ]);
+
+    $direct = $this->actingAs($this->user)
+        ->postJson('/api/v1/files', [
+            'file' => \Illuminate\Http\UploadedFile::fake()->create('photo.jpg', 200),
+        ]);
+
+    expect($presigned->status())->toBe(413)
+        ->and($direct->status())->toBe($presigned->status());
 });
