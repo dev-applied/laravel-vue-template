@@ -132,7 +132,7 @@
 
 <script lang="ts">
 import validators from "@/mixins/validators"
-import {defineAsyncComponent, defineComponent} from "vue"
+import {defineAsyncComponent, defineComponent, markRaw} from "vue"
 
 // import.meta.glob rather than a bare dynamic import: the `none` SSO variant
 // DELETES SsoButtons.vue, and a static path to a missing module fails the whole
@@ -154,7 +154,10 @@ export default defineComponent({
       forgotPasswordError: ['*Please enter an email to reset your password.'],
       showPassword: false,
       showLogin: true,
-      ssoButtons: ssoGlob[ssoPath] ? defineAsyncComponent(ssoGlob[ssoPath] as never) : null,
+      // markRaw: a component object stored in data() gets made reactive, which
+      // Vue warns about at runtime — it deep-proxies the whole component
+      // definition for no benefit, since it never changes after load.
+      ssoButtons: ssoGlob[ssoPath] ? markRaw(defineAsyncComponent(ssoGlob[ssoPath] as never)) : null,
     }
   },
   computed: {

@@ -76,7 +76,7 @@
 </template>
 
 <script lang="ts">
-import { defineAsyncComponent, defineComponent } from "vue"
+import { defineAsyncComponent, defineComponent, markRaw } from "vue"
 import ItemFilterBar from "./_components/ItemFilterBar.vue"
 import AppPaginationTable from "@/components/AppPaginationTable.vue"
 import dayjs from "@/utils/dayjs"
@@ -91,7 +91,10 @@ export default defineComponent({
   components: { ItemFilterBar, AppPaginationTable },
   data() {
     return {
-      exportButton: exportGlob[exportPath] ? defineAsyncComponent(exportGlob[exportPath] as never) : null,
+      // markRaw: a component object stored in data() gets made reactive, which
+      // Vue warns about at runtime — it deep-proxies the whole component
+      // definition for no benefit, since it never changes after load.
+      exportButton: exportGlob[exportPath] ? markRaw(defineAsyncComponent(exportGlob[exportPath] as never)) : null,
       filters: {
         search:   "",
         status:   null as string | null,

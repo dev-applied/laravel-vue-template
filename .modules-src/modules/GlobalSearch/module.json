@@ -1,0 +1,50 @@
+{
+    "name": "GlobalSearch",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-25)",
+    "template_version_tested": "2026-08",
+    "description": "Cross-model search behind one endpoint: a project registers named search sources, and a command palette (Cmd/Ctrl+K) queries every source the user is allowed to reach, grouped by type. Needs no search engine — a source is a closure returning a builder, so the default install is plain SQL.",
+    "composer_requires": [],
+    "options": {
+        "history": {
+            "prompt": "Remember each user's recent searches?",
+            "type": "select",
+            "default": "per-user",
+            "choices": {
+                "per-user": {
+                    "label": "Yes — recent searches per user (adds one table)"
+                },
+                "none": {
+                    "label": "No — no table, no history endpoints",
+                    "drop": [
+                        "Models/SearchHistory.php",
+                        "Database/Migrations/2026_08_25_040000_create_search_histories_table.php",
+                        "Http/Controllers/SearchHistoryController.php",
+                        "Routes/history.php",
+                        "Tests/Feature/SearchHistoryTest.php"
+                    ]
+                }
+            }
+        },
+        "scout": {
+            "prompt": "Add the Laravel Scout source helper?",
+            "type": "select",
+            "default": "off",
+            "choices": {
+                "off": {
+                    "label": "No — sources are plain builders (no dependency)",
+                    "drop": [
+                        "Support/ScoutSearchSource.php",
+                        "Tests/Feature/ScoutSearchSourceTest.php"
+                    ]
+                },
+                "on": {
+                    "label": "Yes — adds laravel/scout and a helper that builds a source from a Scout model",
+                    "require": [
+                        "laravel/scout:^10.11"
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -8,6 +8,7 @@ use App\Mixins\HasManyMixin;
 use App\Mixins\VuetifyPaginateMixin;
 use App\Mixins\WhoDidItMixin;
 use App\Models\Item;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Modules\DataImport\Support\ImportRegistry;
 use Modules\Exports\Support\ExportRegistry;
+use Modules\GlobalSearch\Support\SearchRegistry;
 use ReflectionException;
 
 class AppServiceProvider extends ServiceProvider
@@ -56,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureImports();
         $this->configureExports();
+        $this->configureSearch();
     }
 
     /**
@@ -128,6 +131,59 @@ class AppServiceProvider extends ServiceProvider
             query: fn (array $filters) => Item::query()
                 ->when($filters['search'] ?? null, fn ($q, $t) => $q->where('name', 'like', "%{$t}%"))
                 ->orderBy('id'),
+        );
+    }
+
+    /**
+     * The Items example, as SEARCH sources.
+     *
+     * Same guard and same reason as the two above: the registry is an
+     * allow-list, so a freshly-installed palette finds nothing until a project
+     * declares something, and a palette that always answers "nothing matched"
+     * reads as broken rather than unconfigured. Exports shipped exactly that
+     * way — a page pointing at a button that did not exist anywhere.
+     *
+     * Two sources rather than one, because grouping is the whole point of the
+     * endpoint and a single source cannot demonstrate it.
+     */
+    public function configureSearch(): void
+    {
+        if (! is_dir(base_path('modules/GlobalSearch'))) {
+            return;
+        }
+
+        if (! class_exists(SearchRegistry::class) || ! class_exists(Item::class)) {
+            return;
+        }
+
+        $registry = app(SearchRegistry::class);
+
+        $registry->register(
+            key: 'items',
+            label: 'Items',
+            query: fn (string $term) => Item::query()
+                ->where(fn ($q) => $q->where('name', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%"))
+                ->orderBy('name'),
+            title: fn (Item $item) => $item->name,
+            subtitle: fn (Item $item) => $item->description,
+            route: fn (Item $item) => ['name' => 'items.edit', 'params' => ['id' => $item->id]],
+            icon: 'inventory_2',
+            order: 0,
+        );
+
+        $registry->register(
+            key: 'users',
+            label: 'People',
+            query: fn (string $term) => User::query()
+                ->where(fn ($q) => $q->where('first_name', 'like', "%{$term}%")
+                    ->orWhere('last_name', 'like', "%{$term}%")
+                    ->orWhere('email', 'like', "%{$term}%"))
+                ->orderBy('first_name'),
+            title: fn (User $user) => mb_trim("{$user->first_name} {$user->last_name}") ?: $user->email,
+            subtitle: fn (User $user) => $user->email,
+            icon: 'person',
+            order: 10,
         );
     }
 

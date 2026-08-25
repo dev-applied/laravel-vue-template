@@ -8,6 +8,12 @@ In-flight + planned work, grouped **by concept** (one `##` per initiative / area
 
 **Legend:** `- [x]` done (+ `— YYYY-MM-DD`) · `- [~]` in progress (+ `branch` / `worktree`) · `- [ ]` queued · `- [!]` blocked (+ reason). One status per line — never in prose, never mixed in one bullet. **Concepts with a `[~]` leaf sort to the top** — that's where a parallel session looks for what's hot, and the `branch` / `worktree` on each `[~]` leaf is how it avoids collisions.
 
+## GlobalSearch — module 24
+
+- [x] **Cross-model search behind one endpoint, with a Cmd/Ctrl+K palette.** The strongest un-built candidate left in the mining report — 8 distinct projects carry a hand-rolled `SearchController`. Needs no search engine: a source is a closure returning a builder, so the default install is plain SQL. A closure rather than model-plus-columns because the interesting sources are never a flat LIKE (searching orders means matching the customer's name, a join the module cannot guess); a registry rather than a `Searchable` trait because the search surface has to be an explicit allow-list — with a trait, adding a column to an adopting model quietly makes it readable through search. Unauthorised sources are OMITTED rather than returned empty, and `types[]` validates against what is registered rather than what the caller may reach, because both alternatives answer "that type exists" to anyone who guessed. Results are grouped, never interleaved — ranking across sources cannot be done honestly. 16 tests, 6 mutations all caught. Driven end to end: Cmd+K opens and focuses, two groups in declared order, arrow keys move the cursor, Enter and click both navigate, recents show on reopen, no horizontal scroll at 390×844 — 2026-08-25
+- [x] **Wired into the template rather than shipped unreachable** — Items and People registered as sources in `AppServiceProvider`, palette mounted once in `DefaultLayout` behind `import.meta.glob`. Exports shipped with an empty registry and a page pointing at a button that existed nowhere; this is that lesson applied before the fact rather than after — 2026-08-25
+- [x] **An async component in `data()` is made reactive** — Vue warns at runtime and deep-proxies the whole component definition for nothing. Surfaced by the layout change but not caused by it: `LoginPage` and `ItemListPage` had it too. All three `markRaw()` — 2026-08-25
+
 ## Render-correctness guards — the failures no linter can see
 
 A family of bugs this codebase keeps producing: the code is valid, eslint and
