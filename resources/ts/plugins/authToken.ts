@@ -59,6 +59,16 @@ export async function stashImpersonatorToken(): Promise<void> {
     return
   }
   const storage = useStorage()
+
+  // Never overwrite an existing stash. Impersonating while ALREADY
+  // impersonating would otherwise park the impersonation token over the real
+  // person's, and stopping would return them to the previous impersonated user
+  // rather than to themselves — with their own token gone for good. Keeping the
+  // first one means stop always goes back to whoever actually signed in.
+  if (await storage.get(IMPERSONATOR_TOKEN_KEY)) {
+    return
+  }
+
   await storage.set(IMPERSONATOR_TOKEN_KEY, inMemoryToken)
 }
 
