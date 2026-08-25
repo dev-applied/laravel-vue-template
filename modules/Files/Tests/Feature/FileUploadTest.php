@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Files\Models\File;
+use Modules\Files\Support\FileScanner;
 
 // Files are created owned by $this->user: the module now authorizes on the
 // WhoDidIt uploader (modules/Files/Support/OwnerFileAccess), and a factory row
@@ -167,4 +168,94 @@ test('an upload with no folder is still fine', function () {
         ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->image('loose.jpg')])
         ->assertOk()
         ->assertJsonPath('file.folder_id', null);
+});
+
+// ── Refusing a file ──────────────────────────────────────────────────────────
+// The module ships no scanner and no quota, because which antivirus a project
+// can run and how much storage a user gets are not a vendored module's call.
+// What it ships is the place both decisions live.
+
+test('a bound scanner refuses an upload before anything is written', function () {
+    Storage::fake(config('filesystems.default'));
+
+    app()->bind(FileScanner::class, fn () => new class implements FileScanner
+    {
+        public function refuse(UploadedFile $file): ?string
+        {
+            return str_contains($file->getClientOriginalName(), 'bad')
+                ? 'That file was refused.'
+                : null;
+        }
+    });
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('bad.exe', 10)])
+        ->assertStatus(422)
+        ->assertJsonPath('message', 'That file was refused.');
+
+    // Refused BEFORE the write, not cleaned up after it.
+    expect(File::count())->toBe(0)
+        ->and(Storage::disk(config('filesystems.default'))->allFiles())->toBeEmpty();
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('fine.pdf', 10)])
+        ->assertOk();
+});
+
+test('the shipped scanner refuses nothing', function () {
+    // Pinned so it cannot drift: a module that rejected uploads on install
+    // would look broken, and most projects take files only from people they
+    // already trust.
+    Storage::fake(config('filesystems.default'));
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('anything.exe', 10)])
+        ->assertOk();
+});
+
+test('a storage quota is enforced across a users files, not just per file', function () {
+    // There has always been a 20MB per-FILE cap and nothing aggregate, so any
+    // signed-in user could fill the disk one 20MB file at a time. On
+    // s3-presigned that stops being a disk problem and becomes a bill.
+    Storage::fake(config('filesystems.default'));
+    config()->set('files.quota_mb', 1);
+
+    // ~600KB lands fine.
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('first.bin', 600)])
+        ->assertOk();
+
+    // A second ~600KB crosses 1MB in aggregate, though neither file is close
+    // to the per-file limit.
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('second.bin', 600)])
+        ->assertStatus(413);
+
+    expect(File::count())->toBe(1);
+});
+
+test('the quota is per uploader, not global', function () {
+    Storage::fake(config('filesystems.default'));
+    config()->set('files.quota_mb', 1);
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('mine.bin', 900)])
+        ->assertOk();
+
+    // Somebody else's allowance is untouched by the first user's.
+    $this->actingAs(User::factory()->create())
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('theirs.bin', 900)])
+        ->assertOk();
+});
+
+test('no quota is configured by default', function () {
+    // Off unless asked for: a cap appearing on install would break every
+    // project that never wanted one.
+    Storage::fake(config('filesystems.default'));
+
+    expect(config('files.quota_mb'))->toBeNull();
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->create('big.bin', 15000)])
+        ->assertOk();
 });

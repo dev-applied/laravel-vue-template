@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Modules\Files\Http\Requests\GeneratePresignedUrlRequest;
 use Modules\Files\Models\File;
+use Modules\Files\Support\FileScanner;
 
 // Only present when the module is installed with storage=s3-presigned; the
 // `local` choice drops this file along with the controller and its routes.
@@ -122,4 +124,33 @@ test('a project can widen the allow-list without touching the module', function 
     $rules = (new GeneratePresignedUrlRequest)->rules();
 
     expect(Validator::make($input, $rules)->errors()->has('path'))->toBeFalse();
+});
+
+test('a refused object is deleted from the bucket, not just rejected', function () {
+    // The presigned design cannot refuse before the write: the browser PUT
+    // straight to the bucket, so the object exists before the app has seen a
+    // byte. Refusing here therefore has to CLEAN UP, and a rejection that left
+    // the object behind would be the worst of both — refused to the user,
+    // still costing money and still sitting in the bucket.
+    Storage::fake(config('filesystems.default'));
+
+    app()->bind(FileScanner::class, fn () => new class implements FileScanner
+    {
+        public function refuse(UploadedFile $file): ?string
+        {
+            return 'That file was refused.';
+        }
+    });
+
+    $file = File::factory()->unprocessed()->create(['created_by_id' => $this->user->id]);
+    $path = $file->responsive_paths['original'] ?? $file->path;
+    Storage::disk($file->disk)->put($path, 'pretend bytes');
+
+    $this->actingAs($this->user)
+        ->putJson("/api/v1/files/process/{$file->id}")
+        ->assertStatus(422)
+        ->assertJsonPath('message', 'That file was refused.');
+
+    expect(File::find($file->id))->toBeNull()
+        ->and(Storage::disk($file->disk)->exists($path))->toBeFalse();
 });

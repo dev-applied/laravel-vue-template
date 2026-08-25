@@ -114,8 +114,9 @@ second mistake produced 823 errors.
 
 ## Not included
 
-- **Virus scanning.** Uploads are stored as received.
-- **Quotas.** Nothing caps per-user or per-project storage.
+- **A virus scanner.** There is a `FileScanner` seam and a null default — see
+  below — but no engine ships with the module.
+- **A quota by default.** There is a per-uploader cap, off unless configured.
 - **A folder BROWSER.** `folder_id` is recorded on every upload through both
   paths, returned on the resource and indexed — but the module ships no UI for
   navigating folders, and no folders table. It deliberately does not own one:
@@ -145,3 +146,59 @@ return [
 
 Anything not on the list is a 422 on `path`. The module's own frontend never
 sends this field, so leaving the default alone is the normal case.
+
+## Refusing a file
+
+The module ships no scanner and no quota, because which antivirus a project can
+run and how much storage a user gets are not a vendored module's call. What it
+ships is the one place each decision lives.
+
+### Scanning
+
+```php
+// AppServiceProvider::register()
+$this->app->bind(FileScanner::class, ClamAvScanner::class);
+
+class ClamAvScanner implements FileScanner
+{
+    public function refuse(UploadedFile $file): ?string
+    {
+        return $this->clam->scan($file->getRealPath())->isInfected()
+            ? 'That file was refused.'
+            : null;
+    }
+}
+```
+
+Return `null` to allow, or a short reason to refuse. The reason is shown to
+whoever uploaded it, so say "this file was refused" — never which signature
+matched or which engine ran.
+
+**When it runs differs by storage option, and the difference is real:**
+
+| Option | When | On refusal |
+|---|---|---|
+| `local` | Before any bytes are written | Nothing was ever stored |
+| `s3-presigned` | In `process()`, against the copy pulled down for variants | The object and the row are DELETED |
+
+The presigned path cannot do better. The browser PUTs straight to the bucket, so
+the object exists before the app has seen a byte of it — refusing there means
+cleaning up rather than preventing. A project that needs the bytes never to land
+should scan at the bucket (an S3 event, or a scanning product in front of it)
+and treat this seam as the second line.
+
+### Quotas
+
+There has always been a 20 MB per-FILE limit and nothing aggregate, so any
+signed-in user could fill the disk one 20 MB file at a time — which on
+`s3-presigned` is a bill rather than a disk. Publish `config/files.php`:
+
+```php
+return [
+    'quota_mb' => 500,     // per uploader; null (the default) means unlimited
+];
+```
+
+Counted per uploader against `files.created_by_id`, and refused with **413**.
+Off by default, because a cap appearing on install would break every project
+that never asked for one.

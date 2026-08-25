@@ -6,14 +6,18 @@ namespace Modules\Files\Http\Controllers;
 
 use App\Exceptions\AppException;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Files\Http\Requests\GeneratePresignedUrlRequest;
 use Modules\Files\Http\Resources\FileResource;
 use Modules\Files\Models\File;
 use Modules\Files\Support\FileAccess;
+use Modules\Files\Support\FileScanner;
+use Modules\Files\Support\StorageQuota;
 
 /**
  * The `storage=s3-presigned` half of the module: the browser PUTs bytes
@@ -88,7 +92,7 @@ class PresignedUploadController extends Controller
      * the upload client calls it directly, since there is no bucket event.
      * Idempotent — safe to call again if processing is retried.
      */
-    public function process(Request $request, File $file, FileAccess $access): JsonResponse
+    public function process(Request $request, File $file, FileAccess $access, FileScanner $scanner, StorageQuota $quota): JsonResponse
     {
         // Same bare route-model bind the FileController methods had: without
         // this, any authenticated caller could trigger variant generation —
@@ -102,9 +106,40 @@ class PresignedUploadController extends Controller
             throw new AppException('The uploaded object is not in storage yet.', 409);
         }
 
-        $file->forceFill(['size' => (int) ($disk->size($path) / 1000)])->save();
+        $sizeKb = (int) ($disk->size($path) / 1000);
+
+        // Later than the direct path can manage, and deliberately so: the
+        // browser PUT straight to the bucket, so the object exists before the
+        // app has ever seen a byte of it. Refusing here means deleting what
+        // landed rather than preventing it — which is the honest limit of a
+        // presigned design, and is why the README points a project that needs
+        // the bytes never to land at bucket-level scanning instead.
+        $uploaderId = $file->getAttribute($file->getCreatedByColumn());
+
+        $reason = $scanner->refuse($this->localCopyOf($disk, $path, $file->name))
+            ?? $quota->refuse($uploaderId, $sizeKb);
+
+        if ($reason !== null) {
+            $file->delete();   // File::deleting unlinks the object too.
+
+            throw new AppException($reason, 422);
+        }
+
+        $file->forceFill(['size' => $sizeKb])->save();
         $file->processVariants();
 
         return response()->json(['file' => new FileResource($file->fresh())]);
+    }
+
+    /**
+     * The object as an UploadedFile, so a scanner sees the same shape on both
+     * storage paths and a project writes one implementation rather than two.
+     */
+    private function localCopyOf(Filesystem $disk, string $path, string $name): UploadedFile
+    {
+        $temp = tempnam(sys_get_temp_dir(), 'scan_');
+        file_put_contents($temp, $disk->get($path));
+
+        return new UploadedFile($temp, $name, null, null, true);
     }
 }

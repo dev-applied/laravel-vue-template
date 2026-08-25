@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Files\Http\Controllers;
 
+use App\Exceptions\AppException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,12 +15,18 @@ use Modules\Files\Http\Requests\StoreFileRequest;
 use Modules\Files\Http\Resources\FileResource;
 use Modules\Files\Models\File;
 use Modules\Files\Support\FileAccess;
+use Modules\Files\Support\FileScanner;
+use Modules\Files\Support\StorageQuota;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileController extends Controller
 {
-    public function __construct(private readonly FileAccess $access) {}
+    public function __construct(
+        private readonly FileAccess $access,
+        private readonly FileScanner $scanner,
+        private readonly StorageQuota $quota,
+    ) {}
 
     /**
      * JSON metadata. This is what an upload client polls while waiting for the
@@ -60,8 +67,20 @@ class FileController extends Controller
 
     public function store(StoreFileRequest $request): JsonResponse
     {
+        $upload = $request->file('file');
+
+        // Both checks run BEFORE anything is written. A refusal that happens
+        // after the bytes land is a cleanup problem, not a guard.
+        if ($reason = $this->scanner->refuse($upload)) {
+            throw new AppException($reason, 422);
+        }
+
+        if ($reason = $this->quota->refuse($request->user()?->getKey(), (int) ($upload->getSize() / 1000))) {
+            throw new AppException($reason, 413);
+        }
+
         $file = DB::transaction(fn (): File => File::upload(
-            $request->file('file'),
+            $upload,
             folderId: $request->input('folder_id'),
         ));
 

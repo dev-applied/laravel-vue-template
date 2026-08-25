@@ -13,6 +13,11 @@ class ModuleServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Nothing is refused by default — see FileScanner. Bind a real
+        // scanner the moment the project accepts files from anyone it does
+        // not already trust.
+        $this->app->bind(Support\FileScanner::class, Support\NullFileScanner::class);
+
         // register(), not boot(): bound in boot() this resolves to a fresh
         // instance per resolve, so a project's own binding in AppServiceProvider
         // could be silently replaced depending on provider order.
