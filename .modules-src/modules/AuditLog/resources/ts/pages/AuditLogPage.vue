@@ -52,7 +52,7 @@ export default defineComponent({
 <template>
   <v-container>
     <div class="d-flex align-center mb-4 ga-4">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Audit log
       </h1>
       <v-spacer />
@@ -93,7 +93,7 @@ export default defineComponent({
               </v-chip>
             </td>
             <td>{{ entry.subject.type }} #{{ entry.subject.id }}</td>
-            <td class="text-caption">
+            <td class="text-body-small">
               {{ summarise(entry) }}
             </td>
             <td>{{ entry.user?.name ?? "system" }}</td>

@@ -69,7 +69,7 @@ export default defineComponent({
         md="8"
       >
         <div class="d-flex align-center flex-wrap mb-4 ga-2">
-          <h1 class="text-h4">
+          <h1 class="text-headline-large">
             Notifications
           </h1>
           <v-spacer />
@@ -111,7 +111,7 @@ export default defineComponent({
               </v-list-item-subtitle>
 
               <template #append>
-                <span class="text-caption text-medium-emphasis mr-2">
+                <span class="text-body-small text-medium-emphasis mr-2">
                   <AppTimeAgo :value="item.createdAt" />
                 </span>
                 <v-btn

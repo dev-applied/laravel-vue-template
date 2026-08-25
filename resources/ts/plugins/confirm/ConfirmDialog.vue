@@ -34,7 +34,7 @@
         />
       </v-toolbar>
       <v-card-text
-        class="text-body-1 text-body-1 py-3"
+        class="text-body-large text-body-large py-3"
         v-html="message"
       />
       <v-card-actions>

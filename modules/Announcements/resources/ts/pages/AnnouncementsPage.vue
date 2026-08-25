@@ -85,7 +85,7 @@ export default defineComponent({
 <template>
   <v-container>
     <div class="d-flex align-center flex-wrap ga-2 mb-4">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Announcements
       </h1>
       <v-spacer />
@@ -130,7 +130,7 @@ export default defineComponent({
             <div class="text-truncate">
               {{ announcement.body }}
             </div>
-            <div class="text-caption text-medium-emphasis">
+            <div class="text-body-small text-medium-emphasis">
               Created <AppTimeAgo :value="announcement.createdAt" />
               <template v-if="announcement.endsAt">
                 · ends <AppTimeAgo :value="announcement.endsAt" />

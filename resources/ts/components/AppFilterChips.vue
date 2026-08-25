@@ -3,7 +3,7 @@
     v-if="activeFilters.length"
     class="app-filter-chips d-flex flex-wrap ga-2 align-center"
   >
-    <span class="text-caption text-medium-emphasis">
+    <span class="text-body-small text-medium-emphasis">
       Filters:
     </span>
     <v-chip

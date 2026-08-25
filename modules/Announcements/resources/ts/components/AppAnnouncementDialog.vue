@@ -14,7 +14,7 @@
         <span>{{ announcement.title }}</span>
       </v-card-title>
 
-      <v-card-text class="text-body-1 text-pre-wrap">
+      <v-card-text class="text-body-large text-pre-wrap">
         {{ announcement.body }}
       </v-card-text>
 

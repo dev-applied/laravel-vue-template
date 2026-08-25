@@ -6,7 +6,7 @@
         variant="text"
         @click="goBack"
       />
-      <h1 class="text-h4 ml-2">
+      <h1 class="text-headline-large ml-2">
         {{ isEdit ? 'Edit Item' : 'New Item' }}
       </h1>
     </div>

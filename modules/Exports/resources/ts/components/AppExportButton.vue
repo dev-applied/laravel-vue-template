@@ -79,7 +79,7 @@ async function run(format: string) {
 
     <span
       v-if="running && current?.status === 'processing'"
-      class="text-caption text-medium-emphasis ml-2"
+      class="text-body-small text-medium-emphasis ml-2"
     >
       Preparing…
     </span>

@@ -58,7 +58,7 @@ export default defineComponent({
 
 <template>
   <v-container>
-    <h1 class="text-h4 mb-4">
+    <h1 class="text-headline-large mb-4">
       Support queue
     </h1>
 
@@ -126,7 +126,7 @@ export default defineComponent({
                 spam
               </v-chip>
             </td>
-            <td class="text-caption">
+            <td class="text-body-small">
               {{ ticket.email }}
             </td>
             <td>

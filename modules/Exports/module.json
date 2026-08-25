@@ -27,7 +27,7 @@
             }
         }
     },
-    "installed_from_commit": "7216e0ad7faff21a540d3798c0beb262003da6a4",
+    "installed_from_commit": "4b88a97f56f8acb4dc037d34e169b8efb72e4061",
     "installed_at": "2026-08-25",
     "installed_options": {
         "formats": "csv"

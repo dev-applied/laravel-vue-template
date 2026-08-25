@@ -47,20 +47,20 @@ export default defineComponent({
       size="36"
       variant="tonal"
     >
-      <span class="text-caption">{{ initials }}</span>
+      <span class="text-body-small">{{ initials }}</span>
     </v-avatar>
 
     <div class="flex-grow-1 min-width-0">
       <div class="d-flex align-center ga-2 flex-wrap">
-        <span class="text-body-2 font-weight-medium">{{ comment.author?.name ?? 'Unknown' }}</span>
-        <span class="text-caption text-medium-emphasis">
+        <span class="text-body-medium font-weight-medium">{{ comment.author?.name ?? 'Unknown' }}</span>
+        <span class="text-body-small text-medium-emphasis">
           <AppTimeAgo :value="comment.createdAt" />
         </span>
         <!-- A comment that silently changed after someone replied to it is
              worse than one that says it changed. -->
         <span
           v-if="comment.editedAt"
-          class="text-caption text-disabled"
+          class="text-body-small text-disabled"
         >edited</span>
         <v-chip
           v-if="comment.isInternal"
@@ -76,7 +76,7 @@ export default defineComponent({
       <!-- v-show, not v-if: swapping the node would drop focus mid-edit. -->
       <div
         v-show="!editing"
-        class="text-body-2 text-pre-wrap mt-1"
+        class="text-body-medium text-pre-wrap mt-1"
       >
         {{ display }}
       </div>

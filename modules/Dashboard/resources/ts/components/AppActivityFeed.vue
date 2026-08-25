@@ -34,16 +34,16 @@
         :icon="item.icon || undefined"
         size="x-small"
       >
-        <div class="text-body-2">
+        <div class="text-body-medium">
           {{ item.title }}
         </div>
         <div
           v-if="item.subtitle"
-          class="text-caption text-medium-emphasis"
+          class="text-body-small text-medium-emphasis"
         >
           {{ item.subtitle }}
         </div>
-        <div class="text-caption text-disabled">
+        <div class="text-body-small text-disabled">
           {{ relative(item.at) }}
         </div>
       </v-timeline-item>

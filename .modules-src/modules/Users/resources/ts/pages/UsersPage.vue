@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <div class="d-flex align-center flex-wrap mb-4 ga-2">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Users
       </h1>
       <v-spacer />
@@ -58,7 +58,7 @@
           </v-avatar>
           <div>
             <div>{{ item.name }}</div>
-            <div class="text-caption text-medium-emphasis">
+            <div class="text-body-small text-medium-emphasis">
               {{ item.email }}
             </div>
           </div>

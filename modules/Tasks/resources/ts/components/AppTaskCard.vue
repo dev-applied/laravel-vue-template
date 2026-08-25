@@ -76,7 +76,7 @@ export default defineComponent({
       <div class="d-flex align-start ga-2">
         <div class="flex-grow-1 min-width-0">
           <div
-            class="text-body-2"
+            class="text-body-medium"
             :class="{'text-decoration-line-through text-medium-emphasis': task.isClosed}"
           >
             {{ task.title }}
@@ -97,7 +97,7 @@ export default defineComponent({
                  tearing the subtree down mid-interaction kills the drag. -->
             <span
               v-show="task.dueAt"
-              class="text-caption"
+              class="text-body-small"
               :class="task.isOverdue ? 'text-error' : 'text-medium-emphasis'"
             >
               <v-icon
@@ -115,7 +115,7 @@ export default defineComponent({
           size="28"
           variant="tonal"
         >
-          <span class="text-caption">{{ initials }}</span>
+          <span class="text-body-small">{{ initials }}</span>
         </v-avatar>
       </div>
     </v-card-text>

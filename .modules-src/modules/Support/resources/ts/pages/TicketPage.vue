@@ -62,7 +62,7 @@ export default defineComponent({
 <template>
   <v-container v-if="ticket">
     <div class="d-flex align-center mb-4 ga-3 flex-wrap">
-      <h1 class="text-h5">
+      <h1 class="text-headline-small">
         {{ ticket.subject }}
       </h1>
       <v-chip

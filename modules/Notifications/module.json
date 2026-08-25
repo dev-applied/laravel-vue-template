@@ -5,6 +5,6 @@
     "template_version_tested": "2026-08",
     "description": "Per-user database notifications: a paginated feed, unread count, mark-read / mark-all-read, and dismissal, plus the Vue half \u2014 the notification bell, a polling composable, and a full notifications page. Ships an ExampleNotification to copy.",
     "composer_requires": [],
-    "installed_from_commit": "7216e0ad7faff21a540d3798c0beb262003da6a4",
+    "installed_from_commit": "4b88a97f56f8acb4dc037d34e169b8efb72e4061",
     "installed_at": "2026-08-25"
 }

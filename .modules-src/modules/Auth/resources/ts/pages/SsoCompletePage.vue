@@ -15,11 +15,11 @@
           size="48"
         />
 
-        <div class="text-h6 mb-2">
+        <h1 class="text-title-large mb-2">
           Sign-in didn't complete
-        </div>
+        </h1>
 
-        <p class="text-body-2 text-medium-emphasis mb-6">
+        <p class="text-body-medium text-medium-emphasis mb-6">
           {{ error }}
         </p>
 
@@ -39,7 +39,7 @@
           size="40"
         />
 
-        <div class="text-body-1">
+        <div class="text-body-large">
           Signing you in…
         </div>
       </template>

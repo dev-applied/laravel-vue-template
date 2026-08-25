@@ -115,7 +115,7 @@ export default defineComponent({
 <template>
   <v-container>
     <div class="d-flex align-center flex-wrap mb-4 ga-2">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Roles
       </h1>
       <v-spacer />
@@ -146,7 +146,7 @@ export default defineComponent({
             <td class="font-weight-medium">
               {{ role.name }}
             </td>
-            <td class="text-caption">
+            <td class="text-body-small">
               {{ role.permissions.length }} granted
             </td>
             <td>{{ role.usersCount ?? 0 }}</td>
@@ -198,7 +198,7 @@ export default defineComponent({
             class="mb-3"
           >
             <div class="d-flex align-center">
-              <strong class="text-subtitle-2 text-capitalize">{{ group }}</strong>
+              <strong class="text-title-small text-capitalize">{{ group }}</strong>
               <v-btn
                 size="x-small"
                 variant="text"

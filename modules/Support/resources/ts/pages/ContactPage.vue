@@ -54,12 +54,14 @@ export default defineComponent({
       max-width="95vw"
     >
       <template v-if="reference">
-        <v-card-title>Message received</v-card-title>
+        <v-card-title tag="h1">
+          Message received
+        </v-card-title>
         <v-card-text>
           <p class="mb-2">
             Thanks — we will get back to you by email.
           </p>
-          <p class="text-body-2 text-medium-emphasis">
+          <p class="text-body-medium text-medium-emphasis">
             Your reference is <strong>{{ reference }}</strong>. Quote it if you
             need to follow up.
           </p>
@@ -67,7 +69,9 @@ export default defineComponent({
       </template>
 
       <template v-else>
-        <v-card-title>Contact support</v-card-title>
+        <v-card-title tag="h1">
+          Contact support
+        </v-card-title>
         <v-card-text>
           <AppTextField
             v-model="form.name"

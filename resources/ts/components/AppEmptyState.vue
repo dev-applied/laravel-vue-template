@@ -8,12 +8,12 @@
       size="64"
       class="mb-4 text-medium-emphasis"
     />
-    <h3 class="text-h6 mb-2">
+    <h3 class="text-title-large mb-2">
       {{ title }}
     </h3>
     <p
       v-if="description"
-      class="text-body-2 text-medium-emphasis mb-6"
+      class="text-body-medium text-medium-emphasis mb-6"
       style="max-width: 400px;"
     >
       {{ description }}

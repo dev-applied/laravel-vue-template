@@ -16,7 +16,7 @@
       <template #title>
         Something went wrong
       </template>
-      <p class="text-body-2 mb-3">
+      <p class="text-body-medium mb-3">
         The page hit an unexpected error. The team has been notified.
       </p>
       <v-btn

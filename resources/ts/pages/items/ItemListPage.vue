@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Items
       </h1>
       <v-spacer />

@@ -26,14 +26,14 @@
 
       <div class="flex-grow-1 min-w-0">
         <h1
-          class="text-h5 text-md-h4 mb-0"
+          class="text-headline-small text-md-h4 mb-0"
           :class="titleClass"
         >
           {{ title }}
         </h1>
         <p
           v-if="subtitle"
-          class="text-body-2 text-medium-emphasis mt-1 mb-0"
+          class="text-body-medium text-medium-emphasis mt-1 mb-0"
         >
           {{ subtitle }}
         </p>

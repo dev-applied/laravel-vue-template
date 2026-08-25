@@ -61,7 +61,7 @@ export default defineComponent({
 
 <template>
   <v-container>
-    <h1 class="text-h4 mb-4">
+    <h1 class="text-headline-large mb-4">
       Forms
     </h1>
 

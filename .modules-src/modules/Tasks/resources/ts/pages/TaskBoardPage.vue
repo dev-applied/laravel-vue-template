@@ -49,7 +49,7 @@ export default defineComponent({
         variant="text"
         @click="$router.push($routeTo(ROUTES.TASKS))"
       />
-      <h1 class="text-h5">
+      <h1 class="text-headline-small">
         Board
       </h1>
       <v-chip

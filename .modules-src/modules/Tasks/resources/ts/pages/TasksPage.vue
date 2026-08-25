@@ -74,7 +74,7 @@ export default defineComponent({
 <template>
   <v-container>
     <div class="d-flex align-center flex-wrap mb-4 ga-3">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Tasks
       </h1>
       <v-spacer />

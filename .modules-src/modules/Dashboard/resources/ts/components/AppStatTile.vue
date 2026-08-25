@@ -19,26 +19,26 @@
       </v-avatar>
 
       <div class="min-width-0 flex-grow-1">
-        <div class="text-caption text-medium-emphasis text-truncate">
+        <div class="text-body-small text-medium-emphasis text-truncate">
           {{ widget.label }}
         </div>
 
         <div
           v-if="widget.error"
-          class="text-body-2 text-medium-emphasis"
+          class="text-body-medium text-medium-emphasis"
         >
           {{ widget.error }}
         </div>
 
         <template v-else>
-          <div class="text-h5 font-weight-medium">
+          <div class="text-headline-small font-weight-medium">
             {{ formattedValue }}<span
               v-if="stat.suffix"
-              class="text-body-1"
+              class="text-body-large"
             >{{ stat.suffix }}</span>
           </div>
 
-          <div class="d-flex align-center ga-1 text-caption">
+          <div class="d-flex align-center ga-1 text-body-small">
             <template v-if="typeof stat.change === 'number'">
               <v-icon
                 :color="stat.change >= 0 ? 'success' : 'error'"

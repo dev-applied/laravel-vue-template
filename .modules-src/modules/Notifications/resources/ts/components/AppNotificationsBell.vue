@@ -53,7 +53,7 @@
         >
           inbox
         </v-icon>
-        <div class="text-body-2">
+        <div class="text-body-medium">
           You're all caught up.
         </div>
       </div>
@@ -78,17 +78,17 @@
               {{ n.icon }}
             </v-icon>
           </template>
-          <v-list-item-title class="text-body-2">
+          <v-list-item-title class="text-body-medium">
             {{ n.title }}
           </v-list-item-title>
           <v-list-item-subtitle
             v-if="n.body"
-            class="text-caption text-truncate"
+            class="text-body-small text-truncate"
           >
             {{ n.body }}
           </v-list-item-subtitle>
           <template #append>
-            <span class="text-caption text-medium-emphasis">
+            <span class="text-body-small text-medium-emphasis">
               <AppTimeAgo :value="n.createdAt" />
             </span>
           </template>

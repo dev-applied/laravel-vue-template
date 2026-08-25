@@ -7,9 +7,9 @@
       >
         <v-card>
           <v-card-title>
-            <h3 class="text-h3">
+            <h1 class="text-display-small">
               {{ title }}
-            </h3>
+            </h1>
             <!--            <v-spacer />-->
             <!--            <v-img-->
             <!--              contain-->

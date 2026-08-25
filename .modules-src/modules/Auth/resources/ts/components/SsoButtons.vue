@@ -7,7 +7,7 @@
   <div v-if="providers.length">
     <div class="d-flex align-center ga-3 my-4">
       <v-divider />
-      <span class="text-caption text-medium-emphasis">or</span>
+      <span class="text-body-small text-medium-emphasis">or</span>
       <v-divider />
     </div>
 

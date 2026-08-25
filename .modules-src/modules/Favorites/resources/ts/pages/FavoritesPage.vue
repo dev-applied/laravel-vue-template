@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <h1 class="text-h5 mb-4">
+    <h1 class="text-headline-small mb-4">
       My favourites
     </h1>
 

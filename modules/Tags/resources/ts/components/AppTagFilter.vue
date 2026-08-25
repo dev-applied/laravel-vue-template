@@ -53,7 +53,7 @@ export default defineComponent({
                `internalItem`, so `.raw` is undefined and reading through it
                throws. The kernel's AppAutoComplete took the other half of the
                same change in 8ae8c70e. -->
-          <span class="text-caption text-medium-emphasis">{{ item.count }}</span>
+          <span class="text-body-small text-medium-emphasis">{{ item.count }}</span>
         </template>
       </v-list-item>
     </template>

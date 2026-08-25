@@ -27,7 +27,7 @@
           Previous
         </v-btn>
         <v-spacer />
-        <span class="text-caption text-medium-emphasis me-2">
+        <span class="text-body-small text-medium-emphasis me-2">
           Step {{ current }} of {{ steps.length }}
         </span>
         <v-btn

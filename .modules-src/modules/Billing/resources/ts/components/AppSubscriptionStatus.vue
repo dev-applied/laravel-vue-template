@@ -90,7 +90,7 @@ export default defineComponent({
     <v-divider />
 
     <v-card-text>
-      <div class="text-body-2">
+      <div class="text-body-medium">
         <div><strong>Plan</strong> {{ entitlement.tier }}<span v-if="entitlement.plan !== 'none'"> · {{ entitlement.plan }}</span></div>
         <div v-if="entitlement.currentPeriodEnd">
           <strong>{{ entitlement.cancelAtPeriodEnd ? 'Access until' : 'Renews' }}</strong>

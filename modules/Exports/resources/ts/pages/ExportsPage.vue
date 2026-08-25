@@ -52,7 +52,7 @@ export default defineComponent({
 <template>
   <v-container>
     <div class="d-flex align-center flex-wrap mb-4 ga-2">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Exports
       </h1>
       <v-spacer />

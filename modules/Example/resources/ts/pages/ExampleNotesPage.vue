@@ -52,7 +52,7 @@ export default defineComponent({
         cols="12"
         md="8"
       >
-        <h1 class="text-h4 mb-4">
+        <h1 class="text-headline-large mb-4">
           Example Notes
         </h1>
 

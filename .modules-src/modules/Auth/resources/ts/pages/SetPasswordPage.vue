@@ -9,9 +9,9 @@
       >
         <v-card>
           <v-card-title>
-            <h3 class="set-password__title">
+            <h1 class="set-password__title">
               Set a Password
-            </h3>
+            </h1>
             <!--            <v-spacer />-->
             <!--            <v-img-->
             <!--              contain-->

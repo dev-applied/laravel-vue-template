@@ -63,7 +63,7 @@ export default defineComponent({
     @drop="onDrop"
   >
     <div class="d-flex align-center ga-2 mb-2 px-1">
-      <span class="text-subtitle-2">{{ label }}</span>
+      <span class="text-title-small">{{ label }}</span>
       <v-chip
         density="comfortable"
         size="x-small"
@@ -74,9 +74,9 @@ export default defineComponent({
     </div>
 
     <AppTaskCard
-      :clickable="clickable"
       v-for="task in tasks"
       :key="task.id"
+      :clickable="clickable"
       draggable
       :task="task"
       @dragstart="(t, e) => $emit('dragstart', t, e)"
@@ -85,7 +85,7 @@ export default defineComponent({
 
     <div
       v-show="!tasks.length"
-      class="text-caption text-disabled text-center py-6"
+      class="text-body-small text-disabled text-center py-6"
     >
       Nothing here
     </div>

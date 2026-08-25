@@ -8,7 +8,7 @@
     variant="tonal"
     @click:close="$emit('dismiss', announcement)"
   >
-    <div class="text-body-2">
+    <div class="text-body-medium">
       {{ announcement.body }}
     </div>
 

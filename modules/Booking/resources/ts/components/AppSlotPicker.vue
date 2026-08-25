@@ -44,7 +44,7 @@ export default defineComponent({
 
     <div
       v-if="days.length"
-      class="text-caption text-medium-emphasis mb-3"
+      class="text-body-small text-medium-emphasis mb-3"
     >
       Times shown in {{ timezone }}
     </div>
@@ -54,7 +54,7 @@ export default defineComponent({
       :key="day"
       class="mb-4"
     >
-      <div class="text-subtitle-2 mb-2">
+      <div class="text-title-small mb-2">
         {{ dayLabel(day) }}
       </div>
 
@@ -70,7 +70,7 @@ export default defineComponent({
           {{ timeLabel(slot.starts_at) }}
           <span
             v-if="slot.remaining > 1"
-            class="text-caption ms-1"
+            class="text-body-small ms-1"
           >({{ slot.remaining }} left)</span>
         </v-btn>
       </div>

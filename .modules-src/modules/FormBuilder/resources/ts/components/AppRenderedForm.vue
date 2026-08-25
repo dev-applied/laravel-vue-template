@@ -50,12 +50,12 @@ export default defineComponent({
         v-if="showTitle"
         class="mb-4"
       >
-        <h2 class="text-h5">
+        <h1 class="text-headline-small">
           {{ form.name }}
-        </h2>
+        </h1>
         <p
           v-if="form.description"
-          class="text-body-2 text-medium-emphasis mt-1"
+          class="text-body-medium text-medium-emphasis mt-1"
         >
           {{ form.description }}
         </p>

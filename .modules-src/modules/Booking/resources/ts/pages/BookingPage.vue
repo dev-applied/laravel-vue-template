@@ -62,7 +62,7 @@ export default defineComponent({
             : 'Your booking is confirmed.' }}
         </v-alert>
 
-        <div class="text-body-2">
+        <div class="text-body-medium">
           <div><strong>Reference</strong> {{ confirmed.reference }}</div>
           <div><strong>When</strong> {{ dayLabel(confirmed.startsAt.slice(0, 10)) }}, {{ timeLabel(confirmed.startsAt) }}</div>
           <div v-if="confirmed.resource">
@@ -70,13 +70,13 @@ export default defineComponent({
           </div>
         </div>
 
-        <p class="text-caption text-medium-emphasis mt-4">
+        <p class="text-body-small text-medium-emphasis mt-4">
           Keep the reference — it is what lets you cancel.
         </p>
       </template>
 
       <template v-else>
-        <h1 class="text-h5 mb-4">
+        <h1 class="text-headline-small mb-4">
           {{ resource?.name ?? 'Book a time' }}
         </h1>
 

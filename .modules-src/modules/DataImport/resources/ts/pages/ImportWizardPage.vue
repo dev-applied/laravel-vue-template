@@ -116,7 +116,7 @@ export default defineComponent({
 
 <template>
   <v-container>
-    <h1 class="text-h4 mb-4">
+    <h1 class="text-headline-large mb-4">
       Import data
     </h1>
 
@@ -145,7 +145,7 @@ export default defineComponent({
             <div class="font-weight-medium">
               No import targets are registered
             </div>
-            <div class="text-body-2">
+            <div class="text-body-medium">
               A project decides what may be imported, because an import writes to the
               database. Register one with <code>ImportRegistry::register()</code> from
               <code>AppServiceProvider::boot()</code> — see the DataImport README.
@@ -176,7 +176,7 @@ export default defineComponent({
 
       <template #step-2>
         <div>
-          <p class="text-body-2 text-medium-emphasis mb-3">
+          <p class="text-body-medium text-medium-emphasis mb-3">
             Matching columns are pre-selected. Fields marked required must be mapped.
           </p>
           <v-row>
@@ -197,7 +197,7 @@ export default defineComponent({
           <v-table
             v-if="sample.length"
             density="compact"
-            class="mt-3 text-caption"
+            class="mt-3 text-body-small"
           >
             <thead>
               <tr>
@@ -270,7 +270,7 @@ export default defineComponent({
           <v-table
             v-if="dryRun.errors.length"
             density="compact"
-            class="text-caption"
+            class="text-body-small"
           >
             <thead>
               <tr><th>Line</th><th>Problem</th></tr>
@@ -289,7 +289,7 @@ export default defineComponent({
       </template>
 
       <template #step-4>
-        <p class="text-body-2">
+        <p class="text-body-medium">
           Ready to import {{ dryRun?.imported ?? 0 }} rows. Press
           <strong>Start import</strong> to begin — it runs in the background and
           appears in your import history.

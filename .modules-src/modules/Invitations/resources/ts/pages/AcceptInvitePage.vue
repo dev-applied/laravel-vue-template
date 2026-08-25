@@ -87,7 +87,9 @@ export default defineComponent({
       </v-card-text>
 
       <template v-else-if="valid">
-        <v-card-title>Create your account</v-card-title>
+        <v-card-title tag="h1">
+          Create your account
+        </v-card-title>
         <v-card-subtitle>{{ email }}</v-card-subtitle>
         <v-card-text>
           <AppTextField

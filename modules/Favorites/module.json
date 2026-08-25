@@ -5,6 +5,6 @@
     "template_version_tested": "2026-08",
     "description": "Star anything. A polymorphic favourites pivot with a registry allow-list, a toggle endpoint, a Favoritable trait supplying isFavoritedBy / favoritedBy / withFavoritedBy scopes, a star button component and a My Favourites page. The registry takes an ability because the list reads a label back out of every starred record.",
     "composer_requires": [],
-    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_from_commit": "4b88a97f56f8acb4dc037d34e169b8efb72e4061",
     "installed_at": "2026-08-25"
 }

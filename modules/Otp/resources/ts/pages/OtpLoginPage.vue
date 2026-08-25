@@ -54,12 +54,14 @@ export default defineComponent({
       max-width="420"
       width="100%"
     >
-      <v-card-title>Sign in</v-card-title>
+      <v-card-title tag="h1">
+        Sign in
+      </v-card-title>
 
       <!-- v-show, not v-if: swapping these would drop focus and lose whatever
            has been typed if the request is slow. -->
       <v-card-text v-show="!sent">
-        <p class="text-body-2 text-medium-emphasis mb-4">
+        <p class="text-body-medium text-medium-emphasis mb-4">
           We will email you a code. No password needed.
         </p>
         <AppTextField
@@ -73,7 +75,7 @@ export default defineComponent({
       </v-card-text>
 
       <v-card-text v-show="sent">
-        <p class="text-body-2 text-medium-emphasis mb-4">
+        <p class="text-body-medium text-medium-emphasis mb-4">
           We sent a code to <strong>{{ masked }}</strong>.
         </p>
         <AppOtpInput
@@ -81,7 +83,7 @@ export default defineComponent({
           :loading="verifying"
           @complete="submitCode"
         />
-        <div class="text-caption text-medium-emphasis mt-2">
+        <div class="text-body-small text-medium-emphasis mt-2">
           <span v-if="secondsLeft > 0">Expires in {{ countdown() }}</span>
           <v-btn
             v-else

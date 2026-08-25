@@ -50,7 +50,7 @@ export default defineComponent({
 <template>
   <v-container>
     <div class="d-flex align-center flex-wrap mb-4 ga-2">
-      <h1 class="text-h4">
+      <h1 class="text-headline-large">
         Imports
       </h1>
       <v-spacer />
@@ -139,7 +139,7 @@ export default defineComponent({
                 </v-alert>
                 <v-table
                   density="compact"
-                  class="text-caption"
+                  class="text-body-small"
                 >
                   <thead>
                     <tr><th>Line</th><th>Problem</th></tr>
@@ -156,7 +156,7 @@ export default defineComponent({
                 </v-table>
                 <p
                   v-if="row.errorsTrimmed"
-                  class="text-caption text-medium-emphasis pa-3"
+                  class="text-body-small text-medium-emphasis pa-3"
                 >
                   Only the first {{ (row.errors ?? []).length }} problems are kept.
                 </p>

@@ -68,7 +68,7 @@ watch(() => [props.subjectType, props.subjectId], load)
 
 <template>
   <v-card :loading="loading">
-    <v-card-title class="text-subtitle-1">
+    <v-card-title class="text-title-medium">
       History
     </v-card-title>
     <v-divider />
@@ -86,8 +86,8 @@ watch(() => [props.subjectType, props.subjectId], load)
         size="x-small"
       >
         <div class="d-flex align-center ga-2">
-          <strong class="text-body-2 text-capitalize">{{ entry.event }}</strong>
-          <span class="text-caption text-medium-emphasis">
+          <strong class="text-body-medium text-capitalize">{{ entry.event }}</strong>
+          <span class="text-body-small text-medium-emphasis">
             by {{ entry.user?.name ?? "system" }} · <AppTimeAgo :value="entry.createdAt" />
           </span>
         </div>
@@ -95,7 +95,7 @@ watch(() => [props.subjectType, props.subjectId], load)
         <v-table
           v-if="entry.changes.length"
           density="compact"
-          class="mt-1 text-caption"
+          class="mt-1 text-body-small"
         >
           <tbody>
             <tr
