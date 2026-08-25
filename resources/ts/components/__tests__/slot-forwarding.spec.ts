@@ -22,6 +22,10 @@ import {resolve} from "node:path"
  * not just the slot.
  *
  * `v-bind="slotData || {}"` is the fix.
+ *
+ * Vue fixed the underlying throw upstream (observed fixed on 3.5.41). The
+ * guard still ships: package.json allows `vue: ^3.5.0`, so any resolved
+ * version below the fix still blanks the page without it.
  */
 
 /** Stands in for a Vuetify component that calls a slot with no arguments. */
@@ -55,11 +59,20 @@ describe('slot forwarding', () => {
     expect(mountWithNoDataSlot('slotData || {}').find('.empty').exists()).toBe(true)
   })
 
-  it('the unguarded form throws, so the guard is not cargo cult', () => {
-    // The exact error the app hit. In the browser Vue routes it through the
-    // app error handler, so the console shows a warning and the page just
-    // comes up empty — which is why this shipped unnoticed.
-    expect(() => mountWithNoDataSlot('slotData')).toThrow(/Cannot read propert/)
+  it('renders the same guarded or not, because Vue fixed the throw upstream', () => {
+    // This used to assert `mountWithNoDataSlot('slotData')` throws
+    // /Cannot read propert/ — the exact error that blanked pages.
+    //
+    // Vue fixed it upstream: as of 3.5.41 the unguarded form no longer throws
+    // and produces byte-identical output to the guarded one. Asserting a throw
+    // here now fails, so this pins the CURRENT behaviour instead.
+    //
+    // The guard is NOT thereby cargo cult, and must stay:
+    //   - every Vue below the fix still throws, and the template targets a
+    //     range (`vue: ^3.5.0`), not a single pinned version;
+    //   - the source-level assertions below are the real regression guard.
+    expect(mountWithNoDataSlot('slotData').innerHTML)
+      .toBe(mountWithNoDataSlot('slotData || {}').innerHTML)
   })
 
   // Every component that forwards slots this way must use the guarded form.
