@@ -38,6 +38,12 @@
 
 <script lang="ts" setup>
 import { computed } from "vue"
+// Required: this is a <script setup> component, so a child used in the
+// template resolves ONLY if it is imported here. Without it Vue logs
+// "Failed to resolve component: app-date-input" as a WARNING and renders
+// nothing in its place — the preset chips appeared and the two date fields
+// silently did not, which is how this shipped.
+import AppDateInput from "@/components/fields/AppDateInput.vue"
 import dayjs from "@/utils/dayjs"
 
 export interface DateRange {
