@@ -1,7 +1,7 @@
 import BackButton from "@/plugins/backButton/BackButton.vue"
 import createMixin from "@/plugins/backButton/mixin"
-import type { RawLocation } from "vue-router"
-import type {App} from "vue"
+import type { RouteLocationRaw } from "vue-router"
+import type {App, ComponentOptions} from "vue"
 
 
 const defaultOptions = {
@@ -25,7 +25,7 @@ export const backButton: BackButton.Plugin = {
     // @ts-ignore
     state.vms.splice(state.vms.findIndex(vm), 1)
   },
-  setLink(link: RawLocation | null) {
+  setLink(link: RouteLocationRaw | null) {
     state.link = link
     state.vms.forEach(function(vm) {
       vm.link = link
@@ -44,6 +44,10 @@ export default {
   install(app: App, options: typeof defaultOptions | void) {
     app.config.globalProperties.$backButton = backButton
     app.component("BackButton", BackButton)
-    app.mixin(createMixin(backButton, Object.assign(defaultOptions, options)))
+    // `defineComponent` returns a DefineComponent, which app.mixin does not
+    // accept directly even though it is exactly a component options object.
+    // Cast at the boundary rather than dropping defineComponent, which is
+    // what gives the mixin's computed and watch a typed `this`.
+    app.mixin(createMixin(backButton, Object.assign(defaultOptions, options)) as ComponentOptions)
   }
 }

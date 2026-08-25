@@ -26,7 +26,17 @@ export default class Authorization implements App.Middleware.Instance {
       return cancel(routeTo(ROUTES.DASHBOARD, {}, {error: 'You do not have permission to access this page.'}))
     }
 
-    if (to.meta.roles.length && !to.meta.roles.includes($auth.user?.role)) {
+    // `roles` (plural), not `role` — AuthUser has no singular `role` field, so
+    // this compared every route's role list against `undefined` and failed for
+    // everyone. `some` rather than `includes` because a user can hold several
+    // roles and the route lists the ones that grant access.
+    //
+    // Like all_permissions, `roles` is contributed by the RolesPermissions
+    // module; without it the list is empty and a role-gated route denies, which
+    // is the same fail-closed behaviour the permission checks above have.
+    const userRoles = $auth.user?.roles ?? []
+
+    if (to.meta.roles.length && !userRoles.some((role) => to.meta.roles.includes(role.name))) {
       return cancel(routeTo(ROUTES.DASHBOARD, {}, {error: 'You do not have permission to access this page.'}))
     }
 
