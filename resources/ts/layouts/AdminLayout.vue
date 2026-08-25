@@ -92,7 +92,9 @@
       <v-container :fluid="fluid">
         <v-slide-x-reverse-transition mode="out-in">
           <span class="transition-wrapper">
-            <slot />
+            <app-error-boundary name="AdminLayout">
+              <slot />
+            </app-error-boundary>
           </span>
         </v-slide-x-reverse-transition>
       </v-container>
@@ -106,6 +108,7 @@
 import { defineComponent, type PropType } from "vue"
 import { useDisplay } from "vuetify"
 import UpdateDetector from "@/components/UpdateDetector.vue"
+import AppErrorBoundary from "@/components/AppErrorBoundary.vue"
 import AppMessages from "@/components/AppMessages.vue"
 import type { RouteLocationRaw } from "vue-router"
 
@@ -116,7 +119,7 @@ export interface NavItem {
 }
 
 export default defineComponent({
-  components: { AppMessages, UpdateDetector },
+  components: {AppErrorBoundary,  AppMessages, UpdateDetector },
   props: {
     brand: {
       type:    String,

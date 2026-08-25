@@ -16,7 +16,9 @@
     <v-main>
       <v-slide-x-reverse-transition mode="out-in">
         <span class="transition-wrapper">
-          <slot />
+          <app-error-boundary name="DefaultLayout">
+            <slot />
+          </app-error-boundary>
         </span>
       </v-slide-x-reverse-transition>
     </v-main>
@@ -27,6 +29,7 @@
 <script lang="ts">
 import {defineAsyncComponent, defineComponent, markRaw} from "vue"
 import UpdateDetector from "@/components/UpdateDetector.vue"
+import AppErrorBoundary from "@/components/AppErrorBoundary.vue"
 import AppMessages from "@/components/AppMessages.vue"
 import AppNetworkBanner from "@/components/AppNetworkBanner.vue"
 import AppImpersonationBanner from "@/components/AppImpersonationBanner.vue"
@@ -45,7 +48,7 @@ const searchPath = "/modules/GlobalSearch/resources/ts/components/AppGlobalSearc
 
 
 export default defineComponent({
-  components: {
+  components: {AppErrorBoundary, 
     UpdateDetector,
     AppMessages,
     AppNetworkBanner,
