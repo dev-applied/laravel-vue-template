@@ -69,7 +69,8 @@ migrations across 44 local Laravel repos. Full report:
 
 - [ ] **Tenancy sequencing** — SavedViews shipped with a `SavedViewScope` seam (bind once, whole module covered) — that is the pattern the remaining per-user modules should copy, and it makes this decision cheap to defer rather than free to ignore. Comments and Tasks are queued and both store per-user rows; AuditLog already shipped. If the firm wants tenant scoping, deciding late means retrofitting each. Not a blocker today (AuditLog reads through a project-defined gate, so a tenant-aware project scopes there), but it is Devin's call before the next per-user module.
 - [x] **Otp depends on an SMS channel** — RESOLVED by the seam pattern three modules have now used (AudienceResolver, SavedViewScope, CommentableRegistry): Otp declares an `OtpChannel` contract and ships email; a project binds Twilio or anything else. No SmsChannel module has to land first, and nothing about Twilio is baked in — 2026-08-24
-- [ ] **SsoAuth should be an Auth option, not a module** — it is an auth strategy, and Auth already owns the option-variant pattern (sanctum | sanctum+oauth).
+- [x] **SsoAuth is an Auth option** — shipped as a SEPARATE `sso` axis rather than a third choice on `auth`, deviating from the research note: the two point opposite ways (`auth=sanctum+oauth` makes the app an OAuth SERVER for MCP clients, `sso=oidc` an OAuth CLIENT of Google/Microsoft), so one setting would force a false choice. Allow-listed providers, module-issued single-use state (stateless() drops Socialite's CSRF and API routes have no session), verified-email-only account linking, registration off by default, deactivated users refused. 19 SSO tests, 33 across the module — 2026-08-24
+- [ ] **SAML as a third `sso` choice** — deliberately not folded into the OIDC option: it means `onelogin/php-saml` or `simplesamlphp` and a different protocol surface (ACS URL semantics, SP- vs IdP-initiated, `RequestedAuthnContext` defaults). Evidence is the mibev Marriott PingFederate integration — a 189-iteration session that ended marked failed, where the root cause was an enterprise device-cert requirement but most of the time went to exactly those semantics. A module plus a troubleshooting doc is what retains that.
 
 ## Modules — candidate discovery
 
@@ -94,6 +95,7 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+- SSO shipped 2026-08-24 as an Auth option — and the browser found two bugs the tests had not: a provider listed without credentials rendered a button that threw on click (the option's own env default shipped that state), and the callback echoed any throwable's message, sending raw SQL to the client when a migration had not run.
 - User payload allow-listed 2026-08-24 — AuthUserResource returned the whole model, so any module adding a `users` column shipped it to every client (the Users module already had). Five explicit fields, and the roles/permissions checks no longer lazy-load.
 - Template CI is live again 2026-08-24 — nothing had gated a PR; now pint+pest, eslint+vue-tsc+vitest, and a Capacitor build smoke all run on every pull request.
 - `module:make` 2026-08-24 — new modules start from the canonical shape, green on every check before a line is edited.
