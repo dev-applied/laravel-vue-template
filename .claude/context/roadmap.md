@@ -179,6 +179,18 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+- **Vuetify v4 typography was dead across the whole app** — shipped 2026-08-25. `text-h4`, `text-body-2`,
+  `text-caption` and the rest do not EXIST in v4 (renamed to the MD3 scale), so 81 usages across the kernel and
+  22 modules rendered at the inherited size and every heading fell back to a browser default. Nothing errored.
+  The v4 upgrade had already removed the `#applied { h1 { @extend .text-h1 } }` mapping, and the follow-up that
+  added `class="text-h3"` to the login title was dead too. Remapped by measured size/weight, guarded in bin/lint.
+- **Accessibility pass over the public and auth surface** — shipped 2026-08-25. 19 icon-only buttons announced
+  nothing (Vuetify renders `icon="delete"` as a ligature, so the only text content is the glyph); 7 pages had no
+  h1 or started at h3, and every one was public or auth; the three password-reveal toggles had `tabindex="-1"`,
+  so the only way to check a typed password was unreachable by keyboard; /login had no autocomplete or type on
+  its inputs. Also: board cards advertised a click that did nothing, and the file dropzone's preview was
+  mouse-only.
+
 - **Modules — browser verification sweep** — all leaves shipped 2026-08-25 (every module page loaded and looked at,
   not just 200-checked, at desktop and 390px). What it found, none of which any suite saw: the Booking confirmation
   named the BOOKER as the location (`$this->resource` in a JsonResource is the wrapped model, and Booking has a

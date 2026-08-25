@@ -22,6 +22,11 @@ Accepted tech debt. Check here before "discovering" a bug.
 
 ## Resolved (last 90 days)
 
+- **The entire Vuetify typography scale was inert** — v4 renamed `text-h*` / `text-body-*` / `text-caption` to the
+  Material Design 3 names, so 81 surviving v3 usages contributed nothing and every heading took a browser default.
+  Invisible to every linter and every test; found only because changing a heading's TAG for screen-reader structure
+  moved its size, which a tag swap should never do. Remapped, and `bin/lint` now refuses the v3 names (2026-08-25)
+
 - **Files vertical — broken S3 upload path** — the kernel's S3 branch had never worked: `generate-presigned-url` had a controller method and no route, `mockS3Event` called a method that did not exist, the composable polled a JSON field on an endpoint that returns a redirect, and `useFile()` default-imported a module with no default export. Resolved by rebuilding it correctly in `modules/Files` (storage option: local | s3-presigned) rather than porting the broken flow upstream (2026-08-24)
 - **Module frontends were never type-checked** — `npm run build` strips types with esbuild, so `vue-tsc` had only ever run without modules installed. Added to modules CI; the first run found 53 errors including three modules whose submit buttons never rendered (2026-08-24)
 - **The suite ran on sqlite :memory:** against the project's own documented convention, hiding a Booking migration that fails outright on MariaDB and two `expires_at` columns carrying `ON UPDATE CURRENT_TIMESTAMP`. Both CI workflows and phpunit.xml now use MySQL (2026-08-25)
