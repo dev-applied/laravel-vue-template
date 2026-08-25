@@ -367,18 +367,35 @@ class ModuleAddCommand extends Command
      *
      * @param  array<int, string>  $specs
      */
-    private function recordNpmDependencies(array $specs, string $section): void
+    private function recordNpmDependencies(array $specs, string $section, ?string $packageJsonPath = null): void
     {
         if ($specs === []) {
             return;
         }
 
-        $path     = base_path('package.json');
+        $path     = $packageJsonPath ?? base_path('package.json');
         $original = (string) file_get_contents($path);
         /** @var array<string, mixed> $package */
         $package = json_decode($original, true);
 
         foreach ($specs as $spec) {
+            // Refuse a spec that is not `name` or `name@constraint`.
+            //
+            // Without this the composer syntax `laravel-echo:^2.2` is written
+            // into package.json as the KEY `"laravel-echo:^2.2": "*"` — a name
+            // npm will never resolve, sorted quietly into the middle of the
+            // dependency list. Nothing downstream notices: `npm install`
+            // succeeds because it treats it as an unknown package name that
+            // simply is not there, the import fails at build time in a way that
+            // looks like a missing file, and `module:check` reports the real
+            // package as missing while the manifest looks correct.
+            if (! preg_match('/^(@[a-z0-9._-]+\/)?[a-z0-9._-]+(@.+)?$/i', $spec)) {
+                throw new RuntimeException(
+                    "Module npm requirement [{$spec}] is not a valid npm spec. ".
+                    'Use `name` or `name@constraint` — `name:constraint` is composer syntax.'
+                );
+            }
+
             // Split on the LAST @ so scoped names like @vueuse/core@^13 survive.
             $at      = mb_strrpos($spec, '@');
             $name    = $at > 0 ? mb_substr($spec, 0, $at) : $spec;

@@ -48,9 +48,15 @@ class ModuleCheckCommand extends Command
             // at once. Reading a path the glob saw a moment ago is therefore
             // not guaranteed, and throwing there reports a dependency problem
             // that does not exist. Skip what vanished; the next run sees it.
-            $contents = File::exists($path) ? File::get($path) : null;
+            //
+            // A read, not an exists()-then-read. The earlier version checked
+            // first and still threw under `pest --parallel`, because the file
+            // can vanish BETWEEN the two calls — the window is small and the
+            // suite hits it, which is how a green gate turned into one flaky
+            // ErrorException at line 51.
+            $contents = @file_get_contents($path);
 
-            if ($contents === null) {
+            if ($contents === false) {
                 continue;
             }
 

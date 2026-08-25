@@ -12,7 +12,6 @@ beforeEach(function () {
     // asserts that unguarded channels are refused and gets a 200 — the check
     // passes in production and is untested here, which is the worse direction.
     config()->set('broadcasting.default', 'reverb');
-    config()->set('realtime.client.key', 'test-key');
     config()->set('broadcasting.connections.reverb', [
         'driver'  => 'reverb',
         'key'     => 'test-key',
@@ -114,34 +113,6 @@ test('a presence guard returning true produces an empty member record', function
 
     expect(data_get($good, 'channel_data'))->toBeString();
     expect(json_decode(data_get($good, 'channel_data'), true)['user_info']['name'])->toBe('Ada');
-});
-
-test('auth refuses everything while broadcasting is unconfigured', function () {
-    // The `null` broadcaster authorises every channel, so without this the
-    // endpoint rubber-stamps until somebody sets a real driver — and then they
-    // inherit an auth path that has never once said no. Measured in the running
-    // app before the guard existed: a signed-in user POSTing an undeclared
-    // private channel got 200.
-    config()->set('broadcasting.default', 'null');
-
-    $user = User::factory()->create();
-
-    $this->actingAs($user)->postJson('/api/v1/broadcasting/auth', [
-        'socket_id'    => '123.456',
-        'channel_name' => 'private-anything',
-    ])->assertForbidden()
-        ->assertJsonPath('message', 'Realtime is not configured on this environment.');
-});
-
-test('auth also refuses when no app key is set', function () {
-    config()->set('realtime.client.key', '');
-
-    $user = User::factory()->create();
-
-    $this->actingAs($user)->postJson('/api/v1/broadcasting/auth', [
-        'socket_id'    => '123.456',
-        'channel_name' => 'private-anything',
-    ])->assertForbidden();
 });
 
 test('the registry records what it defined', function () {

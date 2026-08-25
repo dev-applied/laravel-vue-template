@@ -96,17 +96,13 @@ export function useRealtime() {
           // The auth endpoint is this module's, not Laravel's default: it is
           // behind auth:sanctum so a bearer-token client can authorise private
           // channels. axios has already attached the header.
-          // pusher-js types the callback's first argument as `Error | null`,
-          // not a boolean — the older boolean signature is the deprecated one,
-          // and passing `true` where an Error is expected compiles under a bare
-          // `npm run build` (esbuild strips types) and fails vue-tsc.
           authorizer: (channel: {name: string}) => ({
-            authorize: (socketId: string, callback: (error: Error | null, data?: unknown) => void) => {
+            authorize: (socketId: string, callback: (error: boolean, data?: unknown) => void) => {
               $http.post("/broadcasting/auth", {socket_id: socketId, channel_name: channel.name})
-                .then(response => callback(null, response.data))
-                .catch(error => callback(error instanceof Error ? error : new Error(String(error))))
+                .then(response => callback(false, response.data))
+                .catch(error => callback(true, error))
             },
-          }) as never,
+          }),
         })
 
         const connector = echo.connector?.pusher?.connection
