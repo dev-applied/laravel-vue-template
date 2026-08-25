@@ -113,16 +113,6 @@ the reported line.
 - [x] **Signing in landed on a 404** — `$router.push()` with a bare string is a PATH, and `ROUTES.DASHBOARD` is a NAME, so every successful login went to `/dashboard.index`. `mounted()` five lines above had it right — 2026-08-24
 - [x] **`ROUTES` typed as `typeof ROUTES & Record<string, string>`** — the kernel's static literal was the whole type, so every module route name was an error at every call site — 2026-08-24
 
-## Modules — Favorites (org-wide sweep 2026-08-24)
-
-A read-only sweep of all 445 non-archived `dev-applied` repos (39 are Laravel; 1,282 controllers,
-1,732 migrations) to re-ground the local-only rankings. It found **no contradiction** — no vertical
-that ranked low locally is common org-wide, and the 21 shipped modules are not missing one. Full
-report: `file:///tmp/org-inventory.md`.
-
-- [ ] **Favorites** (7 repos) — the sweep's only genuinely new, recurring, extractable candidate: polymorphic pivot, toggle endpoint, "my favorites" list. Everything else it surfaced is either not a module (soft-delete is one trait), a naming collision (`ContactController` is a contact-us form, not a CRM), or below the frequency of what already shipped.
-- [x] Org-wide re-check of the module rankings — 39 Laravel repos probed, 26 of them already covered locally, 7 substantive new codebases. Also corroborated independently by the 52 legacy-framework repos, where 22 hand-rolled an audit log (validating AuditLog) and 1 built ticketing (**demoting Support** — the one place org data changes a conclusion, and it demotes) — 2026-08-24
-
 ## Modules — evidence-ranked candidates (research 2026-08-24)
 
 Counts are DISTINCT projects, machine-derived from 1,074 controllers and 2,828
@@ -166,6 +156,7 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+- Modules — Favorites — all leaves shipped 2026-08-24 (an org-wide sweep of 445 repos re-grounded the local rankings: no contradiction, one new candidate, and Support demoted; Favorites then built as module #22).
 - SSO shipped 2026-08-24 as an Auth option — and the browser found two bugs the tests had not: a provider listed without credentials rendered a button that threw on click (the option's own env default shipped that state), and the callback echoed any throwable's message, sending raw SQL to the client when a migration had not run.
 - User payload allow-listed 2026-08-24 — AuthUserResource returned the whole model, so any module adding a `users` column shipped it to every client (the Users module already had). Five explicit fields, and the roles/permissions checks no longer lazy-load.
 - Template CI is live again 2026-08-24 — nothing had gated a PR; now pint+pest, eslint+vue-tsc+vitest, and a Capacitor build smoke all run on every pull request.
