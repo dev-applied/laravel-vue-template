@@ -219,9 +219,19 @@ Authoring — `module.json` `options`:
   vs upstream versions. Applying updates is deliberate work, never automatic;
   do it on retainer touches and Laravel-major upgrades (upstream ports the
   module once, every client upgrade pulls the port). Updates replay the
-  module's `installed_options` so a pruned variant stays scoped. (The automated
-  update/merge command itself is not built yet — updates today are the manual
-  three-way merge described above.)
+  module's `installed_options` so a pruned variant stays scoped.
+- **Update**: `php artisan module:update [Name...]` — the three-way merge above,
+  automated. base = upstream at `installed_from_commit`, theirs = upstream HEAD,
+  ours = the copy in this project. `git merge-file` does the per-file merge, so
+  conflicts land as ordinary conflict markers (`yours (this project)` /
+  `upstream`) only where the project actually diverged. `installed_options` is
+  replayed against BOTH upstream trees before diffing, so a pruned variant stays
+  pruned. New upstream files are added; files upstream DELETED are reported and
+  kept — an update never silently takes code away. `module.json` is re-stamped
+  so the next update has the right base. `--dry-run` reports and touches
+  nothing. Exits non-zero when anything conflicted, so a script cannot mistake
+  "merged with conflicts" for a clean merge. With no names it updates every
+  installed module.
 - **Harvest** (feeds the modules repo): when a project builds something
   module-worthy — or the quote skill's Prior Art Check matches a family with
   2+ prior builds and no module — extract it as the FIRST build task of the
