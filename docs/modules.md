@@ -186,8 +186,15 @@ Authoring — `module.json` `options`:
 
 ## Workflows
 
-## Workflows
-
+- **Scaffold** (start a new module): `php artisan module:make <Name>` — writes
+  the full anatomy into a modules-repo checkout (`--dest`, default a sibling
+  `laravel-vue-modules`): model with `newFactory()`, factory, migration,
+  controller, form requests, resource, routes, service provider, feature tests,
+  Vue page, composable, route file and README. `--model=` overrides the primary
+  model name (default: the singular of the module name). The stubs encode the
+  conventions below, so a generated module passes pint, eslint, vue-tsc and its
+  own tests before a line is edited. Verify it the same way as any module:
+  `module:add <Name> --from=<dest>` into a template checkout, then run the gate.
 - **Add**: `php artisan module:add` (in the container, like every artisan
   command). With no arguments it multiselects from every module in the firm
   modules repo (`dev-applied/laravel-vue-modules`); pass names to skip the
