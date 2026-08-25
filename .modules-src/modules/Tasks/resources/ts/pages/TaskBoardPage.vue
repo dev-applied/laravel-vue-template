@@ -2,6 +2,7 @@
 import {defineComponent} from "vue"
 import AppTaskColumn from "@modules/Tasks/resources/ts/components/AppTaskColumn.vue"
 import useTasks, {type Task, type TaskStatus} from "@modules/Tasks/resources/ts/composables/useTasks"
+import {ROUTES} from "@modules/Tasks/resources/ts/routes"
 
 export default defineComponent({
   name: "TaskBoardPage",
@@ -10,7 +11,10 @@ export default defineComponent({
     return useTasks()
   },
   data() {
+    // No glob guard in this direction: TasksPage exists in every variant, so
+    // the way back is always safe to render.
     return {
+      ROUTES,
       dragging: null as Task | null,
       columns: ['todo', 'in_progress', 'blocked', 'done'] as TaskStatus[],
     }
@@ -39,6 +43,12 @@ export default defineComponent({
 <template>
   <v-container fluid>
     <div class="d-flex align-center ga-2 mb-4">
+      <v-btn
+        aria-label="Back to the task list"
+        icon="list"
+        variant="text"
+        @click="$router.push($routeTo(ROUTES.TASKS))"
+      />
       <h1 class="text-h5">
         Board
       </h1>

@@ -5,6 +5,14 @@ import AppTimeAgo from "@/components/AppTimeAgo.vue"
 import AppSelect from "@/components/fields/AppSelect.vue"
 import AppTextField from "@/components/fields/AppTextField.vue"
 import useTasks, {PRIORITY_COLORS, STATUS_LABELS, type Task} from "@modules/Tasks/resources/ts/composables/useTasks"
+import {ROUTES} from "@modules/Tasks/resources/ts/routes"
+
+// Same detection routes.ts uses to decide whether to REGISTER /tasks/board. The
+// `list` choice deletes TaskBoardPage.vue, so without this the toggle would be a
+// visible button that navigates to a route which does not exist — the module's
+// own rule is that a visible button can never produce an error.
+const boardGlob = import.meta.glob("/modules/Tasks/resources/ts/pages/TaskBoardPage.vue")
+const hasBoard  = !!boardGlob["/modules/Tasks/resources/ts/pages/TaskBoardPage.vue"]
 
 export default defineComponent({
   name: "TasksPage",
@@ -14,6 +22,8 @@ export default defineComponent({
   },
   data() {
     return {
+      hasBoard,
+      ROUTES,
       filters: {status: null as string | null, search: "", mine: false, overdue: false},
       newTitle: "",
       creating: false,
@@ -63,9 +73,23 @@ export default defineComponent({
 
 <template>
   <v-container>
-    <h1 class="text-h4 mb-4">
-      Tasks
-    </h1>
+    <div class="d-flex align-center mb-4 ga-3">
+      <h1 class="text-h4">
+        Tasks
+      </h1>
+      <v-spacer />
+      <!-- Only in the list+kanban variant. The board shipped with nothing
+           linking to it in either direction, so the option's whole point was
+           reachable only by typing the URL. -->
+      <v-btn
+        v-if="hasBoard"
+        prepend-icon="view_kanban"
+        variant="tonal"
+        @click="$router.push($routeTo(ROUTES.TASK_BOARD))"
+      >
+        Board view
+      </v-btn>
+    </div>
 
     <v-card class="mb-4">
       <v-card-text class="d-flex ga-3 flex-wrap align-center">
