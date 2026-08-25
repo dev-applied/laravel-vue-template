@@ -87,17 +87,6 @@ the reported line.
 - [x] **Signing in landed on a 404** — `$router.push()` with a bare string is a PATH, and `ROUTES.DASHBOARD` is a NAME, so every successful login went to `/dashboard.index`. `mounted()` five lines above had it right — 2026-08-24
 - [x] **`ROUTES` typed as `typeof ROUTES & Record<string, string>`** — the kernel's static literal was the whole type, so every module route name was an error at every call site — 2026-08-24
 
-## Auth — SAML deferrals, re-questioned
-
-The two things the SAML option shipped without. Both are half-wired already, which is the worst of
-the three states: `SamlSettings` builds `singleLogoutService` from `SAML_IDP_SLO_URL` and the SP
-metadata ADVERTISES an SLS endpoint, so a correctly-configured Azure or Okta will POST LogoutRequests
-at a URL nothing serves. `wantAssertionsEncrypted` is passed to the toolkit but the SP keypair path
-has never been exercised.
-
-- [x] **Single Logout (SLO)** — SLS taking both message kinds plus an SP-initiated endpoint, a `name_id`/`session_index` migration, and a kernel `onBeforeLogout` seam so ordinary sign-out drives it. Found a real hole doing it: `wantMessagesSigned` is optional for sign-in (the assertion signs itself) but a LogoutRequest has no assertion, and php-saml only demands a signature when that flag is set — so at the default the endpoint accepted an unsigned LogoutRequest naming any NameID, from anyone. `forSlo()` forces it. 13 tests, all four variants green (14/54/53/93), browser-verified — 2026-08-24
-- [~] **Encrypted assertions** — SP keypair, decryption exercised by a test that encrypts with the SP's public key. Untested config is not a feature.
-
 ## Modules — evidence-ranked candidates (research 2026-08-24)
 
 Counts are DISTINCT projects, machine-derived from 1,074 controllers and 2,828
@@ -141,6 +130,7 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+- Auth SAML deferrals — all leaves shipped 2026-08-24 (both re-questioned and both real: the metadata had been ADVERTISING an SLS endpoint that served nothing, and encryption was wired but never exercised. Building SLO turned up an unauthenticated log-anybody-out — php-saml only requires a LogoutRequest signature when `wantMessagesSigned` is set, which is correctly optional for sign-in but fatal for a message that carries no assertion. Auth's "Not included" list is now empty for SAML.).
 - SSO security review — all leaves shipped 2026-08-24 (six findings from an adversarial review of the OIDC option, closing with the issuer pin: `allowed_domains` cannot catch nOAuth, because on a multi-tenant endpoint the attacker asserts YOUR domain from THEIR tenant and the domain check passes by design. `required_claims` pins the tenant claim, fails closed on an absent claim and on an env var that did not resolve, and applies to already-linked identities so adding a pin actually revokes. SAML needed nothing — php-saml pins `<Issuer>` to `idp.entityId` before reading the assertion.).
 - Auth module type-error bugs — all leaves shipped 2026-08-24 (decorative client-side validation on login and forgot-password, an error string bound to a boolean visibility flag, and the structural gap behind both: module frontends were only type-checked once copied into a template checkout, so nothing ever did it. `vue-tsc --noEmit` now runs on every leg of the module CI matrix.).
 - Modules — Favorites — all leaves shipped 2026-08-24 (an org-wide sweep of 445 repos re-grounded the local rankings: no contradiction, one new candidate, and Support demoted; Favorites then built as module #22).
