@@ -3,6 +3,7 @@
     <div class="d-flex align-center mb-4">
       <v-btn
         icon="arrow_back"
+        aria-label="Back to the item list"
         variant="text"
         @click="goBack"
       />

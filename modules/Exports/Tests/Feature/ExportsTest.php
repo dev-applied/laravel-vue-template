@@ -25,11 +25,22 @@ beforeEach(function () {
 });
 
 test('the sources endpoint lists what the project registered', function () {
-    $this->actingAs($this->user)
-        ->getJson('/api/v1/exports/sources')
-        ->assertOk()
-        ->assertJsonPath('sources.0.key', 'users')
-        ->assertJsonPath('sources.0.label', 'Users');
+    // Asserted by CONTENT, not by position. This used to pin `sources.0`, which
+    // only held while the test's own source was the only one in the registry —
+    // the template then registered an Items source from AppServiceProvider and
+    // this went red without anything about exports changing. Every real project
+    // registers its own, so position was never a property worth asserting.
+    $sources = collect(
+        $this->actingAs($this->user)
+            ->getJson('/api/v1/exports/sources')
+            ->assertOk()
+            ->json('sources')
+    );
+
+    $users = $sources->firstWhere('key', 'users');
+
+    expect($users)->not->toBeNull('the registered source is missing from the listing')
+        ->and($users['label'])->toBe('Users');
 });
 
 test('the sources route is not shadowed by the export wildcard', function () {
@@ -190,4 +201,29 @@ test('deleting an export removes its generated file', function () {
 test('export routes require authentication', function () {
     $this->getJson('/api/v1/exports')->assertUnauthorized();
     $this->postJson('/api/v1/exports', ['source' => 'users'])->assertUnauthorized();
+});
+
+test('a storage failure degrades to "not downloadable" instead of failing the request', function () {
+    // ExportResource calls isDownloadable() PER ROW, so a listing makes one
+    // remote HEAD per record and any of them can throw. Seen for real, driving
+    // the page: S3 credentials permitting PutObject but not the HEAD that
+    // exists() needs — the export completed, the object was written, and then
+    // the listing answered with a raw Flysystem line straight to the user:
+    //
+    //   Unable to check existence for: exports/1-items-....csv
+    //
+    // The job's own failures are redacted through safeReason(). This path,
+    // outside any try, had nothing.
+    $export = Export::factory()->create([
+        'user_id' => $this->user->id,
+        'status'  => Export::STATUS_COMPLETED,
+        'path'    => 'exports/1-items.csv',
+        'disk'    => 'broken-disk',
+    ]);
+
+    Storage::shouldReceive('disk')
+        ->with('broken-disk')
+        ->andThrow(new RuntimeException('Unable to check existence for: exports/1-items.csv'));
+
+    expect($export->isDownloadable())->toBeFalse();
 });

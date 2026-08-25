@@ -245,7 +245,7 @@ test('both storage paths refuse an over-quota upload with the same status', func
 
     $direct = $this->actingAs($this->user)
         ->postJson('/api/v1/files', [
-            'file' => \Illuminate\Http\UploadedFile::fake()->create('photo.jpg', 200),
+            'file' => UploadedFile::fake()->create('photo.jpg', 200),
         ]);
 
     expect($presigned->status())->toBe(413)

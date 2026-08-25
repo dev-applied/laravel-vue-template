@@ -1,10 +1,19 @@
 <template>
   <v-container>
-    <div class="d-flex align-center mb-4">
+    <div class="d-flex align-center flex-wrap ga-2 mb-4">
       <h1 class="text-headline-large">
         Items
       </h1>
       <v-spacer />
+      <!-- Only when the module is installed. `component :is` with a null
+           resolves to nothing, so a project that removes Exports loses the
+           button rather than getting a render error. -->
+      <component
+        :is="exportButton"
+        v-if="exportButton"
+        :filters="filters"
+        source="items"
+      />
       <v-btn
         color="primary"
         prepend-icon="add"
@@ -48,12 +57,14 @@
       <template #[`item.actions`]="{ item }">
         <v-btn
           icon="edit"
+          aria-label="Edit item"
           variant="text"
           size="small"
           @click.stop="goEdit(item.id)"
         />
         <v-btn
           icon="delete"
+          aria-label="Delete item"
           variant="text"
           size="small"
           color="error"
@@ -65,15 +76,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
+import { defineAsyncComponent, defineComponent } from "vue"
 import ItemFilterBar from "./_components/ItemFilterBar.vue"
 import AppPaginationTable from "@/components/AppPaginationTable.vue"
 import dayjs from "@/utils/dayjs"
+
+// import.meta.glob, not a static import: modules/Exports may not be installed,
+// and a static path to a missing file fails the whole Vite build rather than
+// just this page. Same idiom LoginPage uses for SsoButtons.
+const exportGlob = import.meta.glob("/modules/Exports/resources/ts/components/AppExportButton.vue")
+const exportPath = "/modules/Exports/resources/ts/components/AppExportButton.vue"
 
 export default defineComponent({
   components: { ItemFilterBar, AppPaginationTable },
   data() {
     return {
+      exportButton: exportGlob[exportPath] ? defineAsyncComponent(exportGlob[exportPath] as never) : null,
       filters: {
         search:   "",
         status:   null as string | null,

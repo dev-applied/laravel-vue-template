@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Modules\DataImport\Support\ImportRegistry;
+use Modules\Exports\Support\ExportRegistry;
 use ReflectionException;
 
 class AppServiceProvider extends ServiceProvider
@@ -54,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configurePasswords();
 
         $this->configureImports();
+        $this->configureExports();
     }
 
     /**
@@ -93,6 +95,39 @@ class AppServiceProvider extends ServiceProvider
             rules: ['name' => 'required|string|max:255', 'description' => 'nullable|string'],
             required: ['name'],
             handler: fn (array $row) => Item::updateOrCreate(['name' => $row['name']], $row),
+        );
+    }
+
+    /**
+     * The Items example, as an EXPORT source.
+     *
+     * Exports shipped in the bundle with no target registered and no
+     * `AppExportButton` anywhere, so its page said "Start one from any
+     * listing's Export button" about a button that did not exist. DataImport
+     * had exactly the same gap and was wired to Items; its twin was not.
+     *
+     * Guarded on the directory rather than the class: class_exists() reads
+     * composer's CLASSMAP, which answers true for a module that has been
+     * deleted and then fatals on include — and that failure is self-sealing,
+     * because booting is what `module:add` does.
+     */
+    public function configureExports(): void
+    {
+        if (! is_dir(base_path('modules/Exports'))) {
+            return;
+        }
+
+        if (! class_exists(ExportRegistry::class) || ! class_exists(Item::class)) {
+            return;
+        }
+
+        app(ExportRegistry::class)->register(
+            key: 'items',
+            label: 'Items',
+            columns: ['id' => 'ID', 'name' => 'Name', 'description' => 'Description', 'created_at' => 'Created'],
+            query: fn (array $filters) => Item::query()
+                ->when($filters['search'] ?? null, fn ($q, $t) => $q->where('name', 'like', "%{$t}%"))
+                ->orderBy('id'),
         );
     }
 
