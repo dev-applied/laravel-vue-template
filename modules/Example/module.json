@@ -4,6 +4,6 @@
     "harvested_from": "laravel-vue-template (reference module, born here)",
     "template_version_tested": "2026-08",
     "description": "Reference module proving the module conventions end to end: migration, model, API route, service provider, and a Vue page registered through the router glob. Copy its shape when authoring a real module; remove it from client projects that don't want it.",
-    "installed_from_commit": "4b88a97f56f8acb4dc037d34e169b8efb72e4061",
+    "installed_from_commit": "420593e4912d1d09aebc05434f1fcb370783caaa",
     "installed_at": "2026-08-25"
 }

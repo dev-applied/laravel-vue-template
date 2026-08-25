@@ -27,13 +27,3 @@ Uncommitted ideas. Graduate to `roadmap.md` when committed to build.
   this is a visual decision, not a defect: moving to Vuetify's floating `label`
   changes the look of the public login screen, which is a design call rather
   than one to make while fixing screen-reader names.
-
-- **An `Example` module README.** It is the only other module without one. Its
-  twelve files arguably ARE the documentation — `module.json` calls it the
-  reference module — so this may only ever be three lines pointing at that
-  intent.
-
-- **A `Tasks` board scope example.** `TaskScope` ships permissive with a null
-  implementation. A worked `TeamScope` in the README, the way SavedViews shows
-  a tenant scope, would make the seam obviously usable rather than obviously
-  present.

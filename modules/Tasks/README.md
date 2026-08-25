@@ -167,6 +167,31 @@ destructive operations do not rely on it. Bind your own for teams or tenants:
 $this->app->bind(TaskScope::class, TeamScope::class);
 ```
 
+A worked one. `apply()` narrows what is read; `attributes()` stamps the same
+dimension on write, so a task created inside a team cannot land outside it —
+implement one without the other and every new task is invisible the moment it
+is saved:
+
+```php
+class TeamScope implements TaskScope
+{
+    public function apply(Builder $query, mixed $user): void
+    {
+        // No team means no tasks, not every task. Failing open here would
+        // hand the whole board to an unauthenticated or half-provisioned user.
+        $query->where('team_id', $user?->current_team_id ?? 0);
+    }
+
+    public function attributes(mixed $user): array
+    {
+        return ['team_id' => $user?->current_team_id];
+    }
+}
+```
+
+`team_id` has to exist on the table — add it in a project migration, index it,
+and remember the module's own queries do not know about it beyond this seam.
+
 A task outside the scope answers **404**, not 403 — once a project narrows
 visibility, the difference between two status codes must not confirm that a task
 exists.
