@@ -31,13 +31,8 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 - [ ] `module:update` — the automated three-way merge described in docs/modules.md but not built
 - [x] `bin/lint` in the modules repo — pint AND eslint the whole repo from a template checkout in ONE direction, so a later rsync cannot silently revert the fixes. The round trip ate pint fixes once and eslint fixes once; covering only pint just moved which CI leg went red — 2026-08-24
 - [ ] Module scaffolding command (`module:make`) so new modules start from the Example shape
-
-## Modules — extraction from the template
-
-Pulling shipped verticals out of the kernel and into the modules repo. Decision 2026-08-24: **true extraction** — deleted from the template, projects run `module:add`. Kernel contract in `docs/modules.md` shrinks accordingly. Items stays in the template as the worked example; Example stays as the reference module.
-
-- [x] **Files** — whole vertical moved to `modules/Files`, four latent bugs fixed, 17 tests added, `storage` option (local | s3-presigned) — 2026-08-24
-- [~] **Users** — modules repo `main` (direct) — UserController, user-management CRUD + pages. User *model* stays kernel (Auth depends on it).
+- [ ] Resource key casing is split-brain: the kernel returns snake_case (`due_date`, `full_name`, `owner_id`) while all 13 modules return camelCase (`dueAt`, `isSelf`). A project installing modules gets a mixed API. Decide one and sweep — the modules are internally consistent, so the cheaper direction is probably the kernel.
+- [ ] `@vue/test-utils` is not a dependency, so component tests mount by hand via `createApp`. Add it, or document the hand-rolled pattern in `resources/ts/CLAUDE.md` — right now the next person will assume it exists.
 
 ## Modules — generic verticals (built fresh, washwerk as design reference only)
 
@@ -98,4 +93,6 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+- Modules — extraction from the template — all leaves shipped 2026-08-24 (Files and Users lifted out of the kernel; the kernel keeps only a read-only `users` typeahead).
+- Kernel slot-forwarding bug fixed 2026-08-24 — six components blanked the ENTIRE page when the wrapped Vuetify component invoked a zero-argument slot (`no-data`, `loading`, `top`, `bottom`). Any list screen using `#no-data` was dead. Pinned by a vitest spec that reproduces the throw.
 - Modules CI harness — went from every-run-red to fully green 2026-08-24 (4 real bugs: public-repo token, phantom COMPOSER_AUTH, unbuilt frontend, Example collision).
