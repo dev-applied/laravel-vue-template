@@ -2,15 +2,19 @@ name: CI
 
 on:
   workflow_dispatch:
-#  pull_request:
-#    branches:
-#      - main
-#      - staging
-#  push:
-#    branches-ignore:
-#      - main
-#      - staging
-#      - dev
+  # No branch filter on pull_request, deliberately. The template's default
+  # branch is `master` while projects bootstrapped from it use `main` / `dev` /
+  # `staging` — a filter naming specific branches means CI silently never runs
+  # in whichever repo picked the other name. Every PR gets checked instead.
+  pull_request:
+  # Pushes to the long-lived branches are already covered by the PR that merged
+  # into them, so only feature-branch pushes need a run here.
+  push:
+    branches-ignore:
+      - main
+      - master
+      - staging
+      - dev
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

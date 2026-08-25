@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * The SPA shell route responds.
+     *
+     * withoutVite() because the shell renders @vite(...) and would otherwise
+     * demand a built public/build/manifest.json. A backend suite that requires
+     * a frontend build passes locally — where the developer has just built —
+     * and fails in CI, where the PHP job has no reason to run npm. The point of
+     * this test is that the catch-all route resolves, not that assets compiled;
+     * the frontend job covers the build.
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('/');
+        $this->withoutVite();
 
-        $response->assertStatus(200);
+        $this->get('/')->assertStatus(200);
     }
 }
