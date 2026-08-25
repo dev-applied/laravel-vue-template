@@ -26,7 +26,7 @@
 
       <div class="flex-grow-1 min-w-0">
         <h1
-          class="text-headline-small text-md-h4 mb-0"
+          class="text-headline-small text-md-headline-medium mb-0"
           :class="titleClass"
         >
           {{ title }}

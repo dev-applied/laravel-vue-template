@@ -15,6 +15,9 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 status=0
 SRC="resources/ts"
+# Overridable so the skip path is testable, and so a different checkout layout
+# can point at its own install.
+VUETIFY_STYLES="${VUETIFY_STYLES:-node_modules/vuetify/lib/styles}"
 
 echo "── icon names ──"
 # Vuetify here uses the `md` iconset, so names are Material Icons ligatures.
@@ -84,6 +87,37 @@ if grep -rnE --include='*.vue' --include='*.ts' --include='*.scss' \
   status=1
 else
   echo "ok  no Vuetify 2 class names"
+fi
+
+echo "── unknown utility classes ──"
+# The general form of every class-shaped check above. A class name is validated
+# by nothing — eslint sees a string, vue-tsc sees a string, the browser drops a
+# selector it has no rule for — so the element keeps its default and the page
+# looks nearly right. Compares every static class token against what Vuetify
+# actually ships plus what this project defines, and reports the leftovers that
+# are shaped like a utility.
+#
+# It found two the four named checks above could not: `text-md-h4`, because the
+# typography regex requires the size right after `text-`, so the BREAKPOINT
+# variants were never covered; and `text-body`, which is not a class in any
+# Vuetify version. Both measured against a bare div: identical.
+if python3 bin/find-unknown-utility-classes.py "$SRC" "$VUETIFY_STYLES" resources/ts; then
+  echo "ok  no unknown utility classes"
+else
+  case $? in
+    2) # A skip is fine locally, where you may not have installed yet. In CI
+       # node_modules is always present, so a skip there means the guard has
+       # quietly stopped guarding — which is worse than a failure, because the
+       # log still ends in green. Fail instead.
+       if [ -n "${CI:-}" ]; then
+         echo "x cannot check class names in CI — node_modules should be installed by now." >&2
+         status=1
+       else
+         echo "!  skipped — see message above (this check needs node_modules)"
+       fi ;;
+    *) echo "x class names that exist nowhere — a typo, or a name from an older Vuetify." >&2
+       status=1 ;;
+  esac
 fi
 
 exit "$status"

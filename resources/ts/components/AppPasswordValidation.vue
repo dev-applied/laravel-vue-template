@@ -11,9 +11,7 @@
         dot
         inline
       />
-      <span
-        class="ml-2 text-body"
-      >
+      <span class="ml-2">
         {{ conditions[index].text }}
       </span>
     </div>
