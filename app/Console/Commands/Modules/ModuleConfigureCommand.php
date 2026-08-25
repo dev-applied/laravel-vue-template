@@ -89,7 +89,7 @@ class ModuleConfigureCommand extends Command
 
         // apply() on the installed dir drops files the new selection no longer
         // needs and writes the new env; it returns the require/run plan.
-        $plan = $applier->apply($dir, $schema, $new, base_path('.env'));
+        $plan = $applier->apply($dir, $schema, $new, base_path('.env'), $old);
 
         $this->swapDependencies($schema, $old, $new, $plan['require']);
 

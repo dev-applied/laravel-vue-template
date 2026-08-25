@@ -75,3 +75,76 @@ test('droppedFiles expands globs + dirs to relative file paths for the selection
 test('droppedFiles is empty for a choice with no drops', function () {
     expect((new ModuleOptionApplier)->droppedFiles($this->dir, $this->schema, ['auth' => 'sanctum+oauth']))->toBe([]);
 });
+
+test('switching away from a choice retires the env keys only it declared', function () {
+    // The accident: switching SmsMessaging from driver=twilio back to the log
+    // driver left TWILIO_* sitting in .env. Harmless for a log driver; not
+    // harmless for an auth or billing variant, where a stale key still RESOLVES
+    // and something still reads it.
+    (new ModuleOptionApplier)->apply($this->dir, $this->schema, ['auth' => 'sanctum+oauth'], $this->env);
+
+    expect(File::get($this->env))->toContain('AUTH_OAUTH_ENABLED=true');
+
+    (new ModuleOptionApplier)->apply(
+        $this->dir,
+        $this->schema,
+        ['auth' => 'sanctum'],
+        $this->env,
+        ['auth' => 'sanctum+oauth'],   // what we are switching AWAY from
+    );
+
+    $contents = File::get($this->env);
+
+    expect($contents)->toContain('# AUTH_OAUTH_ENABLED=true')
+        ->and($contents)->not->toMatch('/^AUTH_OAUTH_ENABLED=/m');
+});
+
+test('a retired key is commented, never deleted', function () {
+    // The value may be a credential the developer pasted in. A tool that
+    // silently destroys one is worse than the stale key it is solving.
+    // Commenting stops it resolving — the actual hazard — and leaves it
+    // recoverable by eye.
+    File::put($this->env, "APP_NAME=Test\nAUTH_OAUTH_ENABLED=secret-value-worth-keeping\n");
+
+    (new ModuleOptionApplier)->apply(
+        $this->dir,
+        $this->schema,
+        ['auth' => 'sanctum'],
+        $this->env,
+        ['auth' => 'sanctum+oauth'],
+    );
+
+    expect(File::get($this->env))->toContain('secret-value-worth-keeping');
+});
+
+test('a key the incoming choice also declares is left alone', function () {
+    // EXISTING is declared by sanctum+oauth. If the incoming choice declared it
+    // too, retiring it would comment out a key that is about to be written —
+    // the ordering would decide the outcome, which is not a thing to leave to
+    // ordering.
+    $schema                                      = $this->schema;
+    $schema['auth']['choices']['sanctum']['env'] = ['EXISTING' => 'kept'];
+
+    (new ModuleOptionApplier)->apply(
+        $this->dir,
+        $schema,
+        ['auth' => 'sanctum'],
+        $this->env,
+        ['auth' => 'sanctum+oauth'],
+    );
+
+    $contents = File::get($this->env);
+
+    expect($contents)->toMatch('/^EXISTING=kept$/m')
+        ->and($contents)->not->toContain('# EXISTING=');
+});
+
+test('a fresh install retires nothing', function () {
+    // module:add passes no previous selection, so the retirement pass must be a
+    // no-op there rather than commenting out keys the user already had.
+    File::put($this->env, "APP_NAME=Test\nAUTH_OAUTH_ENABLED=set-by-hand\n");
+
+    (new ModuleOptionApplier)->apply($this->dir, $this->schema, ['auth' => 'sanctum'], $this->env);
+
+    expect(File::get($this->env))->toMatch('/^AUTH_OAUTH_ENABLED=set-by-hand$/m');
+});

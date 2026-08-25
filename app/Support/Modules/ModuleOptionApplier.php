@@ -20,9 +20,16 @@ class ModuleOptionApplier
      * @param  array<string, string|array<int, string>|bool>  $resolved  selections from the resolver
      * @return array{require: array<int,string>, require_dev: array<int,string>, npm: array<int,string>, npm_dev: array<int,string>, run: array<int,string>}
      */
-    public function apply(string $moduleDir, array $schema, array $resolved, string $envPath): array
+    public function apply(string $moduleDir, array $schema, array $resolved, string $envPath, array $previous = []): array
     {
         $plan = ['require' => [], 'require_dev' => [], 'npm' => [], 'npm_dev' => [], 'run' => []];
+
+        // Before writing the new choice's keys: retire the ones only the
+        // OUTGOING choice declared. Switching SmsMessaging from twilio back
+        // to the log driver otherwise leaves TWILIO_* sitting in .env —
+        // harmless there, and not harmless for an auth or billing variant
+        // where a stale key still RESOLVES and something still reads it.
+        $this->retireEnv($envPath, $this->envKeysFor($schema, $previous), $this->envKeysFor($schema, $resolved));
 
         foreach ($schema as $key => $def) {
             if (! array_key_exists($key, $resolved)) {
@@ -187,6 +194,71 @@ class ModuleOptionApplier
         } elseif (File::exists($path)) {
             File::delete($path);
         }
+    }
+
+    /**
+     * Env keys declared by the choices a given option selection resolves to.
+     *
+     * @param  array<string, mixed>  $schema
+     * @param  array<string, mixed>  $selection
+     * @return list<string>
+     */
+    private function envKeysFor(array $schema, array $selection): array
+    {
+        $keys = [];
+
+        foreach ($schema as $key => $def) {
+            if (! array_key_exists($key, $selection)) {
+                continue;
+            }
+
+            foreach ($this->selectedChoices((array) $def, $selection[$key]) as $choice) {
+                $env = (array) (($def['choices'][$choice]['env'] ?? []));
+
+                foreach (array_keys($env) as $envKey) {
+                    $keys[] = (string) $envKey;
+                }
+            }
+        }
+
+        return array_values(array_unique($keys));
+    }
+
+    /**
+     * Comment out env keys the outgoing choice declared and the incoming one
+     * does not.
+     *
+     * Commented, NOT deleted, and this is the whole design decision. The value
+     * may be a real credential the developer pasted in, and a tool that silently
+     * destroys one is worse than the stale-key problem it is solving. Commenting
+     * stops it resolving — which is the actual hazard — while leaving it
+     * recoverable by eye.
+     *
+     * A key already commented is left alone, so re-running is a no-op rather
+     * than stacking `# # KEY=`.
+     *
+     * @param  list<string>  $outgoing
+     * @param  list<string>  $incoming
+     */
+    private function retireEnv(string $envPath, array $outgoing, array $incoming): void
+    {
+        $orphans = array_diff($outgoing, $incoming);
+
+        if ($orphans === [] || ! File::exists($envPath)) {
+            return;
+        }
+
+        $contents = File::get($envPath);
+
+        foreach ($orphans as $key) {
+            $contents = preg_replace(
+                '/^('.preg_quote($key, '/').'=.*)$/m',
+                '# $1  # retired: no longer declared by the selected option',
+                $contents,
+            );
+        }
+
+        File::put($envPath, $contents);
     }
 
     /**
