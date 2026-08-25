@@ -51,7 +51,7 @@ test('a failed vendor call is still logged by the manager', function () {
 
     config()->set('sms.driver', 'twilio');
     config()->set('sms.twilio', ['sid' => 'AC123', 'token' => 't', 'from' => '+15550000000']);
-    app()->forgetInstance(\Modules\SmsMessaging\Contracts\SmsSender::class);
+    app()->forgetInstance(Modules\SmsMessaging\Contracts\SmsSender::class);
     app()->forgetInstance(SmsManager::class);
 
     $message = app(SmsManager::class)->send('+15551234567', 'Hello');

@@ -22,7 +22,7 @@ class LogSmsSender implements SmsSender
     {
         Log::info('[sms] would send', ['to' => $to, 'body' => $body]);
 
-        return SmsResult::accepted('log-'.substr(md5($to.$body.microtime()), 0, 12));
+        return SmsResult::accepted('log-'.mb_substr(md5($to.$body.microtime()), 0, 12));
     }
 
     public function name(): string

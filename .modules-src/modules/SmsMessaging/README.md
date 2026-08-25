@@ -78,9 +78,15 @@ and arrives later on a status webhook, if at all; conflating the two is how a
 "sent" column ends up meaning nothing.
 
 **Bodies are stored**, because "what did we send them?" is unanswerable
-otherwise. Redact anything secret before it reaches `send()` — an OTP code is
-the obvious case, and the OTP bridge below sends the code in the body by
-design, so treat the log as sensitive.
+otherwise. When what you send and what you want recorded differ, pass both:
+
+```php
+$manager->send($to, "Your code is 123456", logBody: "Your code is ••••••");
+```
+
+The OTP bridge does exactly this. Support reads this table while a code is
+still live, and a code is a credential — the handset needs the digits, the log
+does not.
 
 Reading it requires the `view-sms-log` ability, which **falls closed** when a
 project has not defined it. Phone numbers plus message bodies is not something

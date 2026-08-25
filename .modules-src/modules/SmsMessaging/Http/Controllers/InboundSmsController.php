@@ -35,8 +35,8 @@ class InboundSmsController extends Controller
 
     public function __invoke(Request $request): Response
     {
-        $from = (string) $request->input('From', '');
-        $keyword = strtolower(trim((string) $request->input('Body', '')));
+        $from    = (string) $request->input('From', '');
+        $keyword = mb_strtolower(mb_trim((string) $request->input('Body', '')));
         $keyword = preg_replace('/[^a-z]/', '', $keyword) ?? '';
 
         $number = PhoneNumber::normalise($from);

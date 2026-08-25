@@ -185,6 +185,16 @@ test('a successful verification clears the throttle', function () {
 test('a non-email identifier is refused when no sms channel is bound', function () {
     // It fails cleanly rather than silently emailing a phone number into the
     // void.
+    //
+    // The unbinding is the test's own setup, not a workaround. Installing the
+    // SmsMessaging module BINDS this channel — that is the point of it — so a
+    // bundle containing both modules has one bound and this assertion is about
+    // a state that no longer exists unless the test arranges it.
+    app()->forgetInstance('otp.channel.sms');
+    app()->offsetUnset('otp.channel.sms');
+
+    expect(app()->bound('otp.channel.sms'))->toBeFalse('the test must start with nothing bound');
+
     $this->postJson('/api/v1/otp/request', ['identifier' => '+15551234567'])
         ->assertStatus(422);
 });

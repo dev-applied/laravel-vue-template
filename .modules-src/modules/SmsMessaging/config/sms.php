@@ -12,13 +12,13 @@ return [
     'default_country_code' => env('SMS_DEFAULT_COUNTRY_CODE', '1'),
 
     'twilio' => [
-        'sid' => env('TWILIO_SID', ''),
+        'sid'   => env('TWILIO_SID', ''),
         'token' => env('TWILIO_TOKEN', ''),
-        'from' => env('TWILIO_FROM', ''),
+        'from'  => env('TWILIO_FROM', ''),
     ],
 
     // Carrier-required keyword replies. HELP must say how to opt out.
-    'help_reply' => env('SMS_HELP_REPLY', 'Reply STOP to opt out.'),
+    'help_reply'  => env('SMS_HELP_REPLY', 'Reply STOP to opt out.'),
     'start_reply' => env('SMS_START_REPLY', 'You are re-subscribed. Reply STOP to opt out.'),
 
     // Used by the Otp bridge when both modules are installed.

@@ -38,7 +38,7 @@ class TwilioSmsSender implements SmsSender
             $response = \Illuminate\Support\Facades\Http::asForm()
                 ->withBasicAuth($this->accountSid, $this->authToken)
                 ->post("https://api.twilio.com/2010-04-01/Accounts/{$this->accountSid}/Messages.json", [
-                    'To' => $to,
+                    'To'   => $to,
                     'From' => $this->from,
                     'Body' => $body,
                 ]);

@@ -119,6 +119,17 @@
       </app-server-validation-form>
     </v-card>
 
+    <!-- Checklists attach to a SUBJECT, so the panel belongs on the screen that
+         already shows that subject rather than on a page of its own. Only once
+         the item exists — there is nothing to inspect before it is saved. -->
+    <component
+      :is="checklistPanel"
+      v-if="checklistPanel && isEdit"
+      subject-type="item"
+      :subject-id="$route.params.id"
+      class="mt-6"
+    />
+
     <v-progress-circular
       v-else
       indeterminate
@@ -128,7 +139,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
+import { defineAsyncComponent, defineComponent, markRaw } from "vue"
 import validators from "@/mixins/validators"
 import AppServerValidationForm from "@/components/AppServerValidationForm.vue"
 import AppDateInput from "@/components/fields/AppDateInput.vue"
@@ -152,6 +163,11 @@ const blankForm = (): ItemForm => ({
   owner_id:    null,
 })
 
+// modules/Checklists may not be installed, and a static path to a missing file
+// fails the whole Vite build rather than just this page.
+const checklistGlob = import.meta.glob("/modules/Checklists/resources/ts/components/AppChecklistPanel.vue")
+const checklistPath = "/modules/Checklists/resources/ts/components/AppChecklistPanel.vue"
+
 export default defineComponent({
   components: { AppServerValidationForm, AppDateInput, AppAutoComplete },
   mixins: [validators],
@@ -159,6 +175,11 @@ export default defineComponent({
     return {
       form:    blankForm(),
       loading: false,
+      // markRaw: a component object in data() is made reactive, which Vue warns
+      // about and which deep-proxies a definition that never changes.
+      checklistPanel: checklistGlob[checklistPath]
+        ? markRaw(defineAsyncComponent(checklistGlob[checklistPath] as never))
+        : null,
       statusOptions: [
         { title: "Draft",    value: "draft" },
         { title: "Active",   value: "active" },

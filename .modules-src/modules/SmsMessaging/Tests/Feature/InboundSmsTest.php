@@ -33,7 +33,7 @@ test('HELP replies, and the reply says how to opt out', function () {
     // A carrier requirement, not a nicety.
     $response = $this->post('/api/v1/sms/inbound', ['From' => '+15551234567', 'Body' => 'HELP'])->assertOk();
 
-    expect(strtoupper($response->getContent()))->toContain('STOP');
+    expect(mb_strtoupper($response->getContent()))->toContain('STOP');
 });
 
 test('an unknown keyword changes nothing and still answers 200', function () {

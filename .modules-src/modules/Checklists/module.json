@@ -1,0 +1,27 @@
+{
+    "name": "Checklists",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-25)",
+    "template_version_tested": "2026-08",
+    "description": "Reusable checklist templates instantiated against any registered model. An instance copies its items at creation, so editing a template never changes an inspection somebody already signed. Optional photo evidence per item via the Files module.",
+    "composer_requires": [],
+    "options": {
+        "evidence": {
+            "prompt": "Allow photo evidence on checklist items?",
+            "type": "select",
+            "default": "files",
+            "choices": {
+                "files": {
+                    "label": "Yes — an item can require a photo, uploaded through the Files module"
+                },
+                "none": {
+                    "label": "No — answers and notes only",
+                    "drop": [
+                        "resources/ts/components/AppChecklistEvidence.vue",
+                        "Tests/Feature/ChecklistEvidenceTest.php"
+                    ]
+                }
+            }
+        }
+    }
+}

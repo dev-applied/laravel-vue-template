@@ -29,20 +29,20 @@ class PhoneNumber
         }
 
         if (str_starts_with($digits, '+')) {
-            $rest = preg_replace('/\D/', '', substr($digits, 1)) ?? '';
+            $rest = preg_replace('/\D/', '', mb_substr($digits, 1)) ?? '';
 
-            return strlen($rest) >= 8 && strlen($rest) <= 15 ? '+'.$rest : null;
+            return mb_strlen($rest) >= 8 && mb_strlen($rest) <= 15 ? '+'.$rest : null;
         }
 
         $digits = preg_replace('/\D/', '', $digits) ?? '';
-        $code = ltrim((string) ($defaultCountryCode ?? config('sms.default_country_code', '1')), '+');
+        $code   = mb_ltrim((string) ($defaultCountryCode ?? config('sms.default_country_code', '1')), '+');
 
         // A US 11-digit number beginning with the country code is already whole.
-        if ($code !== '' && str_starts_with($digits, $code) && strlen($digits) > 10) {
+        if ($code !== '' && str_starts_with($digits, $code) && mb_strlen($digits) > 10) {
             return '+'.$digits;
         }
 
-        if (strlen($digits) === 10 && $code !== '') {
+        if (mb_strlen($digits) === 10 && $code !== '') {
             return '+'.$code.$digits;
         }
 

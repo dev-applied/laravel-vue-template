@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
-use Modules\SmsMessaging\Models\SmsMessage;
-use Modules\SmsMessaging\Models\SmsOptOut;
 use Modules\SmsMessaging\Contracts\SmsSender;
 use Modules\SmsMessaging\Drivers\LogSmsSender;
+use Modules\SmsMessaging\Models\SmsMessage;
+use Modules\SmsMessaging\Models\SmsOptOut;
 use Modules\SmsMessaging\Support\PhoneNumber;
 use Modules\SmsMessaging\Support\SmsManager;
 

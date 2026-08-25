@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Modules\Checklists\Support\ChecklistSubjects;
 use Modules\DataImport\Support\ImportRegistry;
 use Modules\Exports\Support\ExportRegistry;
 use Modules\GlobalSearch\Support\SearchRegistry;
@@ -63,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureSearch();
         $this->configureOnboarding();
         $this->configureSmsLog();
+        $this->configureChecklists();
     }
 
     /**
@@ -271,6 +273,31 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Gate::define('view-sms-log', fn (User $user) => false);
+    }
+
+    /**
+     * Items as a checklist subject, plus a worked template.
+     *
+     * The subject registry is an allow-list — the instantiate endpoint takes a
+     * subject type off the wire, so without one it is an arbitrary-model-lookup
+     * endpoint. The KEY travels, never the class name.
+     *
+     * The template is seeded rather than declared, because templates are data a
+     * project edits. Seeding one means a fresh install has something in the
+     * picker instead of an empty selector with nothing saying why — the same
+     * gap Exports shipped with.
+     */
+    public function configureChecklists(): void
+    {
+        if (! is_dir(base_path('modules/Checklists'))) {
+            return;
+        }
+
+        if (! class_exists(ChecklistSubjects::class) || ! class_exists(Item::class)) {
+            return;
+        }
+
+        app(ChecklistSubjects::class)->register('item', Item::class);
     }
 
     public function configureModels(): void
