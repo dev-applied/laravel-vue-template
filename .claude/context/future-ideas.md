@@ -20,11 +20,6 @@ Uncommitted ideas. Graduate to `roadmap.md` when committed to build.
   delete-on-infected) would let the seam be the second line rather than the only
   one.
 
-- **Content-length-range on the presigned PUT.** The storage quota is enforced
-  before the write on `local` and after it on `s3-presigned`, because the app
-  never learns the size until the object exists. A presigned POST policy with a
-  content-length-range condition would let S3 refuse an oversized upload itself.
-
 - **An `Example` module README.** It is the only other module without one. Its
   twelve files arguably ARE the documentation — `module.json` calls it the
   reference module — so this may only ever be three lines pointing at that

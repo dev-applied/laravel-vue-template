@@ -21,6 +21,7 @@
                     "label": "Direct multipart upload to the app disk (variants generated in-request)",
                     "drop": [
                         "Http/Controllers/PresignedUploadController.php",
+                        "Http/Requests/GeneratePresignedUrlRequest.php",
                         "Routes/s3.php",
                         "Tests/Feature/PresignedUploadTest.php"
                     ]

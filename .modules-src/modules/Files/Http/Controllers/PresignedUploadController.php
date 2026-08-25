@@ -34,8 +34,22 @@ class PresignedUploadController extends Controller
      *
      * @throws AppException
      */
-    public function generate(GeneratePresignedUrlRequest $request): JsonResponse
+    public function generate(GeneratePresignedUrlRequest $request, StorageQuota $quota): JsonResponse
     {
+        $sizeBytes = (int) $request->input('file_size');
+
+        // Ahead of the disk check on purpose. The quota was only ever consulted
+        // in process(), which runs AFTER the object is in the bucket — so an
+        // over-quota upload was refused having already been stored and charged
+        // for. Refusing here costs nothing, depends on no infrastructure, and
+        // happens before a File row is reserved. `files.size` is kilobytes at
+        // /1000, matching File::upload, so the incoming figure converts the same.
+        $refusal = $quota->refuse($request->user()?->getKey(), (int) ($sizeBytes / 1000));
+
+        if ($refusal !== null) {
+            throw new AppException($refusal, 422);
+        }
+
         $disk = Storage::disk();
 
         // providesTemporaryUrls() is NOT sufficient: a local disk with serving
@@ -60,7 +74,7 @@ class PresignedUploadController extends Controller
             'name'             => $originalName,
             'path'             => $path,
             'type'             => $fileType,
-            'size'             => 0,
+            'size'             => (int) ($sizeBytes / 1000),
             'disk'             => config('filesystems.default'),
             'folder_id'        => $request->input('folder_id'),
             'responsive_paths' => ['original' => $path],
@@ -70,10 +84,16 @@ class PresignedUploadController extends Controller
 
         $client  = $disk->getClient();
         $request = $client->createPresignedRequest(
+            // ContentLength is part of the signed request, so S3 refuses a PUT
+            // whose Content-Length differs from the size that was validated
+            // above. Without it the server-side check is only as good as the
+            // client's honesty: nothing stopped a caller declaring 1 KB, taking
+            // the signed URL and writing a gigabyte.
             $client->getCommand('PutObject', [
-                'Bucket'      => config('filesystems.disks.s3.bucket'),
-                'Key'         => $path,
-                'ContentType' => $fileType,
+                'Bucket'        => config('filesystems.disks.s3.bucket'),
+                'Key'           => $path,
+                'ContentType'   => $fileType,
+                'ContentLength' => $sizeBytes,
             ]),
             now()->addMinutes(5)
         );

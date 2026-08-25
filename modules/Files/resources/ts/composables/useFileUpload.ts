@@ -111,6 +111,11 @@ async function uploadViaPresignedUrl(
   let response = await $http.post('/files/generate-presigned-url', {
     file_name: file.name,
     file_type: file.type,
+    // Required by the endpoint. It validates the size and signs it into the
+    // presigned PUT as ContentLength, so an oversized or over-quota upload is
+    // refused before any bytes leave the browser — and S3 rejects the PUT if
+    // the actual body does not match what was declared here.
+    file_size: file.size,
     ...additionalData
   }).catch((e: any) => e)
   if ($error(response.status, response.data?.message, response.data?.errors, false)) {

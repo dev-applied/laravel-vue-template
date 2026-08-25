@@ -21,6 +21,7 @@
                     "label": "Direct multipart upload to the app disk (variants generated in-request)",
                     "drop": [
                         "Http/Controllers/PresignedUploadController.php",
+                        "Http/Requests/GeneratePresignedUrlRequest.php",
                         "Routes/s3.php",
                         "Tests/Feature/PresignedUploadTest.php"
                     ]
@@ -38,7 +39,7 @@
             }
         }
     },
-    "installed_from_commit": "cf5d9a3dc6bd682cf2e51d96ea5fac528c178ce3",
+    "installed_from_commit": "6e61ad1e2233ccf75c2166cabf14f6bc23298b94",
     "installed_at": "2026-08-25",
     "installed_options": {
         "storage": "local"

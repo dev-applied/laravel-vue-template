@@ -16,6 +16,15 @@ class GeneratePresignedUrlRequest extends FormRequest
             'file_name' => 'required|string',
             'folder_id' => 'sometimes|nullable|integer',
             'file_type' => 'required|string',
+            // Required, and the cap matches StoreFileRequest's `max:20480` so
+            // both storage paths refuse the same file.
+            //
+            // Without it a presigned PUT carried NO size constraint: the signed
+            // URL let the browser write an object of any size, the per-file
+            // limit applied only to the `local` path, and the storage quota was
+            // checked in process() — after the object had landed and been paid
+            // for. Refusing here costs nothing because no bytes have moved yet.
+            'file_size' => ['required', 'integer', 'min:1', 'max:'.(20480 * 1024)],
             // An allow-list, not a free string.
             //
             // This value became the S3 KEY PREFIX of a presigned PUT, so the
@@ -28,6 +37,14 @@ class GeneratePresignedUrlRequest extends FormRequest
             // Projects that need more roots publish config/files.php with
             // `upload_prefixes` — see the module README.
             'path' => ['sometimes', 'nullable', 'string', Rule::in(config('files.upload_prefixes', ['uploads']))],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'file_size.max' => 'This file is too large. Please upload a file less than 20MB.',
         ];
     }
 }

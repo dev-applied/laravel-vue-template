@@ -27,6 +27,7 @@ test('presigned generation is rejected on a disk without temporary urls', functi
 
     $this->actingAs($this->user)
         ->postJson('/api/v1/files/generate-presigned-url', [
+            'file_size' => 1024,
             'file_name' => 'photo.jpg',
             'file_type' => 'image/jpeg',
         ])
@@ -37,7 +38,77 @@ test('presigned generation validates its input', function () {
     $this->actingAs($this->user)
         ->postJson('/api/v1/files/generate-presigned-url', [])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['file_name', 'file_type']);
+        ->assertJsonValidationErrors(['file_name', 'file_type', 'file_size']);
+});
+
+// ── Size, before any bytes move ──────────────────────────────────────────────
+// A presigned PUT carried no size constraint at all: the signed URL let the
+// browser write an object of any size, the 20MB per-file limit lived only on
+// the `local` path's StoreFileRequest, and the storage quota was consulted in
+// process() — after the object had landed in the bucket and been paid for.
+
+test('an oversized upload is refused before anything is signed', function () {
+    Storage::fake('local');
+    config()->set('filesystems.default', 'local');
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files/generate-presigned-url', [
+            'file_name' => 'huge.zip',
+            'file_type' => 'application/zip',
+            'file_size' => 20480 * 1024 + 1,
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['file_size']);
+
+    // No row reserved: the refusal happens before the File is created, so a
+    // rejected upload leaves nothing behind to clean up.
+    expect(File::query()->count())->toBe(0);
+});
+
+test('the size cap matches the direct upload path', function () {
+    // Both storage variants must refuse the same file. StoreFileRequest uses
+    // `max:20480` (kilobytes), so the byte cap here is the same number.
+    $rules = (new GeneratePresignedUrlRequest)->rules();
+
+    expect($rules['file_size'])->toContain('max:'.(20480 * 1024));
+});
+
+test('an over-quota upload is refused before a row is reserved', function () {
+    config()->set('files.quota_mb', 1);
+
+    // 900 KB already stored, so a 200 KB upload crosses a 1 MB limit.
+    File::factory()->create(['created_by_id' => $this->user->id, 'size' => 900]);
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files/generate-presigned-url', [
+            'file_name' => 'photo.jpg',
+            'file_type' => 'image/jpeg',
+            'file_size' => 200 * 1000,
+        ])
+        ->assertStatus(422);
+
+    // Still just the seeded row — nothing was reserved for the refused upload.
+    expect(File::query()->count())->toBe(1);
+});
+
+test('an upload inside the quota is not refused by the quota', function () {
+    // The inverse. A quota that refuses everything would pass the test above
+    // while breaking every upload, so this pins that it only refuses the ones
+    // that cross the line. It gets past the quota and stops at the disk check,
+    // which is a 400 and not a 422 — the local fake has no S3 client.
+    config()->set('files.quota_mb', 1);
+    Storage::fake('local');
+    config()->set('filesystems.default', 'local');
+
+    File::factory()->create(['created_by_id' => $this->user->id, 'size' => 100]);
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files/generate-presigned-url', [
+            'file_name' => 'photo.jpg',
+            'file_type' => 'image/jpeg',
+            'file_size' => 200 * 1000,
+        ])
+        ->assertStatus(400);
 });
 
 test('processing an object that has not landed yet is a conflict', function () {
@@ -89,6 +160,7 @@ test('the caller cannot choose where in the bucket their signed url writes', fun
     // module's own frontend has ever sent this field.
     $this->actingAs($this->user)
         ->postJson('/api/v1/files/generate-presigned-url', [
+            'file_size' => 1024,
             'file_name' => 'invoice.pdf',
             'file_type' => 'application/pdf',
             'path'      => '../../backups',
@@ -98,6 +170,7 @@ test('the caller cannot choose where in the bucket their signed url writes', fun
 
     $this->actingAs($this->user)
         ->postJson('/api/v1/files/generate-presigned-url', [
+            'file_size' => 1024,
             'file_name' => 'invoice.pdf',
             'file_type' => 'application/pdf',
             'path'      => 'someone-elses-prefix',
