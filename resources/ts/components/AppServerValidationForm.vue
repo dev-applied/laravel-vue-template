@@ -13,11 +13,19 @@ const props = withDefaults(defineProps<{
   hideSuccess?: boolean,
   hideValidationErrors?: boolean,
   successMessage?: MaybeRef<string>,
+  /**
+   * Vuetify's validate-on. Defaults to `eager` (validate on mount), which is
+   * right for a full-page form the user navigated to deliberately. A form that
+   * opens in a dialog wants `blur` — `eager` paints every field red before the
+   * user has typed a character, and it does it again on every reopen.
+   */
+  validateOn?: MaybeRef<string>,
 }>(), {
   method: 'post',
   hideSuccess: false,
   hideValidationErrors: false,
   successMessage: 'Success',
+  validateOn: 'eager',
 })
 
 
@@ -120,7 +128,7 @@ defineExpose({
     ref="form"
     :readonly="loading"
     v-bind="$attrs"
-    validate-on="eager"
+    :validate-on="toValue(validateOn) as any"
     @submit.prevent
   >
     <slot v-bind="{ submit, loading, getErrors, errorBag }" />

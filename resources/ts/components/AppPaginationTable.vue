@@ -11,9 +11,14 @@
       v-for="(_, name) in $slots"
       #[name]="slotData"
     >
+      <!-- `slotData || {}` rather than `slotData`: a zero-argument slot
+           (Vuetify's no-data, loading, top, bottom, ...) forwards `undefined`,
+           and Vue's guardReactiveProps turns that into null. renderSlot only
+           defaults props for `undefined`, so null reaches `props.key` and
+           throws — blanking the entire page, not just the slot. -->
       <slot
         :name="name"
-        v-bind="slotData"
+        v-bind="slotData || {}"
       />
     </template>
     <template

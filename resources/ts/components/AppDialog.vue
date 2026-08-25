@@ -8,10 +8,14 @@
       v-for="(_, name) in $slots"
       #[name]="slotData"
     >
+      <!-- `slotData || {}` rather than `slotData`: a zero-argument slot
+           forwards `undefined`, and Vue's guardReactiveProps turns that into
+           null. renderSlot only defaults props for `undefined`, so null
+           reaches `props.key` and throws — blanking the entire page. -->
       <slot
         v-if="name !== 'default'"
         :name="name"
-        v-bind="slotData"
+        v-bind="slotData || {}"
       />
     </template>
 
