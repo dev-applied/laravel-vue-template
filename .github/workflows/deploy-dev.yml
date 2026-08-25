@@ -16,4 +16,16 @@ jobs:
     uses: dev-applied/deploy-action/.github/workflows/deploy.yml@main
     with:
       ENVIRONMENT: DEV
+      # dev-applied/deploy-action defaults NODE_VERSION to 16.19.0, which cannot
+      # build Vite 7. It fails as a bare "Compile CSS and Javascript" step
+      # failure that names nothing — found by running a deploy, not by reading
+      # it. Keep this in step with the node image in docker-compose.yml.
+      NODE_VERSION: '22.16.0'
+      #
+      # PHP is NOT an input: the action reads the repository VARIABLE
+      # PHP_VERSION (then FPM_VERSION, then '8.1'). This template requires
+      # php ^8.4, so every project bootstrapped from it must set
+      #   gh api -X POST repos/OWNER/REPO/actions/variables -f name=PHP_VERSION -f value=8.4
+      # or composer install refuses the lock file, naming brick/math and
+      # laravel/framework rather than the setting at fault.
     secrets: inherit

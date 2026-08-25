@@ -152,6 +152,32 @@ GitHub Actions, via the [`dev-applied/deploy-action`](https://github.com/dev-app
 - `deploy-lambda.yml` — serverless deploys (see `servers/serverless/`)
 - `dependabot-auto-merge.yml`, `dependabot-labels.yml` — dependabot handling
 
+### Two things a new project must set, or the first deploy fails
+
+Both were found by running a real deploy of this template, and **neither error
+names the setting that caused it**.
+
+**`PHP_VERSION` repository variable — set it to `8.4`.** The action reads a
+repository *variable* (not a workflow input): `PHP_VERSION`, falling back to
+`FPM_VERSION`, then to `'8.1'`. This template requires `php ^8.4`, so on the
+default `composer install` refuses the lock file and prints a wall of "your php
+version (8.1.34) does not satisfy that requirement" naming `brick/math` and
+`laravel/framework` — none of which is the problem.
+
+```sh
+gh api -X POST repos/OWNER/REPO/actions/variables -f name=PHP_VERSION -f value=8.4
+```
+
+**`NODE_VERSION` is already pinned in the workflows here.** The action defaults
+it to `16.19.0`, which cannot build Vite 7; it fails as a bare "Compile CSS and
+Javascript" step failure that names nothing at all. Keep the pin in step with
+the node image in `docker-compose.yml` when you upgrade one.
+
+**Workflows in a repository's first commit do not register.** If you create the
+repo and push everything in one go, `gh workflow list` comes back empty and
+there is nothing to run — Actions reports `enabled: true` and the files are
+correct on the default branch. Touch them in a second commit and they appear.
+
 ## For AI agents
 
 Claude Code agents working in this repo should also read `CLAUDE.md` at the project root and the area-specific `CLAUDE.md` files under `resources/ts/`, `app/`, and `database/`. Key rules:
