@@ -8,6 +8,11 @@ In-flight + planned work, grouped **by concept** (one `##` per initiative / area
 
 **Legend:** `- [x]` done (+ `— YYYY-MM-DD`) · `- [~]` in progress (+ `branch` / `worktree`) · `- [ ]` queued · `- [!]` blocked (+ reason). One status per line — never in prose, never mixed in one bullet. **Concepts with a `[~]` leaf sort to the top** — that's where a parallel session looks for what's hot, and the `branch` / `worktree` on each `[~]` leaf is how it avoids collisions.
 
+## Demo site — laravel-vue-demo
+
+- [x] **Demo repo built and pushed** — `dev-applied/laravel-vue-demo`, the template with all 28 modules installed, plus the two files that make it a demo rather than a copy. `DemoGatesServiceProvider` grants every module ability (the modules gate themselves fail-closed on purpose, so a bare install answers "This action is unauthorized" on most screens — correct, and a useless demo); it boots only in local/demo/staging, lists abilities explicitly so a new module's missing ability shows as a 403 rather than being silently granted, and excludes impersonation deliberately. `ShowcaseSeeder` fills the registry-driven surfaces. Both verified against a running stack before extraction: `/announcements` went from 403 to showing seeded content — 2026-08-25
+- [!] **Deploy to hades is blocked on an admin.** Two separate things, neither of which a member can do. (1) **Zero of the 8 workflow files register** — `actions/workflows` returns `total_count: 0` while the files are correct on the default branch and repo-level Actions reports `enabled: true`. Not caused by private visibility: `laravel-vue-modules` is private and registers fine. Reads like an org policy on newly-created repos. (2) **No `DEV` environment secrets** — `dev-applied/deploy-action` reads ENV, HOST, PORT, USERNAME, SSHKEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_SECURITY_GROUP_ID; they are per-project credentials and are not mine to create. blocked-on: Devin — check the org Actions policy, then copy the DEV environment from an existing deployed project and run Deploy Dev
+
 ## SmsMessaging — module 26
 
 
