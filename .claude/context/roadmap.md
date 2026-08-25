@@ -177,6 +177,21 @@ migrations across 44 local Laravel repos. Full report:
 - [x] `vue-tsc --noEmit` clean — 42 errors (not the recorded 73; the Vuetify v4 work had already cut it) down to 0. Most were wrong DECLARATIONS hiding real bugs: `$confirm` declared with its first two parameters reversed, AppAutoComplete passing its axios instance under the wrong option name so creates went out unauthenticated, `extractId` using a function as an object key, `reload(resetPage)` ignoring its argument, AppListTable skipping a page on a cancelled request, and ItemFormPage reading past the `data` envelope so the canonical CRUD example could never edit a record — 2026-08-24
 - [x] Vitest drops the dev server to a stale bundle — RETESTED 2026-08-24, does not reproduce. `npm run test:ci` run the sanctioned way (`docker compose exec frontend`) leaves `public/hot` untouched (same mtime and contents before/after, app still 200s), across three runs. `git stash list` is also empty, so the recorded fix location no longer exists. Reopen with a fresh repro if it returns — the old blocker record was stale and was keeping a non-issue on the board — 2026-08-24
 
+## Template bootstrap — RolesPermissions is bundled but never wired
+
+- [!] **The template bundles RolesPermissions and does not put `HasAccessControl` on its User model, so out of the
+  box no user can hold a role.** Consequence, measured by driving it: `/roles` manages roles nobody can be given,
+  and every gated module page answers 403 — announcements, settings, audit log, invitations, forms admin, users.
+  A fresh bootstrap therefore looks broken until someone reads step 3 of the module README. The module is
+  correctly defensive about it (every caller guards with `method_exists`, and `GrantAdminCommand` prints the
+  README path), so this is not a bug in the module.
+  blocked-on: **Devin's call.** Adding the trait to the kernel User couples it to a removable module — deleting
+  RolesPermissions would then fatal on a missing trait, which is precisely why it is a seam. Leaving it means the
+  template ships a decorative permissions UI. A third option is a `HasAccessControl` shim in the kernel that the
+  module overrides, which keeps User compiling either way but adds a concept.
+  Evidence: with the trait added temporarily, all six of those pages render and work — announcements created and
+  published end to end, and unpublish→republish correctly did not re-mail (deliveries stayed at 2).
+
 ## Recently Done (last 30 days)
 
 - **Vuetify v4 typography was dead across the whole app** — shipped 2026-08-25. `text-h4`, `text-body-2`,
