@@ -66,6 +66,16 @@ jobs:
           printf "%s" "$ENV" > .env
           composer install --prefer-dist --optimize-autoloader
           cp .env .env.testing
+      # Before the suite, because it explains a whole class of failure the
+      # suite reports as something else. The template bundles every module, so
+      # every run executes every bundled module's tests — and a module whose
+      # composer dependency was installed locally by `module:add` but never
+      # COMMITTED fails with "Class X not found" in a job that has nothing to
+      # do with that module. Three legs went red exactly that way on
+      # 2026-08-25 before this existed.
+      - name: Check installed modules have their declared dependencies
+        run: php artisan module:check
+
       - name: Run Pint + Pest (composer ci)
         run: composer ci
 
