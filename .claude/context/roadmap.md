@@ -102,15 +102,6 @@ the reported line.
 - [x] **Signing in landed on a 404** — `$router.push()` with a bare string is a PATH, and `ROUTES.DASHBOARD` is a NAME, so every successful login went to `/dashboard.index`. `mounted()` five lines above had it right — 2026-08-24
 - [x] **`ROUTES` typed as `typeof ROUTES & Record<string, string>`** — the kernel's static literal was the whole type, so every module route name was an error at every call site — 2026-08-24
 
-## Modules — browser verification sweep
-
-22 modules shipped tonight with green suites, and tonight's own evidence is that a green suite says
-very little about whether a screen works: the icon bug, the inert Dashboard module, the 404 login,
-and three modules whose submit button never rendered were ALL invisible to tests and to
-`npm run build`. Most module pages have never been loaded in a browser at all.
-
-- [~] Install every module into a template checkout, migrate, and load every module page — looking at what renders, not at whether it 200s.
-
 ## Modules — QA sweep findings (three parallel audits, 2026-08-24)
 
 Three read-only sweeps over all 22 modules — authorization, frontend correctness, data integrity.
@@ -187,6 +178,15 @@ migrations across 44 local Laravel repos. Full report:
 - [x] Vitest drops the dev server to a stale bundle — RETESTED 2026-08-24, does not reproduce. `npm run test:ci` run the sanctioned way (`docker compose exec frontend`) leaves `public/hot` untouched (same mtime and contents before/after, app still 200s), across three runs. `git stash list` is also empty, so the recorded fix location no longer exists. Reopen with a fresh repro if it returns — the old blocker record was stale and was keeping a non-issue on the board — 2026-08-24
 
 ## Recently Done (last 30 days)
+
+- **Modules — browser verification sweep** — all leaves shipped 2026-08-25 (every module page loaded and looked at,
+  not just 200-checked, at desktop and 390px). What it found, none of which any suite saw: the Booking confirmation
+  named the BOOKER as the location (`$this->resource` in a JsonResource is the wrapped model, and Booking has a
+  relation called `resource`); the kanban board had no link in or out; every module page's browser tab showed its
+  route identifier (`booking.show` on a public page); `/notifications` scrolled sideways at 390px, and ten more
+  header rows were one long label away from the same. Two things I first read as bugs were NOT: four "blank" pages
+  were a 2s settle being too short, and two 404s are correct because `import.meta.glob` already guards route
+  registration. Public booking and public form flows both driven end to end, logged out.
 
 - **Option drop-list symmetry** — all leaves shipped 2026-08-25 (three variants dropped a TEST while keeping the
   code it covered, and it was the DEFAULT choice carrying the drop in each — Comments `threading=flat` 28→33,
