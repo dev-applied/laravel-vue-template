@@ -100,6 +100,7 @@
         <div class="d-flex justify-end flex-nowrap ga-1">
           <v-btn
             icon="edit"
+            aria-label="Edit user"
             size="small"
             title="Edit"
             variant="text"
@@ -112,6 +113,7 @@
           <v-btn
             v-if="!item.isSelf"
             :icon="item.isActive ? 'person_off' : 'how_to_reg'"
+            :aria-label="item.isActive ? 'Deactivate user' : 'Reactivate user'"
             size="small"
             :title="item.isActive ? 'Deactivate' : 'Reactivate'"
             variant="text"
@@ -121,6 +123,7 @@
             v-if="!item.isSelf"
             color="error"
             icon="delete"
+            aria-label="Delete user"
             size="small"
             title="Delete"
             variant="text"

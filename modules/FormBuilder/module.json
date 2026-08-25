@@ -5,6 +5,6 @@
     "template_version_tested": "2026-08",
     "description": "Forms a non-developer can define, rendered through the kernel's field components and validated server-side from the same definition. Submissions are stored, exportable, and never trust the client's idea of what the form contained.",
     "composer_requires": [],
-    "installed_from_commit": "173b490d611dac7396e794ed97c8d6f9cbe6930a",
+    "installed_from_commit": "e03b0bd3fe70cb9dd0f5b4464a13147f29312438",
     "installed_at": "2026-08-25"
 }

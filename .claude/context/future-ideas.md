@@ -20,6 +20,14 @@ Uncommitted ideas. Graduate to `roadmap.md` when committed to build.
   delete-on-infected) would let the seam be the second line rather than the only
   one.
 
+- **Visible labels on the auth fields, not just placeholders.** LoginPage and
+  SetPasswordPage label their inputs with `placeholder` alone, so a sighted user
+  who has typed can no longer see what the field was for (WCAG 3.3.2). The
+  programmatic name is stable now — an `aria-label` was added alongside — so
+  this is a visual decision, not a defect: moving to Vuetify's floating `label`
+  changes the look of the public login screen, which is a design call rather
+  than one to make while fixing screen-reader names.
+
 - **An `Example` module README.** It is the only other module without one. Its
   twelve files arguably ARE the documentation — `module.json` calls it the
   reference module — so this may only ever be three lines pointing at that

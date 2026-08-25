@@ -273,6 +273,7 @@
                   class="preview-action"
                   color="primary"
                   icon="open_in_new"
+                  aria-label="Open this file in a new tab"
                   size="small"
                   target="_blank"
                   variant="text"

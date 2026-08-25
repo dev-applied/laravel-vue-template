@@ -168,12 +168,14 @@ export default defineComponent({
 
               <v-btn
                 :icon="announcement.publishedAt ? 'visibility_off' : 'send'"
+                :aria-label="announcement.publishedAt ? 'Unpublish announcement' : 'Publish announcement'"
                 size="small"
                 variant="text"
                 @click="togglePublish(announcement)"
               />
               <v-btn
                 icon="edit"
+                aria-label="Edit announcement"
                 size="small"
                 variant="text"
                 @click="edit(announcement)"
@@ -181,6 +183,7 @@ export default defineComponent({
               <v-btn
                 color="error"
                 icon="delete"
+                aria-label="Delete announcement"
                 size="small"
                 variant="text"
                 @click="remove(announcement)"

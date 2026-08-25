@@ -219,6 +219,7 @@ export default defineComponent({
                 v-if="task.canDelete"
                 color="error"
                 icon="delete_outline"
+                aria-label="Delete task"
                 size="x-small"
                 variant="text"
                 @click="destroy(task)"

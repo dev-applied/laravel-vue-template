@@ -46,6 +46,7 @@
                 autocomplete="new-password"
                 variant="outlined"
                 placeholder="Password*"
+                aria-label="Password"
                 prepend-inner-icon="lock"
                 @keyup="revalidateConfirmation"
               >
@@ -54,7 +55,7 @@
                     icon
                     size="small"
                     style="margin-top: -2px;"
-                    tabindex="-1"
+                    :aria-label="showPassword ? 'Hide the password' : 'Show the password'"
                     @click="showPassword = !showPassword"
                   >
                     <v-icon
@@ -73,6 +74,7 @@
                 autocomplete="new-password"
                 variant="outlined"
                 placeholder="Confirm Password*"
+                aria-label="Confirm password"
                 prepend-inner-icon="lock"
               >
                 <template #append>
@@ -80,7 +82,7 @@
                     icon
                     size="small"
                     style="margin-top: -2px;"
-                    tabindex="-1"
+                    :aria-label="showConfirmPassword ? 'Hide the password confirmation' : 'Show the password confirmation'"
                     @click="showConfirmPassword = !showConfirmPassword"
                   >
                     <v-icon

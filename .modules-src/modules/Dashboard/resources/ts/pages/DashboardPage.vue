@@ -8,6 +8,7 @@
       <v-btn
         :loading="loading"
         icon="refresh"
+        aria-label="Refresh the dashboard"
         size="small"
         variant="text"
         @click="fetch()"

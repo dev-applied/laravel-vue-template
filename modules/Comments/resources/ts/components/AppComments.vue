@@ -115,6 +115,7 @@ export default defineComponent({
         <template #append>
           <v-btn
             icon="close"
+            aria-label="Cancel this reply"
             size="x-small"
             variant="text"
             @click="replyTo = null"

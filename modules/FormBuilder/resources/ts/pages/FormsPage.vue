@@ -104,6 +104,7 @@ export default defineComponent({
               </v-chip>
               <v-btn
                 :icon="form.is_published ? 'visibility_off' : 'send'"
+                :aria-label="form.is_published ? 'Unpublish form' : 'Publish form'"
                 size="small"
                 variant="text"
                 @click="togglePublished(form)"
@@ -111,6 +112,7 @@ export default defineComponent({
               <v-btn
                 color="error"
                 icon="delete_outline"
+                aria-label="Delete form"
                 size="small"
                 variant="text"
                 @click="destroy(form)"

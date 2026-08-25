@@ -32,6 +32,9 @@
                   v-model="email"
                   variant="outlined"
                   placeholder="Email"
+                  aria-label="Email"
+                  type="email"
+                  autocomplete="username"
                   prepend-inner-icon="account_circle"
                   :rules="[rules.email(), rules.required()]"
                   @keydown.enter="login"
@@ -41,6 +44,8 @@
                   :type="showPassword ? 'text' : 'password'"
                   variant="outlined"
                   placeholder="Password"
+                  aria-label="Password"
+                  autocomplete="current-password"
                   prepend-inner-icon="lock"
                   :rules="[rules.required()]"
                   @keydown.enter="login"
@@ -50,7 +55,7 @@
                       icon
                       size="small"
                       style="margin-top: -2px;"
-                      tabindex="-1"
+                      :aria-label="showPassword ? 'Hide the password' : 'Show the password'"
                       @click="showPassword = !showPassword"
                     >
                       <v-icon

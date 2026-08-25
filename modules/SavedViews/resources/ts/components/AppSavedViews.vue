@@ -130,6 +130,7 @@ export default defineComponent({
                 <v-btn
                   :color="view.isDefault ? 'warning' : undefined"
                   :icon="view.isDefault ? 'star' : 'star_border'"
+                  :aria-label="view.isDefault ? 'Stop using this as the default view' : 'Make this the default view'"
                   size="x-small"
                   variant="text"
                   @click.stop="setDefault(view)"
@@ -138,6 +139,7 @@ export default defineComponent({
                   v-if="allowSharing"
                   :color="view.isShared ? 'primary' : undefined"
                   :icon="view.isShared ? 'group' : 'people_outline'"
+                  :aria-label="view.isShared ? 'Stop sharing this view' : 'Share this view'"
                   size="x-small"
                   variant="text"
                   @click.stop="toggleShared(view)"
@@ -145,6 +147,7 @@ export default defineComponent({
                 <v-btn
                   color="error"
                   icon="delete_outline"
+                  aria-label="Delete this saved view"
                   size="x-small"
                   variant="text"
                   @click.stop="destroy(view)"

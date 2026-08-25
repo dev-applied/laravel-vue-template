@@ -33,7 +33,7 @@
             }
         }
     },
-    "installed_from_commit": "7216e0ad7faff21a540d3798c0beb262003da6a4",
+    "installed_from_commit": "e03b0bd3fe70cb9dd0f5b4464a13147f29312438",
     "installed_at": "2026-08-25",
     "installed_options": {
         "delivery": "in-app+email"

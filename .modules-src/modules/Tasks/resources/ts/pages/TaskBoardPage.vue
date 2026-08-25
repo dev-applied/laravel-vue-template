@@ -65,6 +65,7 @@ export default defineComponent({
       <v-btn
         :loading="loading"
         icon="refresh"
+        aria-label="Refresh the board"
         size="small"
         variant="text"
         @click="fetch({open: undefined})"
