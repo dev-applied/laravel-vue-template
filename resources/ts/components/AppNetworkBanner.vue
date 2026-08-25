@@ -4,7 +4,7 @@
     color="warning"
     icon="wifi_off"
     sticky
-    lines="one"
+    :lines="lines"
     density="compact"
   >
     <v-banner-text>
@@ -28,6 +28,19 @@ export default defineComponent({
   setup() {
     const { online } = useCapacitor()
     return { online }
+  },
+  computed: {
+    /**
+     * Two lines on phones, one everywhere else.
+     *
+     * `lines` sets a -webkit-line-clamp, and at 390px this message needs
+     * two lines, so clamping to one renders "You're offline. Some actions
+     * may not work…" — the half that tells you what to do about it is the
+     * half that gets cut.
+     */
+    lines(): "one" | "two" {
+      return this.$vuetify.display.xs ? "two" : "one"
+    },
   },
 })
 </script>
