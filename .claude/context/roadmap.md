@@ -89,7 +89,7 @@ migrations across 44 local Laravel repos. Full report:
 
 - [ ] Re-enable the template's own `.github/workflows/ci.yml` — currently `workflow_dispatch` only, everything else commented out
 - [ ] `vue-tsc --noEmit` type errors on master (73 recorded 2026-05-14) — never gated by CI
-- [!] Vitest drops the dev server to a stale bundle — the Laravel Vite plugin's cleanup hook deletes `public/hot`. Fix exists uncommitted in `git stash@{0}`. blocked-on: needs its own branch, not the main checkout.
+- [x] Vitest drops the dev server to a stale bundle — RETESTED 2026-08-24, does not reproduce. `npm run test:ci` run the sanctioned way (`docker compose exec frontend`) leaves `public/hot` untouched (same mtime and contents before/after, app still 200s), across three runs. `git stash list` is also empty, so the recorded fix location no longer exists. Reopen with a fresh repro if it returns — the old blocker record was stale and was keeping a non-issue on the board — 2026-08-24
 
 ## Recently Done (last 30 days)
 
