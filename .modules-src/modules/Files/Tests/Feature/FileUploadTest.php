@@ -53,7 +53,16 @@ test('an image upload generates every configured size variant', function () {
         expect($file->responsive_paths)->toHaveKey($size);
         Storage::disk($file->disk)->assertExists($file->responsive_paths[$size]);
     }
-})->skip(fn () => ! extension_loaded('imagick'), 'imagick is required to generate variants');
+})->skip(
+    // The CLASS, not the extension. Variant generation needs imagine/imagine
+    // (a composer package) as well as ext-imagick, and CI installs the
+    // extension — so this guard was satisfied while the library was absent,
+    // and the test fataled with "Class Imagine\\Imagick\\Imagine not found"
+    // instead of skipping. A guard that checks a different thing from what the
+    // code needs is worse than no guard: it reports the wrong cause.
+    fn () => ! class_exists(Imagine\Imagick\Imagine::class),
+    'imagine/imagine and ext-imagick are required to generate variants'
+);
 
 test('uploads are rejected over the size limit', function () {
     $this->actingAs($this->user)
