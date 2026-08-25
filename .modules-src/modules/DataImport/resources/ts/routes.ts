@@ -18,7 +18,7 @@ RouteDesigner.group('', function () {
     "/imports/new",
     () => import("@modules/DataImport/resources/ts/pages/ImportWizardPage.vue"),
     ROUTES.IMPORT_NEW
-  )
+  ).title("New import")
 })
   .layout("Default")
   .middleware([ForceTypes, Authentication, Authorization])

@@ -30,7 +30,7 @@
             }
         }
     },
-    "installed_from_commit": "03792af29073499ee2a498b679f0d143602a3965",
+    "installed_from_commit": "173b490d611dac7396e794ed97c8d6f9cbe6930a",
     "installed_at": "2026-08-25",
     "installed_options": {
         "board": "list"

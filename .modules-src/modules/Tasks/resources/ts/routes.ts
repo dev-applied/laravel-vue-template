@@ -22,7 +22,7 @@ RouteDesigner.group('', function () {
   const boardPath = '/modules/Tasks/resources/ts/pages/TaskBoardPage.vue'
 
   if (board[boardPath]) {
-    RouteDesigner.route("/tasks/board", board[boardPath] as never, ROUTES.TASK_BOARD)
+    RouteDesigner.route("/tasks/board", board[boardPath] as never, ROUTES.TASK_BOARD).title("Task board")
   }
 })
   .layout("Default")

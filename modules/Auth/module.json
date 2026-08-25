@@ -124,7 +124,7 @@
             }
         }
     },
-    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_from_commit": "173b490d611dac7396e794ed97c8d6f9cbe6930a",
     "installed_at": "2026-08-25",
     "installed_options": {
         "auth": "sanctum",

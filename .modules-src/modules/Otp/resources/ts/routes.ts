@@ -11,7 +11,7 @@ RouteDesigner.group('', function () {
     "/sign-in/code",
     () => import("@modules/Otp/resources/ts/pages/OtpLoginPage.vue"),
     ROUTES.OTP_LOGIN
-  )
+  ).title("Sign in with a code")
 })
   .layout("Empty")
   .middleware([ForceTypes, Guest])

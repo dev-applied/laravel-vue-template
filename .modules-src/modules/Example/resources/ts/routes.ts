@@ -20,7 +20,7 @@ RouteDesigner.group('', function () {
     "/example-notes",
     () => import("@modules/Example/resources/ts/pages/ExampleNotesPage.vue"),
     ROUTES.EXAMPLE_NOTES
-  )
+  ).title("Example notes")
 })
   .layout("Default")
   .middleware([ForceTypes, Authentication, Authorization])

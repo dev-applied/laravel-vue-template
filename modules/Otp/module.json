@@ -33,7 +33,7 @@
             }
         }
     },
-    "installed_from_commit": "71a2e2ac0eb68afaec94235988ec996429303c3e",
+    "installed_from_commit": "173b490d611dac7396e794ed97c8d6f9cbe6930a",
     "installed_at": "2026-08-25",
     "installed_options": {
         "purpose": "login"

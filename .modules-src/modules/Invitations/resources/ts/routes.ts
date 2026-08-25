@@ -17,7 +17,7 @@ RouteDesigner.group('', function () {
     "/accept-invite",
     () => import("@modules/Invitations/resources/ts/pages/AcceptInvitePage.vue"),
     ROUTES.ACCEPT_INVITE
-  )
+  ).title("Accept invitation")
 })
   .layout("Empty")
   .middleware([ForceTypes, Guest])

@@ -16,7 +16,7 @@ RouteDesigner.group('', function () {
     "/forms/:slug",
     () => import("@modules/FormBuilder/resources/ts/pages/FormFillPage.vue"),
     ROUTES.FORM_FILL
-  )
+  ).title("Complete form")
 })
   .layout("Empty")
   .middleware([ForceTypes])

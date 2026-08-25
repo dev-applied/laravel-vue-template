@@ -43,7 +43,7 @@ RouteDesigner.group('', function () {
   const completeLoader = completePage["/modules/Auth/resources/ts/pages/SsoCompletePage.vue"]
 
   if (completeLoader) {
-    RouteDesigner.route("/auth/sso/complete", completeLoader, ROUTES.SSO_COMPLETE)
+    RouteDesigner.route("/auth/sso/complete", completeLoader, ROUTES.SSO_COMPLETE).title("Signing you in")
   }
 })
   .layout("Empty")

@@ -39,7 +39,7 @@ if (ticketingPages['./pages/TicketsPage.vue'] && ticketingPages['./pages/TicketP
       "/support/tickets/:id",
       ticketingPages['./pages/TicketPage.vue'] as never,
       ROUTES.TICKET
-    )
+    ).title("Support ticket")
   })
     .layout("Default")
     .middleware([ForceTypes, Authentication, Authorization])

@@ -55,6 +55,19 @@ export abstract class RouteBuilder {
     return this
   }
 
+  /**
+   * The human name for this page — browser tab, bookmark, history entry, and
+   * what a screen reader announces on navigation.
+   *
+   * Without it App.vue falls back to the route NAME, so every module page read
+   * as its identifier: "booking.show", "tasks.index", "support.tickets". The
+   * booking page is public, so that string was what a customer saw in their tab
+   * and saved into a bookmark.
+   */
+  public title(title: string): this {
+    return this.meta({title})
+  }
+
   public meta(meta: Record<string, any>): this {
     this.attributes = merge({}, this.attributes, omit(meta, ["prefix", "middleware", "where", "props", "layout", "permissions_all", "permissions_any"]))
 
