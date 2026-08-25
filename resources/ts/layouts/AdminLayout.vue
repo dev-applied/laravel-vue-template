@@ -59,6 +59,7 @@
     >
       <slot name="nav">
         <v-list
+          v-if="navItems.length"
           density="compact"
           nav
         >
@@ -71,6 +72,20 @@
             :value="item.title"
           />
         </v-list>
+        <!--
+          Says why it is empty instead of rendering a blank column. `navItems`
+          defaults to [], so a project that has not passed it yet — every
+          project on day one — gets a drawer with nothing in it and no clue
+          that a prop is missing. The Dashboard on the same screen already
+          explains its own empty state; this matches it.
+        -->
+        <p
+          v-else-if="!rail"
+          class="text-body-small text-medium-emphasis pa-4"
+        >
+          No navigation items. Pass a <code>nav-items</code> prop, or override
+          the <code>#nav</code> slot.
+        </p>
       </slot>
 
       <template
