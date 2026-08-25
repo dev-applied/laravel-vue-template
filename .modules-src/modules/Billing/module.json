@@ -1,0 +1,34 @@
+{
+    "name": "Billing",
+    "version": "0.1.0",
+    "harvested_from": "the firm's hybrid-billing runbook (decision register + implementation contract, read 2026-08-24). Not harvested from client code.",
+    "template_version_tested": "2026-08",
+    "description": "Subscription entitlements resolved from RevenueCat webhooks, so one gate answers for Apple, Google and web alike. The webhook is the only thing that grants access; the client only ever re-reads. Ships the env-gated QA affordances the runbook requires.",
+    "composer_requires": [],
+    "options": {
+        "admin": {
+            "prompt": "Include the admin entitlement switcher?",
+            "type": "select",
+            "default": "none",
+            "choices": {
+                "none": {
+                    "label": "No — production-only build, nothing can flip a tier by hand",
+                    "drop": [
+                        "Http/Controllers/EntitlementSwitcherController.php",
+                        "Routes/qa.php",
+                        "Tests/Feature/EntitlementSwitcherTest.php"
+                    ],
+                    "env": {
+                        "BILLING_ALLOW_SWITCHER": "false"
+                    }
+                },
+                "switcher": {
+                    "label": "Yes — env-gated switcher so QA can reach every entitlement state",
+                    "env": {
+                        "BILLING_ALLOW_SWITCHER": "false"
+                    }
+                }
+            }
+        }
+    }
+}
