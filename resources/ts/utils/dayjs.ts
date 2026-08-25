@@ -92,7 +92,24 @@ function time_ago(time: TimeValue, local: boolean = true): string {
   if (local) {
     date = date.local()
   }
-  return dayjs.min(date.endOf('day'), dayjs()).fromNow()
+  const now = dayjs()
+
+  // Clamp ONLY sub-minute forward skew. A row stamped by a server clock a
+  // little ahead of the browser should read "a few seconds ago" rather than
+  // "in 43 seconds"; that is the whole legitimate case.
+  //
+  // The previous form was `dayjs.min(date.endOf('day'), dayjs()).fromNow()`,
+  // which clamped every timestamp to now — and because endOf('day') pushes a
+  // date to 23:59, that caught two whole classes rather than clock skew:
+  //   - every FUTURE date (a task due in 2 days read "a few seconds ago")
+  //   - every timestamp from EARLIER TODAY (3 hours ago read the same)
+  // Both look plausible on a demo full of freshly-seeded rows and are wrong
+  // everywhere else.
+  if (date.isAfter(now) && date.diff(now, 'second') < 60) {
+    return now.fromNow()
+  }
+
+  return date.fromNow()
 }
 
 function time_future(time: TimeValue, local: boolean = true): string {
