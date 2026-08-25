@@ -138,4 +138,36 @@ return [
         'enabled' => env('AUTH_OAUTH_ENABLED', false),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Single sign-on (Auth module, `sso` option)
+    |--------------------------------------------------------------------------
+    |
+    | A SEPARATE axis from `oauth` above, and the opposite direction: `oauth`
+    | makes this app an OAuth SERVER for MCP clients, while `sso` makes it an
+    | OAuth CLIENT of Google / Microsoft / Okta. A project can want either, both
+    | or neither, so they are not choices on one setting.
+    |
+    | `providers` is an allow-list, not a hint: the provider arrives as a URL
+    | segment, and without the list it would reach Socialite's driver factory
+    | directly. Each named provider still needs its own credentials in
+    | config/services.php.
+    |
+    | `allow_registration` is off by default. On an open provider like Google,
+    | on means anyone with an address can create an account; `allowed_domains`
+    | narrows that to a comma-separated list of email domains when it is on.
+    |
+    */
+
+    'sso' => [
+        'enabled'            => env('SSO_ENABLED', false),
+        'providers'          => env('SSO_PROVIDERS', ''),
+        'allow_registration' => env('SSO_ALLOW_REGISTRATION', false),
+        'allowed_domains'    => env('SSO_ALLOWED_DOMAINS', ''),
+        // Overrides the derived /api/v1/auth/sso/{provider}/callback — needed
+        // when the provider must redirect somewhere the API is not, e.g. a
+        // deep-link host for a Capacitor build.
+        'callback_url' => env('SSO_CALLBACK_URL'),
+    ],
+
 ];
