@@ -1,4 +1,4 @@
-import { defineComponent, type VNode } from "vue"
+import { defineComponent, type ComponentPublicInstance, type VNode } from "vue"
 
 function isFunction(arg: any) {
   return typeof arg === "function"
@@ -13,14 +13,23 @@ function getComponentOption(options: Breadcrumbs.Options, vnode: VNode, result: 
   if (!vnode) return result
 
   if (vnode.component) {
-    if (vnode.component.proxy) {
-      if (vnode.component?.proxy.$breadCrumbsComputed.length) {
-        result = vnode.component?.proxy.$breadCrumbsComputed
-      }
+    // The computed this mixin installs is not on ComponentPublicInstance, so it
+    // has to be named here. Optional, because the walk visits every component in
+    // the tree and most of them never declared a breadCrumbs option.
+    const proxy = vnode.component.proxy as
+      (ComponentPublicInstance & { $breadCrumbsComputed?: Breadcrumbs.Item[] }) | null
+
+    if (proxy?.$breadCrumbsComputed?.length) {
+      result = proxy.$breadCrumbsComputed
     }
+
     result = getComponentOption(options, vnode.component.subTree, result)
   } else if (vnode.shapeFlag & 16) {
-    const vnodes = vnode.children
+    // shapeFlag 16 is ARRAY_CHILDREN, so children IS an array here — but the
+    // declared type covers every child shape, including null and plain strings,
+    // and indexing a string yields characters rather than vnodes.
+    const vnodes = (vnode.children ?? []) as VNode[]
+
     for (let i = 0; i < vnodes.length; i++) {
       result = getComponentOption(options, vnodes[i], result)
     }

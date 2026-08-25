@@ -8,10 +8,14 @@
       v-for="(_, name) in $slots"
       #[name]="slotData"
     >
+      <!-- `slotData || {}` rather than `slotData`: a zero-argument slot
+           forwards `undefined`, and Vue's guardReactiveProps turns that into
+           null. renderSlot only defaults props for `undefined`, so null
+           reaches `props.key` and throws — blanking the entire page. -->
       <slot
         v-if="name !== 'default'"
         :name="name"
-        v-bind="slotData"
+        v-bind="slotData || {}"
       />
     </template>
 
@@ -21,7 +25,10 @@
         v-bind="{isActive}"
       >
         <v-card>
-          <slot name="title">
+          <slot
+            name="title"
+            :title="title"
+          >
             <v-card-title class="d-flex justify-space-between align-center">
               <div>{{ title }}</div>
               <v-icon @click="isActive.value = false">
@@ -63,7 +70,10 @@ defineSlots<{
   }): any,
   default(props: { isActive: Ref<boolean, boolean> }): any
   body(): any,
-  title(props: { title: string }): any
+  // Optional: `title` is an optional prop, and the default slot content is
+  // rendered without it. Declaring it required made the component's own
+  // fallback markup fail its own slot contract.
+  title(props: { title?: string }): any
 }>()
 
 const {smAndDown} = useDisplay()

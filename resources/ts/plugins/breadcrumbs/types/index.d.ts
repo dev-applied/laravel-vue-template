@@ -1,5 +1,9 @@
 declare namespace Breadcrumbs {
-  import type { RawLocation } from "vue-router"
+  // Inline import type: a top-level import would turn this .d.ts into a
+  // module and stop `declare namespace` from being global. Vue Router 4
+  // renamed RouteLocationRaw to RouteLocationRaw.
+  type RouteLocationRaw = import("vue-router").RouteLocationRaw
+
 
   export interface Options {
     keyName: string
@@ -9,7 +13,7 @@ declare namespace Breadcrumbs {
     icon?: string,
     text?: string,
     disabled?: boolean,
-    to?: RawLocation | string
+    to?: RouteLocationRaw | string
   }
 
   export interface State {

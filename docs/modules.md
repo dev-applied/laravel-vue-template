@@ -59,6 +59,19 @@ with `resources/` (frontend) on macOS's case-insensitive filesystem.
   and still rely on `$http` / `$auth` / `$error`. `modules/Files` registers
   `$file` this way. A module that needs to augment the global property types
   ships its own `.d.ts` — `tsconfig.json` already globs `modules/**/*.ts`.
+- **An option-pruned page must be registered through a glob, not a static
+  import.** `routes.ts` is not dropped by an option, but the pages it points at
+  may be — and a static `() => import(".../DroppedPage.vue")` fails the vite
+  build with an unresolved module. Use `import.meta.glob`, which only ever
+  contains files that exist at build time:
+
+  ```ts
+  const pages = import.meta.glob('./pages/Ticket*.vue')
+  if (pages['./pages/TicketsPage.vue']) {
+    RouteDesigner.route("/tickets", pages['./pages/TicketsPage.vue'] as never, ROUTES.TICKETS)
+  }
+  ```
+  `modules/Support` is the reference.
 - **Pages are lazy imports, never strings** — the string resolver only sees
   `resources/ts/pages/`. `() => import("@modules/X/resources/ts/pages/XPage.vue")`
   also code-splits per module.
@@ -173,8 +186,15 @@ Authoring — `module.json` `options`:
 
 ## Workflows
 
-## Workflows
-
+- **Scaffold** (start a new module): `php artisan module:make <Name>` — writes
+  the full anatomy into a modules-repo checkout (`--dest`, default a sibling
+  `laravel-vue-modules`): model with `newFactory()`, factory, migration,
+  controller, form requests, resource, routes, service provider, feature tests,
+  Vue page, composable, route file and README. `--model=` overrides the primary
+  model name (default: the singular of the module name). The stubs encode the
+  conventions below, so a generated module passes pint, eslint, vue-tsc and its
+  own tests before a line is edited. Verify it the same way as any module:
+  `module:add <Name> --from=<dest>` into a template checkout, then run the gate.
 - **Add**: `php artisan module:add` (in the container, like every artisan
   command). With no arguments it multiselects from every module in the firm
   modules repo (`dev-applied/laravel-vue-modules`); pass names to skip the
@@ -199,9 +219,19 @@ Authoring — `module.json` `options`:
   vs upstream versions. Applying updates is deliberate work, never automatic;
   do it on retainer touches and Laravel-major upgrades (upstream ports the
   module once, every client upgrade pulls the port). Updates replay the
-  module's `installed_options` so a pruned variant stays scoped. (The automated
-  update/merge command itself is not built yet — updates today are the manual
-  three-way merge described above.)
+  module's `installed_options` so a pruned variant stays scoped.
+- **Update**: `php artisan module:update [Name...]` — the three-way merge above,
+  automated. base = upstream at `installed_from_commit`, theirs = upstream HEAD,
+  ours = the copy in this project. `git merge-file` does the per-file merge, so
+  conflicts land as ordinary conflict markers (`yours (this project)` /
+  `upstream`) only where the project actually diverged. `installed_options` is
+  replayed against BOTH upstream trees before diffing, so a pruned variant stays
+  pruned. New upstream files are added; files upstream DELETED are reported and
+  kept — an update never silently takes code away. `module.json` is re-stamped
+  so the next update has the right base. `--dry-run` reports and touches
+  nothing. Exits non-zero when anything conflicted, so a script cannot mistake
+  "merged with conflicts" for a clean merge. With no names it updates every
+  installed module.
 - **Harvest** (feeds the modules repo): when a project builds something
   module-worthy — or the quote skill's Prior Art Check matches a family with
   2+ prior builds and no module — extract it as the FIRST build task of the
@@ -224,8 +254,17 @@ Authoring — `module.json` `options`:
 4. **Route names are namespaced** (`example.notes`) and exported from
    routes.ts; pages/components prefix with the module name where collision is
    plausible.
-5. **Migrations are append-only** once a module has shipped anywhere.
-6. **The Wayfinder gotcha**: Wayfinder generates from the CACHED route table
+5. **Migrations are append-only** once a module has shipped anywhere, and a
+   migration that creates a table the kernel or another module might already own
+   must be **guarded** (`if (Schema::hasTable(...)) return;`). `modules/Files`
+   adopts an existing `files` table rather than colliding with it.
+6. **Never hardcode a guard name.** This template registers a `sanctum` guard,
+   and spatie-style guard inference reads `auth.providers.*.model` — a role or
+   permission created as `web` is invisible to a user resolved as `sanctum`.
+   `modules/RolesPermissions/Support/Guard.php` shows the derivation.
+7. **A module may not assume another module is installed.** Degrade instead:
+   `modules/Invitations` applies a role only `if (method_exists($user, 'assignRole'))`.
+8. **The Wayfinder gotcha**: Wayfinder generates from the CACHED route table
    when one exists. After adding/removing a module, run
    `php artisan route:clear` before any `npm run build` / `composer
    typescript`, or module routes silently vanish from the generated TS.

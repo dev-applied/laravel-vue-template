@@ -1,0 +1,90 @@
+<template>
+  <v-container>
+    <div class="d-flex align-center mb-4">
+      <h1 class="text-h4">
+        {{ Module }}
+      </h1>
+      <v-spacer />
+    </div>
+
+    <v-card class="mb-4">
+      <v-card-text>
+        <v-text-field
+          v-model="filters.search"
+          clearable
+          density="comfortable"
+          hide-details
+          label="Search"
+          max-width="320"
+          prepend-inner-icon="search"
+        />
+      </v-card-text>
+    </v-card>
+
+    <app-pagination-table
+      ref="table"
+      endpoint="{{ kebabPlural }}"
+      :filters="filters"
+      :headers="headers"
+      :items-per-page="25"
+      striped-rows
+    >
+      <template #[`item.actions`]="{ item }">
+        <!-- flex-nowrap: several small buttons overflow the actions column at
+             its natural width and wrap onto a second line. -->
+        <div class="d-flex justify-end flex-nowrap ga-1">
+          <v-btn
+            color="error"
+            icon="delete"
+            size="small"
+            title="Delete"
+            variant="text"
+            @click.stop="destroy(item)"
+          />
+        </div>
+      </template>
+
+      <template #no-data>
+        <app-empty-state
+          description="Nothing matches those filters."
+          icon="inbox"
+          title="Nothing here yet"
+        />
+      </template>
+    </app-pagination-table>
+  </v-container>
+</template>
+
+<script lang="ts">
+import {defineComponent} from "vue"
+import AppEmptyState from "@/components/AppEmptyState.vue"
+import AppPaginationTable from "@/components/AppPaginationTable.vue"
+import use{{ Module }}, {type {{ Model }}Item} from "@modules/{{ Module }}/resources/ts/composables/use{{ Module }}"
+
+export default defineComponent({
+  name: "{{ Module }}Page",
+  components: {AppEmptyState, AppPaginationTable},
+  setup() {
+    return use{{ Module }}()
+  },
+  data() {
+    return {
+      filters: {search: ''},
+      headers: [
+        {title: 'Name', key: 'name', sortable: false},
+        {title: '', key: 'actions', sortable: false, align: 'end' as const, width: 90, nowrap: true},
+      ],
+    }
+  },
+  methods: {
+    reload() {
+      (this.$refs.table as InstanceType<typeof AppPaginationTable>)?.reload()
+    },
+    async destroy(item: {{ Model }}Item) {
+      if (!await this.$confirm('Delete?', `"${item.name}" will be removed permanently.`, 'error')) return
+
+      if (await this.remove(item)) this.reload()
+    },
+  },
+})
+</script>

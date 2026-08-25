@@ -68,7 +68,10 @@ export abstract class RouteBuilder {
   }
 
   public addPermissionAll(permissions: string | string[]): this {
-    this.attributes.permissions_all = this.attributes.permissions_any.concat(Array.isArray(permissions) ? permissions : [permissions])
+    // Reads permissions_all, not permissions_any — the original concatenated
+    // the wrong list, so addPermissionAll() replaced the all-list with the
+    // any-list plus the new entries.
+    this.attributes.permissions_all = this.attributes.permissions_all.concat(Array.isArray(permissions) ? permissions : [permissions])
 
     return this
   }

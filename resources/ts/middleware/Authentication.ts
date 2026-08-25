@@ -1,10 +1,13 @@
 import { useUserStore } from "@/stores/user"
-import type { NavigationGuardNext, RouteRecordNormalized } from "vue-router"
+import type { NavigationGuardNext, RouteLocationNormalized, RouteLocationNormalizedLoaded } from "vue-router"
 
 export default class Authentication implements App.Middleware.Instance {
   async handle(
-    to: RouteRecordNormalized,
-    from: RouteRecordNormalized,
+    // RouteRecordNormalized is a route DEFINITION; the pipeline passes a
+    // navigation target. They are different shapes, and the mismatch was
+    // only invisible because the vue-router shim had broken the types.
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalizedLoaded,
     next: App.Middleware.Caller,
     cancel: NavigationGuardNext
   ): Promise<void> {

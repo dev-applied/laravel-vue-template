@@ -1,0 +1,29 @@
+import useHttp from "@/composables/useHttp"
+
+export interface {{ Model }}Item {
+  id:        number
+  name:      string
+  createdAt: string | null
+  updatedAt: string | null
+}
+
+/**
+ * Lifecycle actions only.
+ *
+ * Listing is NOT here: AppPaginationTable owns the endpoint, pagination,
+ * sorting and debounced search. Create/update belong to
+ * AppServerValidationForm, which already owns the 422 error bag and its
+ * per-field mapping. Re-implementing either in a composable is how a screen
+ * ends up silently showing only the first page.
+ */
+export default function use{{ Module }}() {
+  const {$http, $error} = useHttp()
+
+  async function remove(item: {{ Model }}Item): Promise<boolean> {
+    const {status, data} = await $http.delete(`{{ kebabPlural }}/${item.id}`).catch((e: any) => e)
+
+    return !$error(status, data?.message, data?.errors)
+  }
+
+  return {remove}
+}

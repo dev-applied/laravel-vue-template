@@ -67,8 +67,16 @@ export function normalizeItems<T = any>(
  */
 export function extractId<T = any>(
   item: AutocompleteItem<T>,
-  itemValue: string = "id"
+  itemValue: string | ((item: AutocompleteItem<T>) => PrimitiveId) = "id"
 ): PrimitiveId {
+  // Functions are supported for the same reason extractTitle supports them, and
+  // because Vuetify's own item-value does. Without this branch a caller passing
+  // `:item-value="(u) => u.id"` indexed the item BY THE FUNCTION, which yields
+  // undefined — the selection then never matched anything.
+  if (typeof itemValue === "function") {
+    return itemValue(item)
+  }
+
   return (item as any)[itemValue]
 }
 

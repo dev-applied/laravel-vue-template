@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{ Module }}\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Modules\{{ Module }}\Http\Requests\Store{{ Model }}Request;
+use Modules\{{ Module }}\Http\Requests\Update{{ Model }}Request;
+use Modules\{{ Module }}\Http\Resources\{{ Model }}Resource;
+use Modules\{{ Module }}\Models\{{ Model }};
+
+class {{ Model }}Controller extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        ${{ plural }} = {{ Model }}::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search')->toString();
+
+                // Grouped. Chained ungrouped as ->where()->orWhere(), the OR
+                // escapes past every other constraint on the query — which is
+                // how a scoping or soft-delete filter silently stops applying.
+                $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%"));
+            })
+            ->latest('id')
+            ->vuetifyPaginate();
+
+        // through() is the paginator's own map: it keeps the pagination
+        // envelope the frontend table depends on and wraps each row.
+        return response()->json(${{ plural }}->through(fn ({{ Model }} $item) => new {{ Model }}Resource($item)));
+    }
+
+    public function store(Store{{ Model }}Request $request): JsonResponse
+    {
+        $item = {{ Model }}::create($request->validated());
+
+        return response()->json(new {{ Model }}Resource($item), 201);
+    }
+
+    public function show({{ Model }} ${{ singular }}): JsonResponse
+    {
+        return response()->json(new {{ Model }}Resource(${{ singular }}));
+    }
+
+    public function update(Update{{ Model }}Request $request, {{ Model }} ${{ singular }}): JsonResponse
+    {
+        ${{ singular }}->update($request->validated());
+
+        return response()->json(new {{ Model }}Resource(${{ singular }}->fresh()));
+    }
+
+    public function destroy({{ Model }} ${{ singular }}): JsonResponse
+    {
+        ${{ singular }}->delete();
+
+        return response()->json(['message' => '{{ Model }} deleted.']);
+    }
+}

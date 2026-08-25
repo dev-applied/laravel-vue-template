@@ -72,22 +72,59 @@ class ModuleSource
     /**
      * Copy the module's files into $dest. Returns the source commit SHA (for the
      * installed_from_commit stamp), or 'unknown'.
+     *
+     * $ref pins a specific commit instead of the branch head — module:update
+     * needs the tree as it stood at `installed_from_commit` to use as the
+     * three-way merge base.
      */
-    public function fetchInto(string $name, string $dest): string
+    public function fetchInto(string $name, string $dest, ?string $ref = null): string
     {
         if ($this->isLocal()) {
-            File::copyDirectory($this->localPath()."/modules/{$name}", $dest);
+            if ($ref === null) {
+                File::copyDirectory($this->localPath()."/modules/{$name}", $dest);
 
-            return mb_trim(Process::path($this->localPath())->run('git rev-parse HEAD')->output()) ?: 'unknown';
+                return mb_trim(Process::path($this->localPath())->run('git rev-parse HEAD')->output()) ?: 'unknown';
+            }
+
+            $this->archiveFromLocalGit($name, $ref, $dest);
+
+            return $ref;
         }
 
-        $this->downloadFromGithub($name, $dest);
+        $this->downloadFromGithub($name, $dest, $ref);
 
-        return $this->github('commits/'.$this->branch())->json('sha') ?? 'unknown';
+        return $ref ?? ($this->github('commits/'.$this->branch())->json('sha') ?? 'unknown');
     }
 
-    private function downloadFromGithub(string $name, string $dest): void
+    /**
+     * Extract one module's subtree at an arbitrary commit out of a local
+     * checkout, without touching its working tree — `git archive` reads the
+     * object database, so a dirty or checked-out-elsewhere repo is fine.
+     */
+    private function archiveFromLocalGit(string $name, string $ref, string $dest): void
     {
+        $staging = sys_get_temp_dir().'/module-archive-'.uniqid();
+        File::makeDirectory($staging, recursive: true);
+
+        $result = Process::path($this->localPath())
+            ->run(sprintf('git archive %s modules/%s | tar -x -C %s', escapeshellarg($ref), escapeshellarg($name), escapeshellarg($staging)));
+
+        if (! $result->successful()) {
+            File::deleteDirectory($staging);
+
+            throw new RuntimeException("Could not read modules/{$name} at {$ref}: ".mb_trim($result->errorOutput()));
+        }
+
+        File::copyDirectory("{$staging}/modules/{$name}", $dest);
+        File::deleteDirectory($staging);
+    }
+
+    private function downloadFromGithub(string $name, string $dest, ?string $ref = null): void
+    {
+        // The tarball endpoint takes any ref, a bare SHA included, which is how
+        // module:update reaches its merge base.
+        $ref ??= $this->branch();
+
         $repo       = config('modules.source.repo');
         $tarball    = sys_get_temp_dir()."/module-{$name}-".uniqid().'.tar.gz';
         $extractDir = sys_get_temp_dir()."/module-{$name}-".uniqid();
@@ -96,7 +133,7 @@ class ModuleSource
             ->withHeaders(['Accept' => 'application/vnd.github+json'])
             ->timeout(120)
             ->sink($tarball)
-            ->get("https://api.github.com/repos/{$repo}/tarball/{$this->branch()}")
+            ->get("https://api.github.com/repos/{$repo}/tarball/{$ref}")
             ->throw();
 
         File::makeDirectory($extractDir, recursive: true);

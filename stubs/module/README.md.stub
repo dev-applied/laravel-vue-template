@@ -1,0 +1,43 @@
+# {{ Module }}
+
+{{ description }}
+
+Scaffolded by `module:make`. Replace this file's contents as the module takes
+shape — a README that still reads like a stub is worse than none.
+
+## Install
+
+```sh
+php artisan module:add {{ Module }}
+php artisan migrate
+php artisan route:clear && composer typescript
+```
+
+## API
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/{{ kebabPlural }}` | Paginated, `?search=` filters by name |
+| POST | `/api/v1/{{ kebabPlural }}` | |
+| GET | `/api/v1/{{ kebabPlural }}/{id}` | |
+| PUT | `/api/v1/{{ kebabPlural }}/{id}` | Partial payloads accepted |
+| DELETE | `/api/v1/{{ kebabPlural }}/{id}` | |
+
+All routes are behind `auth:sanctum`. Add a `can:` gate in `Routes/api.php` if
+this surface needs one, and define that gate in the PROJECT — who counts as an
+administrator is a project decision, not a module's.
+
+## Before you ship this
+
+- [ ] Replace the placeholder `name` column with the real schema.
+- [ ] Decide whether any of this needs a permission gate.
+- [ ] If the module needs something a project must supply (an SMS channel, a
+      tenant scope, an audience), declare a **contract** and ship a safe default
+      rather than assuming another module is installed. See the `OtpChannel` /
+      `SavedViewScope` / `CommentableRegistry` seams for the pattern.
+- [ ] Fire **events** rather than calling another module directly.
+- [ ] Run `bin/lint` from the modules repo before committing.
+
+## Tests
+
+`modules/{{ Module }}/Tests/Feature/{{ Module }}Test.php`

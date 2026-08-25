@@ -1,5 +1,9 @@
 declare namespace BackButton {
-  import type { RawLocation } from "vue-router"
+  // Inline import type: a top-level import would turn this .d.ts into a
+  // module and stop `declare namespace` from being global. Vue Router 4
+  // renamed RouteLocationRaw to RouteLocationRaw.
+  type RouteLocationRaw = import("vue-router").RouteLocationRaw
+
 
   export interface Options {
     rootKey: string,
@@ -8,11 +12,11 @@ declare namespace BackButton {
 
   export interface Item {
     text?: string,
-    link?: RawLocation
+    link?: RouteLocationRaw
   }
 
   export interface State {
-    link: RawLocation | null,
+    link: RouteLocationRaw | null,
     text: string | null,
     vms: typeof BackButton[]
   }
@@ -22,7 +26,7 @@ declare namespace BackButton {
 
     unregisterInstance(vm: any): void;
 
-    setLink(link: RawLocation | null): void;
+    setLink(link: RouteLocationRaw | null): void;
 
     setText(text: string | null): void;
   }

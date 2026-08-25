@@ -186,14 +186,22 @@ export default defineComponent({
       this.loading = true
       const { data } = await this.$http.get(`/items/${this.$route.params.id}`).catch(e => e)
       this.loading = false
-      if (!data) return
+
+      // `show` returns an ItemResource, and Laravel wraps a returned resource in
+      // a `data` envelope — so the record is at `data.data`, not `data`. Reading
+      // the envelope's own properties gave undefined for every field, and the
+      // `??` fallbacks then filled the form with defaults, so opening an item
+      // for editing silently showed a blank form and saving it wiped the record.
+      const item = data?.data ?? data
+      if (!item) return
+
       this.form = {
-        name:        data.name        ?? "",
-        description: data.description ?? "",
-        status:      data.status      ?? "active",
-        priority:    data.priority    ?? 3,
-        due_date:    data.due_date    ?? null,
-        owner_id:    data.owner_id    ?? null,
+        name:        item.name        ?? "",
+        description: item.description ?? "",
+        status:      item.status      ?? "active",
+        priority:    item.priority    ?? 3,
+        due_date:    item.due_date    ?? null,
+        owner_id:    item.owner_id    ?? null,
       }
     },
     // AppServerValidationForm#submit throws on client-side validation failure

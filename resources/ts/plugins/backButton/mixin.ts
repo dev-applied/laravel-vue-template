@@ -1,85 +1,102 @@
-import type { DefineComponent } from "vue/types/v3-define-component"
+import {defineComponent, type ComponentPublicInstance, type VNode} from "vue"
 
-function isFunction({ arg }: { arg: any }) {
+/**
+ * Ported from Vue 2.
+ *
+ * The previous version subscribed with `this.$on("hook:created")` /
+ * `"hook:destroyed"` / `"hook:activated"`. Vue 3 removed BOTH `$on` and the
+ * `hook:` event namespace, so every one of those calls would have thrown
+ * `this.$on is not a function` the moment a component actually declared a
+ * `backButton` option. It never surfaced only because nothing in the template
+ * declares one — `beforeCreate` returned early before reaching the first `$on`.
+ *
+ * It also walked `$children`, which Vue 3 removed as well. The tree walk now
+ * goes through the vnode tree, matching plugins/breadcrumbs/mixin.ts — the same
+ * plugin shape, already working under Vue 3.
+ */
+
+function isFunction(arg: unknown): boolean {
   return typeof arg === "function"
 }
 
-function triggerUpdate({ options, $root, backButton }: { options: any, $root: any, backButton: any }) {
-  const state = getComponentOption(options, $root)
+type BackButtonState = Pick<BackButton.State, "link" | "text">
+
+function emptyState(): BackButtonState {
+  return {link: null, text: null}
+}
+
+function triggerUpdate(root: VNode | undefined, backButton: BackButton.Plugin): void {
+  const state = getComponentOption(root, emptyState())
+
   backButton.setLink(state.link)
   backButton.setText(state.text)
 }
 
-function getComponentOption(options: BackButton.Options, component: DefineComponent, result: Pick<BackButton.State, "link" | "text"> = {
-  link: null,
-  text: null
-}): Pick<BackButton.State, "link" | "text"> {
+function getComponentOption(vnode: VNode | undefined, result: BackButtonState): BackButtonState {
+  if (!vnode) return result
 
-  if (component._inactive) {
-    return result
-  }
+  if (vnode.component) {
+    // The computed this mixin installs is not on ComponentPublicInstance, so it
+    // has to be named here. Optional, because the walk visits every component in
+    // the tree and most never declared a backButton option.
+    const proxy = vnode.component.proxy as
+      (ComponentPublicInstance & { $backButtonComputed?: BackButton.Item | null }) | null
 
-  const { keyName } = options
-  const { $backButtonComputed, $options, $children } = component
+    const data = proxy?.$backButtonComputed
 
-  if ($options[keyName]) {
-    const data = $backButtonComputed || $options[keyName]
-    if (typeof data === "object") {
-      result = Object.assign(result, data)
-    }
-  }
-
-  // collect & aggregate child options if deep = true
-  if ($children.length) {
-    $children.forEach((childComponent: DefineComponent) => {
-      if (!childComponent || !childComponent.$root) {
-        return
+    if (data && typeof data === "object") {
+      result = {
+        link: data.link ?? result.link,
+        text: data.text ?? result.text,
       }
+    }
 
-      result = getComponentOption(options, childComponent, result)
-    })
+    return getComponentOption(vnode.component.subTree, result)
+  }
+
+  if (vnode.shapeFlag & 16) {
+    // shapeFlag 16 is ARRAY_CHILDREN, so children IS an array here — but the
+    // declared type covers every child shape, including null and plain strings.
+    const children = (vnode.children ?? []) as VNode[]
+
+    for (const child of children) {
+      result = getComponentOption(child, result)
+    }
   }
 
   return result
 }
 
 export default function createMixin(backButton: BackButton.Plugin, options: BackButton.Options) {
-  const updateOnLifecycleHook = ["activated", "deactivated", "beforeMount"]
+  return defineComponent({
+    computed: {
+      $backButtonComputed(): BackButton.Item | null {
+        const declared = (this.$options as Record<string, any>)[options.keyName]
 
-  return {
-    beforeCreate() {
-      const $root = this[options.rootKey]
-      const $options = this.$options
+        if (!declared) return null
 
-      if (typeof $options[options.keyName] === "undefined" || $options[options.keyName] === null) {
-        return
-      }
-
-      if (isFunction({ arg: $options[options.keyName] })) {
-        $options.computed = $options.computed || {}
-        $options.computed.$backButtonComputed = $options[options.keyName]
-
-        this.$on("hook:created", function() {
-          // @ts-ignore
-          this.$watch("$backButtonComputed", function() {
-            triggerUpdate({ options: options, $root: $root, backButton: backButton })
-          })
-        })
-      }
-
-      this.$on("hook:destroyed", function() {
-        // @ts-ignore
-        this.$nextTick(() => {
-          // @ts-ignore
-          triggerUpdate({ options: options, $root: this.$root, backButton: backButton })
-        })
-      })
-
-      updateOnLifecycleHook.forEach((lifecycleHook) => {
-        this.$on(`hook:${lifecycleHook}`, function() {
-          triggerUpdate({ options: options, $root: $root, backButton: backButton })
-        })
-      })
-    }
-  }
+        return isFunction(declared) ? declared.call(this) : declared
+      },
+    },
+    watch: {
+      $backButtonComputed: {
+        handler() {
+          triggerUpdate(this.$root?.$.vnode, backButton)
+        },
+        immediate: true,
+      },
+    },
+    beforeMount() {
+      triggerUpdate(this.$root?.$.vnode, backButton)
+    },
+    beforeUnmount() {
+      triggerUpdate(this.$root?.$.vnode, backButton)
+    },
+    activated() {
+      triggerUpdate(this.$root?.$.vnode, backButton)
+    },
+    deactivated() {
+      triggerUpdate(this.$root?.$.vnode, backButton)
+    },
+  })
 }

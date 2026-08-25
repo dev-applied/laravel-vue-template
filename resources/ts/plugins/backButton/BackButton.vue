@@ -23,12 +23,12 @@
 <script lang="ts">
 import { backButton } from "@/plugins/backButton/index"
 import { defineComponent } from "vue"
-import type { RawLocation } from "vue-router"
+import type { RouteLocationRaw } from "vue-router"
 
 export default defineComponent({
   data() {
     return {
-      link: null as string | RawLocation | null,
+      link: null as string | RouteLocationRaw | null,
       text: null
     }
   },
@@ -40,6 +40,11 @@ export default defineComponent({
   },
   methods: {
     navigate() {
+      // The button renders only when a link is set, but `link` is nullable in
+      // the plugin state and router.push(null) is a runtime error rather than a
+      // no-op, so the guard is real rather than a type formality.
+      if (!this.link) return
+
       this.$router.push(this.link)
     }
   }

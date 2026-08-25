@@ -1,5 +1,6 @@
 import {type PropType, ref} from 'vue'
 import axios, {type AxiosInstance} from 'axios'
+import {$http} from "@/plugins/axios"
 import errorHandler from '@/plugins/errorHandler'
 
 import type {AutocompleteItem, CreateItemPayload, CreateItemResponse} from './types'
@@ -20,7 +21,10 @@ export function makeUseCreateItemProps() {
 
 export function useCreateItem<T = any>(options: UseCreateItemOptions) {
   const { endpoint, axios: customAxios, newItemKey } = options
-  const http = customAxios || axios
+  // $http, not the bare axios package: the package default has no baseURL,
+  // no auth header and none of the app's interceptors, so a create fired
+  // through it went out unauthenticated to a relative URL.
+  const http = customAxios || $http
 
   const creating = ref(false)
 
