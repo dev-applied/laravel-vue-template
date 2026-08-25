@@ -192,6 +192,15 @@ migrations across 44 local Laravel repos. Full report:
   Evidence: with the trait added temporarily, all six of those pages render and work — announcements created and
   published end to end, and unpublish→republish correctly did not re-mail (deliveries stayed at 2).
 
+## Dependencies — routine bumps
+
+- [ ] **15 open Dependabot PRs on the template, none security.** `npm audit` and `composer audit` both report
+  zero advisories, so these are version currency rather than risk. All are within-major (Vue 3.5.x tooling,
+  guzzle 7.10→7.15, sass, vitest, dayjs, flysystem, sentry-laravel); four are grouped PRs. Deliberately NOT
+  force-updated during the overnight run: several change package.json CONSTRAINTS rather than just the lock, and
+  rewriting the locks here would conflict with all 15 PRs and send Dependabot into a rebase loop. They merge
+  cleanly through CI, which is the cheaper path.
+
 ## Recently Done (last 30 days)
 
 - **Vuetify v4 typography was dead across the whole app** — shipped 2026-08-25. `text-h4`, `text-body-2`,
