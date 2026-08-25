@@ -8,22 +8,8 @@ In-flight + planned work, grouped **by concept** (one `##` per initiative / area
 
 **Legend:** `- [x]` done (+ `— YYYY-MM-DD`) · `- [~]` in progress (+ `branch` / `worktree`) · `- [ ]` queued · `- [!]` blocked (+ reason). One status per line — never in prose, never mixed in one bullet. **Concepts with a `[~]` leaf sort to the top** — that's where a parallel session looks for what's hot, and the `branch` / `worktree` on each `[~]` leaf is how it avoids collisions.
 
-## Realtime — module 28
-
-- [x] **Websocket wiring, with the three things that are usually wrong.** Broadcast auth behind Sanctum rather than the `web` guard Laravel defaults to — an SPA on cookies works either way, a Capacitor build on a bearer token does not, and the failure is a socket that connects and then authorises no private channel at all. Client config SERVED rather than baked in, because a Capacitor app is compiled once and pointed at an API afterwards. And the `REVERB_HOST` worktree gotcha, until now firm-standard knowledge living in `~/.claude/stacks/laravel-vue.md` instead of installable code. Ships no container. 9 tests, 5 mutations caught — 2026-08-25
-- [x] **Broadcast auth refused everything unconfigured — because it was authorising everything.** The `null` broadcaster (the default in a fresh install AND in the test environment) authorises every channel. Nothing leaks while the driver is null, but the endpoint rubber-stamps, so the day somebody sets a real driver they inherit an auth path that has never once said no. Measured in the running app first: a signed-in user POSTing `private-nobody-declared-this` got 200 — 2026-08-25
-- [x] **`bin/check-drop-imports.py`** — a dropped `.vue`/`.ts` must not be statically imported by a survivor. `AppChecklistPanel` imported `AppChecklistEvidence`, which `evidence=none` drops, so that one variant's Vite build failed and no other did — the file is right there in every developer's working copy. Wired into `bin/lint` and the CI `discover` job so it fails in seconds rather than four minutes and a matrix leg later — 2026-08-25
-- [x] **`module:add` now refuses a malformed `npm_requires` entry.** `laravel-echo:^2.2` (composer syntax) became the package.json KEY `"laravel-echo:^2.2": "*"` — a name npm will never resolve, sorted quietly into the middle of the dependency list. Nothing downstream noticed: `npm install` succeeds treating it as an absent package, the import fails at build time looking like a missing file, and `module:check` reports the REAL package as missing while the manifest reads correctly. 2 tests, mutation-checked — 2026-08-25
-- [x] **A flaky `module:check` test under `pest --parallel`.** The manifest read was an `exists()`-then-`get()`, and the file can vanish between the two calls while sibling test processes create and delete fixture modules. One `ErrorException` in an otherwise green gate. Now a single suppressed read; three consecutive parallel runs green — 2026-08-25
-
-## Checklists — module 27
-
-- [x] **Reusable templates instantiated against any registered model.** The template/instance split is the whole reason it is a module: a template is edited over time, and an instance must not change under the person who filled it in, so `instantiate()` COPIES the items. A checklist signed last month has to keep saying what was actually checked. Deleting a template does not delete the inspections done under it. Subjects are an allow-list (the KEY travels, never the class name), `pending` is not a settable answer, a completed checklist cannot be edited, completion reports every reason at once, evidence is demanded of the ANSWER not the item, and template editing is gated while filling one in is not. 15 tests, 6 mutations caught — 2026-08-25
-- [x] **FormBuilder overlap decided: siblings, not a preset.** A form is filled once by whoever it is for; a checklist is filled repeatedly against a subject and exists to record that something was verified. Written into the README so it stops being re-decided — 2026-08-25
-- [x] **`[object Promise]` where the upload control belongs.** `import.meta.glob` hands back a LOADER, and assigning it straight to `:is` renders that string. Found by loading the page; no test could see it. Fixed with `defineAsyncComponent` + `markRaw`, and a sweep confirmed the other four glob sites were already correct — 2026-08-25
-- [x] **Both twilio CI legs went red on `pint --test` while every test passed.** The two twilio-only files were excluded from the sync back so an installed `driver=log` copy could not reintroduce dropped files — and that exclusion meant pint never saw them. `bin/lint` in FIX mode is the step that was missing — 2026-08-25
-
 ## SmsMessaging — module 26
+
 
 - [x] **SMS as a channel, with the opt-out handling that is a legal duty.** 10 distinct projects carry a hand-rolled Twilio integration. Installs with no vendor account — the default driver logs, so opt-out handling and a delivery log work before anyone signs up to anything. Nothing calls a driver directly: normalise to E.164, check the opt-out list, log the attempt, all in `SmsManager`, because a rule enforced per-driver is missing the day somebody adds the second driver. Honouring STOP is a TCPA/CTIA obligation, and numbers are normalised before anything compares them — the failure otherwise is a message to somebody who texted STOP, because a form captured "(555) 123-4567" and a string comparison says that differs from +15551234567. 35 tests on the default variant, 39 on `driver=twilio`, 11 mutations all caught — 2026-08-25
 - [x] **The Otp bridge, and the bug only the real path found.** Otp declares `otp.channel.sms` and knows nothing about a vendor; this binds it. The first version deliberately did NOT implement Otp's `OtpChannel` interface, reasoning the class must load whether or not Otp is installed — and every SMS code request 500'd, because `ChannelRegistry::get()` has that return type and a wrong one is a TypeError. Its own test missed it by calling the class directly instead of through the registry the application uses. Now implements the interface, resolves through the registry, and posts to `/otp/request` end to end — 2026-08-25
@@ -32,36 +18,8 @@ In-flight + planned work, grouped **by concept** (one `##` per initiative / area
 - [ ] **`module:configure` leaves the previous variant's env keys behind.** Switching SmsMessaging from `driver=twilio` back to the default left empty `TWILIO_*` keys in `.env`. Harmless here; for an auth or billing variant a stale key that still resolves is not.
 - [x] **`module:check` now catches rsync-over-an-installed-module.** It bit three times in one night: syncing a module's full source over an installed copy silently reintroduces the files its option variant dropped, and the failure surfaces as unrelated tests going red — a reinstated `StepUpTest.php` produced seven 405s that read as a broken route. Nothing else could notice, because every other check reads the manifest and the manifest still says `login`. The new check compares each installed variant's drop list against what is on disk. NOT behind `--defaults`: a project picks its variants on purpose so option drift there is normal, but a stray file is wrong in a project for exactly the same reason. 3 tests, 3 mutations caught, and verified against the actual accident — 2026-08-25
 
-## Onboarding — module 25
-
-- [x] **First-run checklist with auto-detection and an opt-in gate.** `completedWhen` is what earns the module: a step is usually already satisfied by work done elsewhere, and asking someone to tick a box for it is what makes onboarding feel like paperwork. Rules that are rules rather than labels — a required step cannot be skipped, a self-detecting step cannot be ticked by hand (422), an outstanding optional step does not hold the gate shut, and skipping is not final. The gate is a per-route `onboarded` ALIAS, never global: the onboarding endpoints and the screens the steps link to must stay reachable, and a global gate's failure mode is a signed-in user who can reach nothing including the page that would release them. 17 tests, 8 mutations all caught — 2026-08-25
-- [x] **"Mark done" beside "Verify your email" — found by loading the page, not by a test.** A step the app can detect for itself must not also accept a manual completion; that is a bypass, and email verification is the case where it matters most. The state now reports `autoDetected` so the client hides the button instead of offering an action the server refuses — 2026-08-25
-- [x] **Two mutations that survived, and what they exposed.** Inverting the skip/completion precedence left every test green, because the skip-then-complete test is satisfied by `markCompleted()` nulling `skipped_at` rather than by the rule under test — the only route to that rule is a step that is optional AND auto-detected. Making optional steps count toward `outstandingRequired` also stayed green, because the middleware helper called `markTestSkipped()` when it could not reach a complete state — a broken gate turned into a skip, the same failure as a lint check reporting ok when it checked nothing. The helper now separates "cannot satisfy generically" from "the count is wrong" — 2026-08-25
-- [x] **Tests look steps up by key, never by position** — the registry is shared with the app under test, which registers its own steps. Five tests failed on first run for exactly that reason, the same brittleness the Exports suite hit once with `sources.0` — 2026-08-25
-
-## GlobalSearch — module 24
-
-- [x] **Cross-model search behind one endpoint, with a Cmd/Ctrl+K palette.** The strongest un-built candidate left in the mining report — 8 distinct projects carry a hand-rolled `SearchController`. Needs no search engine: a source is a closure returning a builder, so the default install is plain SQL. A closure rather than model-plus-columns because the interesting sources are never a flat LIKE (searching orders means matching the customer's name, a join the module cannot guess); a registry rather than a `Searchable` trait because the search surface has to be an explicit allow-list — with a trait, adding a column to an adopting model quietly makes it readable through search. Unauthorised sources are OMITTED rather than returned empty, and `types[]` validates against what is registered rather than what the caller may reach, because both alternatives answer "that type exists" to anyone who guessed. Results are grouped, never interleaved — ranking across sources cannot be done honestly. 16 tests, 6 mutations all caught. Driven end to end: Cmd+K opens and focuses, two groups in declared order, arrow keys move the cursor, Enter and click both navigate, recents show on reopen, no horizontal scroll at 390×844 — 2026-08-25
-- [x] **Wired into the template rather than shipped unreachable** — Items and People registered as sources in `AppServiceProvider`, palette mounted once in `DefaultLayout` behind `import.meta.glob`. Exports shipped with an empty registry and a page pointing at a button that existed nowhere; this is that lesson applied before the fact rather than after — 2026-08-25
-- [x] **An async component in `data()` is made reactive** — Vue warns at runtime and deep-proxies the whole component definition for nothing. Surfaced by the layout change but not caused by it: `LoginPage` and `ItemListPage` had it too. All three `markRaw()` — 2026-08-25
-
-## Render-correctness guards — the failures no linter can see
-
-A family of bugs this codebase keeps producing: the code is valid, eslint and
-vue-tsc are happy, the suite is green, and only the RENDERED result is wrong.
-Each instance is invisible until someone loads the page. `bin/lint-kernel`
-(template, `resources/ts`) and `bin/lint` (modules repo, `modules/`) are the
-gate; both are greps on purpose, both mutation-checked.
-
-- [x] **The 404 page rendered white-on-white and nobody could have known.** One selector held the illustration together: `.not-found .theme--light.v-application`. `theme--light` is a Vuetify **2** class — v3/v4 put `v-theme--<name>` on the root — so it has matched nothing for two majors (measured: `querySelectorAll(...).length === 0`). The app root therefore painted opaque white over the green body, and every other colour on the page is white: white clouds, a white rule, white text forced dark by v-application's own `color`, a white button face. What rendered was three dark words and a 40px stripe of green at the very bottom where the body escaped the app. 250 lines of cloud animation drew nothing. Fixed the selector and moved the page onto `primary`/`on-primary`, so a brand palette reaches it instead of a mint green that appears nowhere in the theme. Making it visible exposed two layout defects that were also mine to land: the rule was drawn THROUGH "THE PAGE" (`line-height: 80%` on a 4em line overflows its own box upward), and fixed 358/420px widths overflowed a phone — now 18px clearance and no horizontal scroll at 390×844 — 2026-08-25
-- [x] **`mediumgray--text` on the Files upload label — a class nothing defines.** Found by generalising the 404 fix rather than stopping at it. `mediumgray` appears exactly once in the whole codebase: in that class attribute. Measured live, side by side — a plain div computes to `rgba(0,0,0,0.87)`, `text-medium-emphasis` to `0.6`, `mediumgray--text` to `0.87`, i.e. identical to plain. The label has rendered at full emphasis instead of muted since the v3 upgrade. Fixed in both repos — 2026-08-25
-- [x] **Three more hardcoded colours, one of them a dead prop.** `AppPasswordValidation`'s `color="#02d9c1"` never applied: both rules set `background` with `!important`, which beats the inline `background-color` Vuetify writes for a hex prop. Removed; met/unmet now use `success` and an `error`→`warning` gradient (verified on /set-password: unmet computes rgb(245,90,78), met rgb(92,184,96) — the theme's own). AppListTable's `#999` is medium-emphasis; BackButton's `#f4f4f4` is a tint of the surface foreground — 2026-08-25
-- [x] **`bin/lint-kernel`** — five checks over `resources/ts`, wired into template CI. The modules repo's `bin/lint` globs `modules/*/resources/ts` and has never been able to see the kernel, which is how three unlabelled buttons, a non-wrapping header row and a dead 404 page shipped here after both sweeps ran green. Icon-only-button and Vuetify-2-class checks are new, and ported back to the modules repo, which had neither — 2026-08-25
-- [x] **Mutation-checking caught the guard reporting correct code.** The v2-class pattern matched v4's own `v-theme--lightTheme`, because that string CONTAINS `theme--light`. Shipped, it would have failed CI on every correct theme class in every project bootstrapped from the template. Six probe cases now pin the boundary in both directions — 2026-08-25
-- [x] **Unknown utility classes are silent too — so check them all, not just the known-bad ones.** Compares every static class token against what Vuetify ships plus what the project defines. Immediately found two the four named guards could not: `text-md-h4` (the typography regex needs the size right after `text-`, so BREAKPOINT variants were never covered) and `text-body` (not a class in any Vuetify version) — both measured identical to a bare div. Two things it has to know that CSS alone does not say: theme colour utilities are generated at runtime and are in no stylesheet, so `text-primary` is seeded from the theme definition (a colour NOT in the theme stays reportable), with the theme root a separate argument from the scan root because scanning modules/ still validates against the kernel's theme; and it must never report ok without a real class list, so a missing node_modules or a thin parse exits 2 — a warning locally, a failure in CI, since a guard that quietly stops guarding while the log ends green is worse than one that fails. 15 probe cases both directions — 2026-08-25
-- [x] **Vuetify 2 prop sweep — clean.** Checked `dense`/`depressed`/`outlined`/`text`/`solo`/`filled`/`background-color`/`offset-y`/`nudge-*`/`.sync`/`@click.native`/`v-list-item-content` and the v2 `{on, attrs}` activator shape across both repos. Only survivors are three `<v-row dense>`, and `dense` still works in v4 (marked deprecated in favour of `density="compact"` — confirmed against the v4 API, not assumed). Unlike classes, a removed prop tends to get noticed, because it becomes a visible fallthrough HTML attribute — 2026-08-25
-
 ## Sweep 2026-08-25 — authorization, deferrals, tenancy
+
 
 Two parallel read-only sweeps over all 22 modules (deferrals/TODOs; per-user data
 scoping). Every claim verified by hand before acting — one was wrong (Invitations'
@@ -78,6 +36,7 @@ scoping). Every claim verified by hand before acting — one was wrong (Invitati
 
 ## Deploy credentials — secrets over variables
 
+
 GitHub **variables** are readable by every repo collaborator and are not masked in logs, so a project on variables exposes its deploy key and full production `.env`. `dev-applied/deploy-action` reads `secrets.X || vars.X` for every sensitive value (its PR #7, 2026-08-24) — but that path is **dead unless the caller workflow passes `secrets: inherit`**. Detail + migration procedure: the `client-deploy` runbook, credentials page.
 
 - [~] `secrets: inherit` on the four deploy callers, + secrets-fallback and log-safe env handling in `deploy-lambda.yml` — feature/deploy-secrets-inherit
@@ -86,6 +45,7 @@ GitHub **variables** are readable by every repo collaborator and are not masked 
 - [x] Truth-up: runbook named the decommissioned Infisical as canonical store; corrected to visilaunch/Vaultwarden — 2026-08-24
 
 ## Modules — CI + distribution harness
+
 
 The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:configure` / `module:outdated` flow. Contract: `docs/modules.md`. Green CI = safe to `module:add`.
 
@@ -103,59 +63,8 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 - [x] `module:add` now clears `node_modules/.vite`. A plain dev-server restart keeps the Vuetify plugin's cached virtual modules, so after a module changed the globs every component 404'd on its `.sass` and the app rendered blank with nothing naming the cause — three debugging cycles before the pattern showed — 2026-08-24
 - [x] `@vue/test-utils` added and the frontend testing conventions written into `resources/ts/CLAUDE.md` — jsdom is not the default environment, mount() not createApp, Vuetify components need the plugin in global.plugins so prefer a stub — 2026-08-24
 
-## Modules — generic verticals (built fresh, washwerk as design reference only)
-
-Decision 2026-08-24: read washwerk's 34 production modules for shape, write fresh generic code — no client code copied. Priority order; `docs/modules.md` explicitly names OTP / subscriptions / exports / booking as target verticals.
-
-- [x] **Notifications** — feed, unread count, mark-read/all, dismiss, ExampleNotification, bell + wired container + page + polling composable, 10 tests — 2026-08-24
-- [x] **Exports** — registry allow-list, queued streaming job, CSV native + XLSX option, export button + history page, 14 tests — 2026-08-24
-- [x] **Otp** — passwordless sign-in + step-up, OtpChannel seam (email shipped, SMS bound by the project), hashed/single-use/attempt-capped codes, dual rate limiting, enumeration-safe responses, env-gated QA bypass, 30 tests — 2026-08-24
-- [x] **SavedViews** — named filter sets per screen, opaque payload, default view, read-only sharing, 422 on duplicate names, SavedViewScope tenancy seam, 23 tests — 2026-08-24
-- [x] **Comments** — HasComments trait, CommentableRegistry allow-list, internal notes, explicit-token @mentions firing UserMentioned (event, not a notification), `threading` option, 29 tests — 2026-08-24
-- [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
-- [x] **Settings** — registry-declared typed settings, self-generating UI, secret masking, one-entry cache, 22 tests — 2026-08-24
-- [x] **Tags** — HasTags trait, TaggableRegistry, slug-as-identity normalisation, AND-by-default scopes, merge endpoint, tags:dedupe for legacy data, 29 tests — 2026-08-24
-- [x] **Billing** — RevenueCat-webhook-authoritative entitlements (NOT direct Stripe, per the hybrid-billing runbook), ordering-safe idempotency ledger, transfer branch, tier middleware, env-gated QA switcher + billing:assert-safe pre-deploy guard, 65 tests — 2026-08-24
-- [x] **Booking** — weekly availability in the resource's timezone, blackouts, capacity, notice/advance windows, lockForUpdate double-booking prevention, `approval` option, 36 tests — 2026-08-24
-- [x] **FormBuilder** — schema-snapshotted submissions, server-derived validation, save-time schema validation, kernel field components inside AppServerValidationForm, 28 tests — 2026-08-24
-- [x] **Tasks** — HasTasks trait, StatusMachine transition table surfaced as nextStatuses, derived completed_at, event seams, `board` option (list | +kanban), 30 tests — 2026-08-24
-
-## Icons — the whole surface was using the wrong set
-
-Vuetify here is configured with the **`md` iconset**, so names are Material Icons ligatures
-(`delete`, `add`, `expand_more`). 47 `mdi-*` names had shipped across 10 modules plus one in the
-kernel. Material Icons is a LIGATURE font, so an unknown name neither errors nor warns — it draws
-the string. `icon="mdi-delete-outline"` painted ~280px of literal text where a 24px glyph belonged,
-with green tests and a clean console. Measured in the live app: a valid ligature is 24px, `mdi-delete-outline` 280px, `totally_not_an_icon` 456px.
-
-- [x] Remap all 47 across 17 files in 10 modules, plus `AppAutoComplete`'s `prepend-icon` in the kernel — 2026-08-24
-- [x] Convention written into `resources/ts/CLAUDE.md`, and a `bin/lint` grep so it cannot recur — the failure is invisible to every linter, so a lint rule was not an option — 2026-08-24
-
-## Module frontends were never type-checked
-
-`npm run build` does not type-check — Vite strips types with esbuild — so `vue-tsc` had only
-ever run against the bare kernel. Running it with modules INSTALLED, for the first time, found
-53 errors across 21 modules. Most were not cosmetic. Each was swept as a CLASS rather than at
-the reported line.
-
-- [x] **Three modules' submit buttons never rendered** — Announcements, Booking and FormBuilder each put their actions in an `#actions` slot on `AppServerValidationForm`, which has exactly one slot (the default). The booking flow could not be booked, an announcement could not be saved, no builder-made form could be submitted. All three also passed `:loading`/`@submit`, which it does not declare, so it made no request either — 2026-08-24
-- [x] **The Announcements dialog had no card or title** — `AppDialog`'s default-slot fallback IS the whole `v-card` — 2026-08-24
-- [x] **OTP sign-in broken three ways in two lines** — `$auth.setToken?.()` silently no-opped (no such method; the optional chaining hid it), `ROUTES.HOME` is undefined so the `?? "/"` fallback made `$routeTo` throw, and `$routeTo` was never passed to `$router.push` — 2026-08-24
-- [x] **`this.$messages` does not exist** — nothing registers it, but `resources/ts/CLAUDE.md` documented it, which is how two modules came to call it. Doc corrected — 2026-08-24
-- [x] **Vuetify v4 slot props** — Tags read `item.raw`; v4 makes `item` the raw value and moves the wrapper to `internalItem`. The kernel took that change in 8ae8c70e; the modules did not — 2026-08-24
-- [x] **Tags `setup()` returned composable OBJECTS** — Vue unwraps refs only at the top level, so `.map` was undefined and a loading flag was an always-truthy `Ref` — 2026-08-24
-- [x] **`useFileUpload` silently dropped two options it never declared** — the dropzone's `onProgress` (progress bar never moved) and the button's `folderId` (uploads ignored the folder). Both are real settings now, threaded through the direct and presigned paths — 2026-08-24
-- [x] **AppFileDropzone's row type** — was `App.Models.File | FakeFile`, never narrowed, while the template reads `.src`/`.status`/`.progress` on every row. One row type now, keeping the server record alongside for `returnObject` — 2026-08-24
-- [x] **`vue-tsc` added to modules CI** — the gap was structural, not a one-off — 2026-08-24
-- [x] **A module can ship its own ambient types**, and the two halves need OPPOSITE file kinds: augmenting `ComponentCustomProperties` needs a module file, declaring an untyped npm package needs a script file. Backwards in one direction fails silently; in the other it shadows Vue's own module (823 errors, measured). Files ships `types.d.ts` + `shims.d.ts` as the worked example — 2026-08-24
-
-## A module could not replace a kernel route
-
-- [x] **modules/Dashboard was completely inert** — it registered its page at `/dashboard` and the kernel's placeholder won every time. Two causes, each hiding the other: the module exported `DASHBOARD: "dashboard.index"`, which did not add a name but RENAMED the kernel's contract out from under it; and a module cannot win that race by construction, because Vite compiles an eager `import.meta.glob` into hoisted static imports, so every module's routes.ts runs before a line of `paths.ts` and the kernel's registration always lands second. The kernel now yields when an installed module exports the name — 2026-08-24
-- [x] **Signing in landed on a 404** — `$router.push()` with a bare string is a PATH, and `ROUTES.DASHBOARD` is a NAME, so every successful login went to `/dashboard.index`. `mounted()` five lines above had it right — 2026-08-24
-- [x] **`ROUTES` typed as `typeof ROUTES & Record<string, string>`** — the kernel's static literal was the whole type, so every module route name was an error at every call site — 2026-08-24
-
 ## Modules — QA sweep findings (three parallel audits, 2026-08-24)
+
 
 Three read-only sweeps over all 22 modules — authorization, frontend correctness, data integrity.
 Every CERTAIN claim is verified by hand before it is worked; the impersonation one was, and was real.
@@ -203,32 +112,16 @@ passes CI green.
 - [x] **Frontend — four empty states pass `text=` to `AppEmptyState`, which declares `description`.** All four swept — 2026-08-25. ORIGINAL: The explanatory line never renders (Comments, Tasks, Announcements, FormBuilder).
 - [x] **Smaller, batched** — all 13 items, 2026-08-25. Two were already fixed as side effects of earlier leaves (Announcements re-dismiss; Booking/Support reference entropy) and were verified rather than re-fixed. The rest: **SetPasswordPage's dead `validate()` guard** (VForm.validate() resolves to an object, so `!await …` was always false — swept every call site across the kernel and all 22 modules, this was the last one). **Comments edit/delete never re-checked the parent's ability** — ownership does not expire but access does, and editing re-syncs mentions, so a removed user kept notifying people inside a record they could no longer open; the parent check runs BEFORE ownership so the ordering is not itself an oracle. **403-vs-404 record oracles** in Comments/Tags/Favorites and **401-vs-404** in FormBuilder — sequential ids plus a status-code difference enumerates the table; FormBuilder's refusal carries the sign-in hint so a real visitor is not stuck. **The global tag pool had no gate at all** — now a `TagPoolScope` seam (third use of this pattern), permissive by default, documented. **Presigned uploads let the caller pick the S3 key prefix** — now an allow-list. **Password reset returned the raw User model** (same bug as AuthUserResource, different endpoint) **and undid sendResetLink's deliberate refusal to confirm an address**. **Raw driver text reached the user** from Exports/DataImport — deliberate AppExceptions still pass through, everything else becomes a logged reference, mutation-checked in BOTH directions so over-redacting fails too. **SettingsManager was a singleton**, so a queue worker served the settings it booted with — `scoped()`, plus a bounded TTL so one dropped cache delete is not permanent. **A failed invitation send destroyed the invitation it replaced** — both store() and resend() are transactional now. **Files was a hardcoded-colour island** — its `--v3-dropzone--*` variables held literal RGB triplets, which reads as theming while a brand change did nothing; swept every module (Files was the only one) and `bin/lint` now greps for it, mutation-checked by reintroducing a literal.
 
-## Modules — evidence-ranked candidates (research 2026-08-24)
-
-Counts are DISTINCT projects, machine-derived from 1,074 controllers and 2,828
-migrations across 44 local Laravel repos. Full report:
-`scratchpad/module-candidates.md`. These outrank the speculative queue below.
-
-- [x] **RolesPermissions** (17 projects) — spatie-backed role CRUD + permission matrix UI, HasAccessControl trait supplying the `all_permissions` / `role` the kernel frontend already read, middleware aliases, grant-admin bootstrap, 16 tests — 2026-08-24
-- [x] **Support** (13) — contact form option-gated up to full ticketing (threaded replies, assignment, status), 18 tests — 2026-08-24
-- [x] **Invitations** (13) — tokenized invite/accept, hashed-at-rest tokens, expiry + single-use, 16 tests. One appcando thread documented three client-visible bugs in a single hand-rolled invite flow — 2026-08-24
-- [x] **Dashboard** (13) — registry shell, batched endpoint, ability filtering, per-user cache, error isolation, named chart slot, 11 tests — 2026-08-24
-- [x] **Announcements** (5) — banner/modal, scheduling windows, per-user dismissal, acknowledgement, fail-closed AudienceResolver, `delivery` option (in-app | +email), 27 tests — 2026-08-24
-- [x] **DataImport** (9) — registry + queued job mirroring Exports, four-step CSV mapping wizard, 16 tests — 2026-08-24
-
 ## Modules — decisions the research forced
+
 
 - [ ] **Tenancy sequencing** — SavedViews shipped with a `SavedViewScope` seam (bind once, whole module covered) — that is the pattern the remaining per-user modules should copy, and it makes this decision cheap to defer rather than free to ignore. Comments and Tasks are queued and both store per-user rows; AuditLog already shipped. If the firm wants tenant scoping, deciding late means retrofitting each. Not a blocker today (AuditLog reads through a project-defined gate, so a tenant-aware project scopes there), but it is Devin's call before the next per-user module.
 - [x] **Otp depends on an SMS channel** — RESOLVED by the seam pattern three modules have now used (AudienceResolver, SavedViewScope, CommentableRegistry): Otp declares an `OtpChannel` contract and ships email; a project binds Twilio or anything else. No SmsChannel module has to land first, and nothing about Twilio is baked in — 2026-08-24
 - [x] **SsoAuth is an Auth option** — shipped as a SEPARATE `sso` axis rather than a third choice on `auth`, deviating from the research note: the two point opposite ways (`auth=sanctum+oauth` makes the app an OAuth SERVER for MCP clients, `sso=oidc` an OAuth CLIENT of Google/Microsoft), so one setting would force a false choice. Allow-listed providers, module-issued single-use state (stateless() drops Socialite's CSRF and API routes have no session), verified-email-only account linking, registration off by default, deactivated users refused. 19 SSO tests, 33 across the module — 2026-08-24
 - [x] **SAML as a third `sso` choice** — shipped 2026-08-24 as `sso = none | oidc | saml | oidc+saml`. Both protocols end at the same `SsoIdentityResolver` and the same single-use handoff code, so the account rules are written once; the resolver now takes a protocol-neutral `SsoIdentity` rather than a Socialite user. 26 tests minting REAL signed assertions against a throwaway self-signed IdP — every negative case is a genuinely hostile document (unsigned, wrong key, tampered after signing, replayed, expired, wrong audience, wrong issuer, answering a different request). All four variants green: 14 / 44 / 40 / 70. Not built, and said so: Single Logout, encrypted assertions. ORIGINAL NOTE: — deliberately not folded into the OIDC option: it means `onelogin/php-saml` or `simplesamlphp` and a different protocol surface (ACS URL semantics, SP- vs IdP-initiated, `RequestedAuthnContext` defaults). Evidence is the mibev Marriott PingFederate integration — a 189-iteration session that ended marked failed, where the root cause was an enterprise device-cert requirement but most of the time went to exactly those semantics. A module plus a troubleshooting doc is what retains that.
 
-## Modules — candidate discovery
-
-- [x] Mine runbooks, `~/.claude` docs and CSR history for missing module candidates — 14 candidates, 13 explicit rejections — 2026-08-24
-- [x] Confirmed NOT to build: Impersonation (already in Auth — would have topped the list at 23 projects), ScheduledReports (0 evidence), ESignature (0), FeatureFlags (1) — 2026-08-24
-
 ## Project context docs
+
 
 `.claude/context/` scaffolded 2026-08-24 during the module run. Only the phases the run needed were completed.
 
@@ -236,15 +129,8 @@ migrations across 44 local Laravel repos. Full report:
 - [x] Phase 9 roadmap seeded as the run's work registry — 2026-08-24
 - [ ] Phases 2-8, 10 — product, glossary, personas, features, workflows, infrastructure/SSH access, integrations, runbooks, ADRs. Several need Devin present (SSH keys, account owners, business model).
 
-## Template health
-
-- [x] **41 open npm Dependabot alerts cleared** (2 critical, 22 high) — `npm audit fix`, lockfile only, 0 vulnerabilities after; build + vitest + eslint green. Root cause was not a broken config: npm sat at exactly `open-pull-requests-limit: 10`, and at the limit Dependabot stops opening new PRs INCLUDING security ones, so every advisory queued behind five routine bumps nobody merged — 2026-08-24
-
-- [x] Template CI re-enabled on `pull_request` (no branch filter, so it runs whether the repo calls its trunk `master` or `main`) and feature pushes. Dispatched first rather than uncommenting and hoping: it caught ExampleTest demanding a built Vite manifest in a job that never runs npm. All three jobs green — 2026-08-24
-- [x] `vue-tsc --noEmit` clean — 42 errors (not the recorded 73; the Vuetify v4 work had already cut it) down to 0. Most were wrong DECLARATIONS hiding real bugs: `$confirm` declared with its first two parameters reversed, AppAutoComplete passing its axios instance under the wrong option name so creates went out unauthenticated, `extractId` using a function as an object key, `reload(resetPage)` ignoring its argument, AppListTable skipping a page on a cancelled request, and ItemFormPage reading past the `data` envelope so the canonical CRUD example could never edit a record — 2026-08-24
-- [x] Vitest drops the dev server to a stale bundle — RETESTED 2026-08-24, does not reproduce. `npm run test:ci` run the sanctioned way (`docker compose exec frontend`) leaves `public/hot` untouched (same mtime and contents before/after, app still 200s), across three runs. `git stash list` is also empty, so the recorded fix location no longer exists. Reopen with a fresh repro if it returns — the old blocker record was stale and was keeping a non-issue on the board — 2026-08-24
-
 ## Template bootstrap — RolesPermissions is bundled but never wired
+
 
 - [!] **The template bundles RolesPermissions and does not put `HasAccessControl` on its User model, so out of the
   box no user can hold a role.** Consequence, measured by driving it: `/roles` manages roles nobody can be given,
@@ -261,6 +147,7 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Dependencies — routine bumps
 
+
 - [ ] **15 open Dependabot PRs on the template, none security.** `npm audit` and `composer audit` both report
   zero advisories, so these are version currency rather than risk. All are within-major (Vue 3.5.x tooling,
   guzzle 7.10→7.15, sass, vitest, dayjs, flysystem, sentry-laravel); four are grouped PRs. Deliberately NOT
@@ -270,6 +157,19 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+
+- **Realtime — module 28** — all leaves shipped 2026-08-25. Reverb/Echo websocket wiring — broadcast auth behind Sanctum (not the `web` guard), client config served rather than baked in for Capacitor, channel guards, connection banner; the drop-list guard came out of it.
+- **Checklists — module 27** — all leaves shipped 2026-08-25. Reusable checklist templates + instances against any subject, with optional file evidence; the `evidence=none` variant exposed the static-import hazard that became `bin/check-drop-imports.py`.
+- **Onboarding — module 25** — all leaves shipped 2026-08-25. Registry-driven setup steps with a `onboarded` middleware gate and a dismissible banner; two mutations survived the first test pass and both got real tests.
+- **GlobalSearch — module 24** — all leaves shipped 2026-08-25. Cross-entity search palette (Cmd/Ctrl+K) over a source registry, optional per-user history and Scout backing.
+- **Render-correctness guards — the failures no linter can see** — all leaves shipped 2026-08-25. Seven greps in `bin/lint-kernel`, mirrored into the modules repo — mdi names, v3 typography, hardcoded colours, unlabelled icon buttons, Vuetify 2 class names, unknown utility classes, unimported components. Each one born from an accident that had already happened.
+- **Modules — generic verticals (built fresh, washwerk as design reference only)** — all leaves shipped 2026-08-24. Twelve verticals built generic from scratch with washwerk read only as a design reference.
+- **Icons — the whole surface was using the wrong set** — all leaves shipped 2026-08-24. Material Symbols ligature names throughout; `mdi-*` names render as literal text under this icon set and nothing warns.
+- **Module frontends were never type-checked** — all leaves shipped 2026-08-24. vue-tsc extended over `modules/`, and the errors that surfaced fixed.
+- **A module could not replace a kernel route** — all leaves shipped 2026-08-24. `moduleProvides()` guard so a module route wins over the kernel placeholder instead of being shadowed by it.
+- **Modules — evidence-ranked candidates (research 2026-08-24)** — all leaves shipped 2026-08-24. Candidate modules ranked by evidence across the org's real repos, then built or explicitly declined.
+- **Modules — candidate discovery** — all leaves shipped 2026-08-24. Swept the organisation's repo inventory for recurring verticals worth extracting.
+- **Template health** — all leaves shipped 2026-08-24. Baseline template cleanup — the P0 items from the first audit pass.
 - **Vuetify v4 typography was dead across the whole app** — shipped 2026-08-25. `text-h4`, `text-body-2`,
   `text-caption` and the rest do not EXIST in v4 (renamed to the MD3 scale), so 81 usages across the kernel and
   22 modules rendered at the inherited size and every heading fell back to a browser default. Nothing errored.
