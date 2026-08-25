@@ -1,0 +1,8 @@
+{
+    "name": "Favorites",
+    "version": "0.1.0",
+    "harvested_from": "built fresh; evidence from the org-wide sweep (7 of 39 Laravel repos had hand-rolled one)",
+    "template_version_tested": "2026-08",
+    "description": "Star anything. A polymorphic favourites pivot with a registry allow-list, a toggle endpoint, a Favoritable trait supplying isFavoritedBy / favoritedBy / withFavoritedBy scopes, a star button component and a My Favourites page. The registry takes an ability because the list reads a label back out of every starred record.",
+    "composer_requires": []
+}

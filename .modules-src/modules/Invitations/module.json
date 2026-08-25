@@ -1,0 +1,8 @@
+{
+    "name": "Invitations",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; 13 of 44 local client repos hand-roll an invite flow)",
+    "template_version_tested": "2026-08",
+    "description": "Invite people by email and let them create their own account from a tokenised link. Tokens are hashed at rest, single-use, expiring, and re-issued on resend. Ships the admin listing, the public accept page, and a prune command.",
+    "composer_requires": []
+}

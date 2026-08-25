@@ -1,0 +1,10 @@
+{
+    "name": "Tags",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; ad-hoc categorisation recurs across client repos, usually as a comma-separated string column)",
+    "template_version_tested": "2026-08",
+    "description": "Polymorphic tags for any model, with a scoped filter that plugs into the existing listing stack, an autocomplete input, and a merge command for when the same tag exists three times with different capitalisation.",
+    "composer_requires": [],
+    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_at": "2026-08-25"
+}

@@ -1,0 +1,8 @@
+{
+    "name": "Dashboard",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; 13 of 44 local client repos ship a landing dashboard)",
+    "template_version_tested": "2026-08",
+    "description": "A dashboard shell a project fills in: registered KPI tiles, an action queue of things needing attention, and a recent-activity feed, all resolved through one batched endpoint. Ships NO charting library — charts go in a named slot so a project picks its own.",
+    "composer_requires": []
+}

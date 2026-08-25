@@ -1,0 +1,12 @@
+{
+    "name": "RolesPermissions",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; 17 of 44 local client repos ship some form of RBAC)",
+    "template_version_tested": "2026-08",
+    "description": "Role and permission access control over spatie/laravel-permission, wired to the authorization surface the template kernel already ships: the Authorization route middleware, $auth.hasPermission, and route meta permissions_all / permissions_any / roles. Adds role CRUD with a permission matrix UI, a HasAccessControl trait for User, and the permission / role route middleware aliases.",
+    "composer_requires": [
+        "spatie/laravel-permission:^6.10"
+    ],
+    "installed_from_commit": "a66a6e81814924f7e624b3b7d647be2c67288810",
+    "installed_at": "2026-08-25"
+}

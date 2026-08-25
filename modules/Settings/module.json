@@ -1,0 +1,10 @@
+{
+    "name": "Settings",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; every client project accumulates values that live in .env but should be editable without a deploy)",
+    "template_version_tested": "2026-08",
+    "description": "Typed, registry-declared application settings with a management UI that generates itself from the declarations. Cached on read, invalidated on write, with secrets masked so an API key never leaves the server twice.",
+    "composer_requires": [],
+    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_at": "2026-08-25"
+}

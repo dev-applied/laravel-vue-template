@@ -1,0 +1,8 @@
+{
+    "name": "FormBuilder",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; client-editable forms recur — intake, applications, surveys — and are usually hardcoded and redeployed for every wording change)",
+    "template_version_tested": "2026-08",
+    "description": "Forms a non-developer can define, rendered through the kernel's field components and validated server-side from the same definition. Submissions are stored, exportable, and never trust the client's idea of what the form contained.",
+    "composer_requires": []
+}

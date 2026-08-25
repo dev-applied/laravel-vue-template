@@ -1,0 +1,31 @@
+{
+    "name": "AuditLog",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24)",
+    "template_version_tested": "2026-08",
+    "description": "Field-level change history for any model. The kernel's WhoDidIt records who touched a row; this records what changed, from what, to what, and from where. Adds an Auditable trait, a filterable log API, a drop-in record timeline, and a retention prune command.",
+    "composer_requires": [],
+    "options": {
+        "capture": {
+            "prompt": "What should each entry capture?",
+            "type": "select",
+            "default": "values",
+            "choices": {
+                "values": {
+                    "label": "Changed field values (old and new)"
+                },
+                "values+request": {
+                    "label": "Changed values plus IP address and user agent",
+                    "env": {
+                        "AUDIT_CAPTURE_REQUEST": "true"
+                    }
+                }
+            }
+        }
+    },
+    "installed_from_commit": "bc53f371463f06ab46e340878062e1dd00e12f36",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "capture": "values"
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "name": "Exports",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24)",
+    "template_version_tested": "2026-08",
+    "description": "Queued exports of any listing: a project registers named export sources, users start one from a listing toolbar, and the job streams rows to a file that is downloadable when ready. CSV needs no dependencies; XLSX is an install-time option.",
+    "composer_requires": [],
+    "options": {
+        "formats": {
+            "prompt": "Which export formats?",
+            "type": "select",
+            "default": "csv",
+            "choices": {
+                "csv": {
+                    "label": "CSV only (no dependencies, streams row by row)",
+                    "drop": [
+                        "Support/XlsxWriter.php",
+                        "Tests/Feature/XlsxExportTest.php"
+                    ]
+                },
+                "csv+xlsx": {
+                    "label": "CSV and XLSX (adds openspout, streams both)",
+                    "require": [
+                        "openspout/openspout:^4.23"
+                    ]
+                }
+            }
+        }
+    },
+    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "formats": "csv"
+    }
+}

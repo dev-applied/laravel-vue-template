@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\DataImport\Jobs;
 
+use App\Exceptions\AppException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -11,7 +12,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Modules\DataImport\Models\DataImport;
 use Modules\DataImport\Support\CsvReader;
 use Modules\DataImport\Support\ImportRegistry;
@@ -109,7 +113,7 @@ class ProcessImport implements ShouldQueue
 
         $this->import->update([
             'status'         => DataImport::STATUS_FAILED,
-            'failure_reason' => $e->getMessage(),
+            'failure_reason' => $this->safeReason($e, 'data-import: job failed'),
         ]);
     }
 
@@ -180,7 +184,12 @@ class ProcessImport implements ShouldQueue
                 $failed++;
 
                 if (count($errors) < DataImport::MAX_RETAINED_ERRORS) {
-                    $errors[] = ['line' => $line, 'errors' => [$e->getMessage()]];
+                    // Per-row failures are the product feature — "row 47 failed
+                    // and here is why" is the whole point — but the row that
+                    // fails is usually failing on a constraint, and a constraint
+                    // violation names the table, the index and the offending
+                    // value back at whoever uploaded the file.
+                    $errors[] = ['line' => $line, 'errors' => [$this->safeReason($e, 'data-import: row failed')]];
                 }
             }
 
@@ -246,5 +255,38 @@ class ProcessImport implements ShouldQueue
         }
 
         return $mapped;
+    }
+
+    /**
+     * A message the person who started this is allowed to read.
+     *
+     * The reason has to reach them — a status of "failed" with no explanation
+     * is useless and they will just retry it — but `$e->getMessage()` on an
+     * arbitrary Throwable is whatever the driver said, and what a driver says
+     * is "SQLSTATE[42S02]: Base table or view not found: 1146 Table
+     * 'acme_prod.legacy_users' doesn't exist", or a connection string, or a
+     * file path on the server.
+     *
+     * So: exceptions the application THREW ON PURPOSE are written for a person
+     * and pass through. Anything else becomes a generic line plus a reference,
+     * and the real text goes to the log where support can match it up.
+     */
+    private function safeReason(Throwable $e, string $context): string
+    {
+        if ($e instanceof AppException || $e instanceof ValidationException) {
+            return $e->getMessage();
+        }
+
+        $reference = (string) Str::uuid();
+
+        Log::error($context, [
+            'reference' => $reference,
+            'exception' => $e::class,
+            'message'   => $e->getMessage(),
+        ]);
+
+        report($e);
+
+        return "Something went wrong on our side. (Reference: {$reference})";
     }
 }

@@ -1,0 +1,37 @@
+{
+    "name": "Booking",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; appointment and resource scheduling recurs, and the double-booking race is nearly always present)",
+    "template_version_tested": "2026-08",
+    "description": "Slot-based booking for any resource: weekly availability, one-off blackouts, capacity, notice windows, and overlap-safe creation under a row lock. Times are stored UTC and computed in the resource's own timezone so DST does not shift a slot.",
+    "composer_requires": [],
+    "options": {
+        "approval": {
+            "prompt": "Are bookings confirmed instantly?",
+            "type": "select",
+            "default": "instant",
+            "choices": {
+                "instant": {
+                    "label": "Instant \u2014 a booked slot is confirmed and held immediately",
+                    "drop": [
+                        "Tests/Feature/BookingApprovalTest.php"
+                    ],
+                    "env": {
+                        "BOOKING_REQUIRES_APPROVAL": "false"
+                    }
+                },
+                "request": {
+                    "label": "Request \u2014 bookings arrive pending and someone approves them",
+                    "env": {
+                        "BOOKING_REQUIRES_APPROVAL": "true"
+                    }
+                }
+            }
+        }
+    },
+    "installed_from_commit": "a66a6e81814924f7e624b3b7d647be2c67288810",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "approval": "instant"
+    }
+}

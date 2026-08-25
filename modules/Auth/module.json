@@ -1,0 +1,133 @@
+{
+    "name": "Auth",
+    "version": "0.3.0",
+    "harvested_from": "laravel-vue-template (extracted from the kernel 2026-08-25)",
+    "template_version_tested": "2026-08",
+    "description": "Credential flows for the template: email + password login issuing Sanctum tokens, me / logout, impersonation, forgot + reset password, and the MCP server endpoint (auth:sanctum). Optionally layers Passport OAuth 2.1 for MCP clients that speak OAuth. Separately, optionally adds single sign-on \u2014 OIDC via Socialite, SAML 2.0 against an enterprise IdP, or both. Those are a different axis from `oauth`: `oauth` makes this app an OAuth SERVER for MCP clients, `sso` makes it a CLIENT of someone else's identity provider.",
+    "composer_requires": [
+        "laravel/mcp:^0.9"
+    ],
+    "options": {
+        "auth": {
+            "prompt": "Authentication style",
+            "type": "select",
+            "default": "sanctum",
+            "choices": {
+                "sanctum": {
+                    "label": "Sanctum only (bearer PAT for the MCP endpoint)",
+                    "drop": [
+                        "resources/views/oauth/**",
+                        "Console/Commands/EnableOAuthCommand.php",
+                        "Tests/Feature/OAuthTest.php"
+                    ],
+                    "env": {
+                        "AUTH_OAUTH_ENABLED": "false"
+                    }
+                },
+                "sanctum+oauth": {
+                    "label": "Sanctum + Passport OAuth 2.1 (for OAuth-speaking MCP clients)",
+                    "require": [
+                        "laravel/passport:^13.7"
+                    ],
+                    "env": {
+                        "AUTH_OAUTH_ENABLED": "true"
+                    },
+                    "run": [
+                        "auth:enable-oauth --force"
+                    ]
+                }
+            }
+        },
+        "sso": {
+            "prompt": "Single sign-on (log in WITH an external identity provider)",
+            "type": "select",
+            "default": "none",
+            "choices": {
+                "none": {
+                    "label": "Email + password only",
+                    "drop": [
+                        "Sso/**",
+                        "Models/UserSsoIdentity.php",
+                        "Http/Controllers/SsoController.php",
+                        "Database/Migrations/2026_08_25_000000_create_user_sso_identities_table.php",
+                        "resources/ts/components/SsoButtons.vue",
+                        "resources/ts/pages/SsoCompletePage.vue",
+                        "Tests/Feature/SsoTest.php",
+                        "Saml/**",
+                        "Http/Controllers/SamlController.php",
+                        "Tests/Feature/SamlTest.php",
+                        "resources/ts/plugin.ts",
+                        "Database/Migrations/2026_08_25_000100_add_saml_session_to_user_sso_identities.php"
+                    ],
+                    "env": {
+                        "SSO_ENABLED": "false",
+                        "SAML_ENABLED": "false"
+                    }
+                },
+                "oidc": {
+                    "label": "OIDC via Socialite (Google / Microsoft / Okta - providers chosen per project)",
+                    "require": [
+                        "laravel/socialite:^5.16"
+                    ],
+                    "drop": [
+                        "Saml/**",
+                        "Http/Controllers/SamlController.php",
+                        "Tests/Feature/SamlTest.php",
+                        "resources/ts/plugin.ts",
+                        "Database/Migrations/2026_08_25_000100_add_saml_session_to_user_sso_identities.php"
+                    ],
+                    "env": {
+                        "SSO_ENABLED": "true",
+                        "SSO_PROVIDERS": "google",
+                        "SSO_ALLOW_REGISTRATION": "false",
+                        "SSO_ALLOWED_DOMAINS": "",
+                        "SAML_ENABLED": "false"
+                    }
+                },
+                "saml": {
+                    "label": "SAML 2.0 against one enterprise IdP (AD FS / Azure / Okta / PingFederate)",
+                    "require": [
+                        "onelogin/php-saml:^4.3"
+                    ],
+                    "drop": [
+                        "Tests/Feature/SsoTest.php"
+                    ],
+                    "env": {
+                        "SAML_ENABLED": "true",
+                        "SSO_ENABLED": "false",
+                        "SSO_ALLOW_REGISTRATION": "false",
+                        "SSO_ALLOWED_DOMAINS": "",
+                        "SAML_IDP_ENTITY_ID": "",
+                        "SAML_IDP_SSO_URL": "",
+                        "SAML_IDP_X509": "",
+                        "SAML_ALLOW_IDP_INITIATED": "false"
+                    }
+                },
+                "oidc+saml": {
+                    "label": "Both - social/OIDC sign-in AND an enterprise SAML IdP",
+                    "require": [
+                        "laravel/socialite:^5.16",
+                        "onelogin/php-saml:^4.3"
+                    ],
+                    "env": {
+                        "SSO_ENABLED": "true",
+                        "SSO_PROVIDERS": "google",
+                        "SSO_ALLOW_REGISTRATION": "false",
+                        "SSO_ALLOWED_DOMAINS": "",
+                        "SAML_ENABLED": "true",
+                        "SAML_IDP_ENTITY_ID": "",
+                        "SAML_IDP_SSO_URL": "",
+                        "SAML_IDP_X509": "",
+                        "SAML_ALLOW_IDP_INITIATED": "false"
+                    }
+                }
+            }
+        }
+    },
+    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "auth": "sanctum",
+        "sso": "none"
+    }
+}

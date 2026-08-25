@@ -1,0 +1,38 @@
+{
+    "name": "Tasks",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; follow-ups and to-dos attached to records recur across client repos)",
+    "template_version_tested": "2026-08",
+    "description": "Assignable tasks with due dates and guarded status transitions, optionally attached to any record. Assignment and completion fire events rather than assuming a notification system. The board view is an install-time choice.",
+    "composer_requires": [],
+    "options": {
+        "board": {
+            "prompt": "Which views do you need?",
+            "type": "select",
+            "default": "list",
+            "choices": {
+                "list": {
+                    "label": "List only \u2014 a filterable table, no drag and drop",
+                    "drop": [
+                        "resources/ts/pages/TaskBoardPage.vue",
+                        "resources/ts/components/AppTaskColumn.vue"
+                    ],
+                    "env": {
+                        "TASKS_BOARD": "false"
+                    }
+                },
+                "list+kanban": {
+                    "label": "List and a kanban board with drag-and-drop status changes",
+                    "env": {
+                        "TASKS_BOARD": "true"
+                    }
+                }
+            }
+        }
+    },
+    "installed_from_commit": "0b825197f6d6e03ce8862e069f3f3796f38e6f53",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "board": "list"
+    }
+}

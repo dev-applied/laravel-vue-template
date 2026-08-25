@@ -1,0 +1,37 @@
+{
+    "name": "Comments",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; notes-on-a-record recurs across client repos, always re-implemented per model)",
+    "template_version_tested": "2026-08",
+    "description": "Comments and internal notes attachable to any model, with @mentions that fire an event rather than assuming a notification system. Threading is an install-time choice.",
+    "composer_requires": [],
+    "options": {
+        "threading": {
+            "prompt": "Should comments support replies?",
+            "type": "select",
+            "default": "flat",
+            "choices": {
+                "flat": {
+                    "label": "Flat \u2014 one list, newest last. Simpler to read and to moderate",
+                    "drop": [
+                        "Tests/Feature/CommentThreadingTest.php"
+                    ],
+                    "env": {
+                        "COMMENTS_THREADING": "false"
+                    }
+                },
+                "threaded": {
+                    "label": "Threaded \u2014 one level of replies under each comment",
+                    "env": {
+                        "COMMENTS_THREADING": "true"
+                    }
+                }
+            }
+        }
+    },
+    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "threading": "flat"
+    }
+}

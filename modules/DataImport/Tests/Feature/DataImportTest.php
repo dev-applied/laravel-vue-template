@@ -210,7 +210,32 @@ test('a handler that throws fails only its own row', function () {
 
     expect($import->fresh()->imported_rows)->toBe(1)
         ->and($import->fresh()->failed_rows)->toBe(1)
-        ->and($import->fresh()->errors[0]['errors'][0])->toContain('handler exploded');
+        // The row number is the useful half and it survives; the driver's
+        // text does not. A constraint violation names the table, the index and
+        // the offending value back at whoever uploaded the file.
+        ->and($import->fresh()->errors[0]['errors'][0])->not->toContain('handler exploded')
+        ->and($import->fresh()->errors[0]['errors'][0])->toContain('Reference:')
+        ->and($import->fresh()->errors[0]['line'])->toBe(3);
+});
+
+test('a handler refusing on purpose says why, in its own words', function () {
+    // Redaction must not swallow the messages a project wrote FOR the person
+    // uploading the file — those are the ones they can act on.
+    app(ImportRegistry::class)->register(
+        key: 'picky',
+        label: 'Picky',
+        fields: ['first_name' => 'First name', 'email' => 'Email'],
+        rules: ['first_name' => 'required', 'email' => 'required|email'],
+        handler: fn (array $row) => throw new App\Exceptions\AppException('That email is already on another account.', 422),
+    );
+
+    $csv    = "First name,Email\nAda,ada@example.com\n";
+    $import = uploadAndGet($this, $csv, 'picky');
+    $import->update(['mapping' => ['first_name' => 'First name', 'email' => 'Email']]);
+
+    (new ProcessImport($import))->handle(app(ImportRegistry::class));
+
+    expect($import->fresh()->errors[0]['errors'][0])->toBe('That email is already on another account.');
 });
 
 test('a user cannot see or run another users import', function () {
@@ -459,5 +484,7 @@ test('the import is marked failed once the attempts are exhausted, not on the fi
     $fresh = $import->fresh();
 
     expect($fresh->status)->toBe(DataImport::STATUS_FAILED)
-        ->and($fresh->failure_reason)->toBe('worker died');
+        // Redacted: a worker dies on driver exceptions, not on prose.
+        ->and($fresh->failure_reason)->not->toContain('worker died')
+        ->and($fresh->failure_reason)->toContain('Reference:');
 });

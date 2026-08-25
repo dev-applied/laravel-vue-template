@@ -1,0 +1,41 @@
+{
+    "name": "Files",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (extracted from the kernel 2026-08-24)",
+    "template_version_tested": "2026-08",
+    "description": "File uploads with generated image variants, signed view/download, and the Vue half that drives them (upload field, dropzone, upload button, lightbox, and the $file global). Storage option: direct multipart upload to the app disk, or presigned PUT straight to S3 with asynchronous variant processing.",
+    "composer_requires": [
+        "imagine/imagine:^1.3"
+    ],
+    "npm_requires": [
+        "heic-to@^1.0.0",
+        "mime-matcher@^1.0.5"
+    ],
+    "options": {
+        "storage": {
+            "prompt": "How should files reach storage?",
+            "type": "select",
+            "default": "local",
+            "choices": {
+                "local": {
+                    "label": "Direct multipart upload to the app disk (variants generated in-request)",
+                    "drop": [
+                        "Http/Controllers/PresignedUploadController.php",
+                        "Routes/s3.php",
+                        "Tests/Feature/PresignedUploadTest.php"
+                    ]
+                },
+                "s3-presigned": {
+                    "label": "Presigned PUT direct to S3, variants processed after the object lands",
+                    "require": [
+                        "league/flysystem-aws-s3-v3:^3.29"
+                    ],
+                    "env": {
+                        "FILESYSTEM_DISK": "s3",
+                        "VITE_FILESYSTEM_DISK": "s3"
+                    }
+                }
+            }
+        }
+    }
+}

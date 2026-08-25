@@ -1,0 +1,8 @@
+{
+    "name": "Notifications",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built to back the kernel's AppNotificationsBell, which shipped with no API 2026-08-24)",
+    "template_version_tested": "2026-08",
+    "description": "Per-user database notifications: a paginated feed, unread count, mark-read / mark-all-read, and dismissal, plus the Vue half — the notification bell, a polling composable, and a full notifications page. Ships an ExampleNotification to copy.",
+    "composer_requires": []
+}

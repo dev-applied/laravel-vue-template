@@ -1,0 +1,8 @@
+{
+    "name": "Users",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template — the kernel shipped a UserController with only index() implemented and no management pages at all. Extracted and finished.",
+    "template_version_tested": "2026-08",
+    "description": "User management: list, search, create, edit, deactivate and delete, with the protections that stop an admin locking everyone out. Deactivation is the default; deletion is separate and deliberate.",
+    "composer_requires": []
+}

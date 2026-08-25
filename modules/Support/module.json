@@ -1,0 +1,44 @@
+{
+    "name": "Support",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; 13 of 44 local client repos ship some contact/support surface)",
+    "template_version_tested": "2026-08",
+    "description": "Inbound support. The contact variant is a spam-resistant public form that emails a mailbox. The ticketing variant keeps every submission as a ticket with status, assignment and a threaded reply history that emails the requester.",
+    "composer_requires": [],
+    "options": {
+        "mode": {
+            "prompt": "How much support surface do you need?",
+            "type": "select",
+            "default": "contact",
+            "choices": {
+                "contact": {
+                    "label": "Contact form only \u2014 submissions are emailed, nothing is managed in-app",
+                    "drop": [
+                        "Http/Controllers/TicketReplyController.php",
+                        "Routes/ticketing.php",
+                        "Models/TicketReply.php",
+                        "Mail/TicketReplyMail.php",
+                        "resources/views/mail/ticket-reply.blade.php",
+                        "resources/ts/pages/TicketsPage.vue",
+                        "resources/ts/pages/TicketPage.vue",
+                        "Tests/Feature/TicketingTest.php"
+                    ],
+                    "env": {
+                        "SUPPORT_TICKETING": "false"
+                    }
+                },
+                "ticketing": {
+                    "label": "Full ticketing \u2014 statuses, assignment and threaded replies",
+                    "env": {
+                        "SUPPORT_TICKETING": "true"
+                    }
+                }
+            }
+        }
+    },
+    "installed_from_commit": "0b825197f6d6e03ce8862e069f3f3796f38e6f53",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "mode": "contact"
+    }
+}
