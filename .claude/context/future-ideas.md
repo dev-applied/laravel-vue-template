@@ -27,3 +27,9 @@ Uncommitted ideas. Graduate to `roadmap.md` when committed to build.
   this is a visual decision, not a defect: moving to Vuetify's floating `label`
   changes the look of the public login screen, which is a design call rather
   than one to make while fixing screen-reader names.
+
+  Evidence added 2026-08-25 to make that call cheap: **27 files** across the
+  kernel and modules label their inputs with `label=`. The only two that do
+  not are `Auth/LoginPage.vue` and `Auth/SetPasswordPage.vue`. So this is not
+  a house style being changed — it is two pages being brought to it, and the
+  only question left is whether the login card's minimal look is deliberate.
