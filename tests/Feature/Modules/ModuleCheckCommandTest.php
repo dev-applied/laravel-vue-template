@@ -272,3 +272,66 @@ test('the check is not behind --defaults', function () {
 
     $this->artisan('module:check')->assertFailed();
 });
+
+test('a source copy that has drifted from the installed one is reported', function () {
+    // `.modules-src/` is what `module:add --from=.modules-src` installs from,
+    // so whichever side is stale is what the NEXT project bootstrapped from
+    // this template receives. Nothing fails while the two disagree, because the
+    // installed copy is the one that runs here — which is exactly why it went
+    // unnoticed for a night. Realtime's broadcast-auth guard was corrected in
+    // modules/ while the source copy still rubber-stamped every channel.
+    $name = basename($this->sandbox);
+    $src  = base_path(".modules-src/modules/{$name}");
+
+    writeManifest($this->sandbox, ['name' => $name]);
+    File::ensureDirectoryExists($src);
+    writeManifest($src, ['name' => $name]);
+
+    file_put_contents($this->sandbox.'/Guard.php', "<?php // fixed\n");
+    file_put_contents($src.'/Guard.php', "<?php // stale\n");
+
+    try {
+        $this->artisan('module:check')
+            ->expectsOutputToContain('Guard.php')
+            ->assertFailed();
+    } finally {
+        File::deleteDirectory($src);
+    }
+});
+
+test('module.json is excluded — module:add writes installed_options into it by design', function () {
+    // Without this exclusion every module is a finding, always: module:add
+    // records the chosen variant in the INSTALLED manifest and never in the
+    // source one, so the two differ on every install that has ever run.
+    $name = basename($this->sandbox);
+    $src  = base_path(".modules-src/modules/{$name}");
+
+    writeManifest($this->sandbox, ['name' => $name, 'installed_options' => ['a' => 'b']]);
+    File::ensureDirectoryExists($src);
+    writeManifest($src, ['name' => $name]);
+
+    try {
+        $this->artisan('module:check')->assertSuccessful();
+    } finally {
+        File::deleteDirectory($src);
+    }
+});
+
+test('a file the variant dropped is not reported as drift', function () {
+    // Present in the source, absent from the install, because the option
+    // variant dropped it. That is the drop list working, not drift — and
+    // reporting it would make every module with options a permanent finding.
+    $name = basename($this->sandbox);
+    $src  = base_path(".modules-src/modules/{$name}");
+
+    writeManifest($this->sandbox, ['name' => $name]);
+    File::ensureDirectoryExists($src);
+    writeManifest($src, ['name' => $name]);
+    file_put_contents($src.'/OnlyInSource.php', "<?php\n");
+
+    try {
+        $this->artisan('module:check')->assertSuccessful();
+    } finally {
+        File::deleteDirectory($src);
+    }
+});
