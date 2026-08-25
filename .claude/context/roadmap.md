@@ -52,22 +52,6 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [x] **FormBuilder** — schema-snapshotted submissions, server-derived validation, save-time schema validation, kernel field components inside AppServerValidationForm, 28 tests — 2026-08-24
 - [x] **Tasks** — HasTasks trait, StatusMachine transition table surfaced as nextStatuses, derived completed_at, event seams, `board` option (list | +kanban), 30 tests — 2026-08-24
 
-## SSO — security review findings (adversarial review 2026-08-24)
-
-An adversarial review of the OIDC option shipped tonight. Two findings verified by hand before
-acting: there is **no frontend handler for the callback anywhere** (grep for `sso/callback` /
-`access_token` across every module's `resources/ts/` returns nothing), and the registration branch
-of the resolver **never calls `emailIsVerified()`**. The 19 SSO tests are green because they call
-the callback directly and assert JSON — which is exactly what a browser would have rendered.
-
-- [x] **H1+C3 — the callback returns a bearer token as a JSON page, and nothing consumes it.** The provider redirects the browser to the API callback, which answers `{"access_token": …}`. The SPA never receives it; sign-in terminates on raw JSON. In a Capacitor build it is worse — that renders inside a system browser with no storage relationship to the app, so the mobile flow cannot complete at all, and the `code` lands in synced Chrome history. Fix is the mechanism the controller's own comment already describes but never built: callback 302s to an app URL with a single-use handoff code, client redeems it over a back channel. Same fix closes C3 (state is freely mintable by anyone, so it binds nothing).
-- [x] **C1 — SSO registration never checks that the email is verified**, and `createUser` stamps `email_verified_at = now()` regardless. With `allow_registration` on, an identity asserting an unverified address gets a local account bearing it, pre-marked verified. The check exists and is called on the *linking* path only.
-- [x] **C2 (partial) — no tenant / issuer binding.** The allow-list is a provider *name*; nothing pins which Azure tenant or Workspace domain an identity came from (the published nOAuth shape). `allowed_domains` gates registration only, never linking.
-- [x] **H2 — three distinguishable refusal messages** give an unauthenticated caller an account-existence oracle (exists / does not exist / deactivated). Collapse to one generic refusal, log the real reason.
-- [x] **H3+M3 — `createUser` and `link` are two writes with no transaction**, and `link()` runs *before* `assertUsable()`, so a refused deactivated user still gets an identity row and a bumped `last_login_at`.
-- [x] **M1/M4/L1 — smaller**: `emailIsVerified` accepts a bare `verified` key that means something else on several providers; the deactivation gate fails open when `Schema::hasColumn` returns false for any reason; `whereRaw('LOWER(email)…')` defeats the unique index on every unauthenticated callback — 2026-08-24
-- [ ] **C2 remainder — pin the issuer per provider.** The domain allow-list now gates linking as well as registration, which is the control a project actually has; binding the specific tenant/issuer claim still belongs to the project that federates with a multi-tenant endpoint. Document per-provider `tid`/`hd` pinning in the Auth README and consider a config hook.
-
 ## Icons — the whole surface was using the wrong set
 
 Vuetify here is configured with the **`md` iconset**, so names are Material Icons ligatures
@@ -78,16 +62,6 @@ with green tests and a clean console. Measured in the live app: a valid ligature
 
 - [x] Remap all 47 across 17 files in 10 modules, plus `AppAutoComplete`'s `prepend-icon` in the kernel — 2026-08-24
 - [x] Convention written into `resources/ts/CLAUDE.md`, and a `bin/lint` grep so it cannot recur — the failure is invisible to every linter, so a lint rule was not an option — 2026-08-24
-
-## Auth module — bugs the type errors were hiding
-
-vue-tsc runs clean on the kernel but had never been run with a module INSTALLED, so four errors in
-Auth's own pages had never been seen. Two were live bugs, in the same shape as the six found earlier
-tonight: a wrong declaration masking a real defect.
-
-- [x] `LoginPage` client-side validation never ran. `VForm.validate()` resolves to an OBJECT and a field's to an ARRAY — both always truthy — so `if (!await …validate()) return` could not fire, on both the login and the forgot-password guard. The server still validated, so nothing was insecure; the rules were decorative — 2026-08-24
-- [x] `SetPasswordPage` bound its error string to `v-alert`'s `v-model`, which is a BOOLEAN visibility flag — dismissing the alert assigned `false` into the message field — 2026-08-24
-- [ ] **Run vue-tsc against installed modules in CI.** The gap is structural, not a one-off: module frontends are only type-checked once copied into a template checkout, and nothing does that automatically.
 
 ## Module frontends were never type-checked
 
@@ -156,6 +130,8 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+- SSO security review — all leaves shipped 2026-08-24 (six findings from an adversarial review of the OIDC option, closing with the issuer pin: `allowed_domains` cannot catch nOAuth, because on a multi-tenant endpoint the attacker asserts YOUR domain from THEIR tenant and the domain check passes by design. `required_claims` pins the tenant claim, fails closed on an absent claim and on an env var that did not resolve, and applies to already-linked identities so adding a pin actually revokes. SAML needed nothing — php-saml pins `<Issuer>` to `idp.entityId` before reading the assertion.).
+- Auth module type-error bugs — all leaves shipped 2026-08-24 (decorative client-side validation on login and forgot-password, an error string bound to a boolean visibility flag, and the structural gap behind both: module frontends were only type-checked once copied into a template checkout, so nothing ever did it. `vue-tsc --noEmit` now runs on every leg of the module CI matrix.).
 - Modules — Favorites — all leaves shipped 2026-08-24 (an org-wide sweep of 445 repos re-grounded the local rankings: no contradiction, one new candidate, and Support demoted; Favorites then built as module #22).
 - SSO shipped 2026-08-24 as an Auth option — and the browser found two bugs the tests had not: a provider listed without credentials rendered a button that threw on click (the option's own env default shipped that state), and the callback echoed any throwable's message, sending raw SQL to the client when a migration had not run.
 - User payload allow-listed 2026-08-24 — AuthUserResource returned the whole model, so any module adding a `users` column shipped it to every client (the Users module already had). Five explicit fields, and the roles/permissions checks no longer lazy-load.
