@@ -105,3 +105,21 @@ Emits TS into `resources/ts/types/laravel/`. Use those types when calling APIs �
 - **Mounting**: `mount()` from `@vue/test-utils`. Do not hand-roll `createApp(...).mount(el)` — it works, but you lose `find`, `trigger`, `setProps` and the automatic teardown.
 - **Vuetify components**: mounting one needs the Vuetify plugin in `global.plugins`. Prefer testing your own logic against a stub over mounting a whole Vuetify tree.
 - Assert on behaviour, not on the rendered class soup. `resources/ts/components/__tests__/slot-forwarding.spec.ts` is the model: it reproduces the actual bug, proves the guard fixes it, and pins the guard so a future "simplification" fails the suite.
+
+## Icons — Material, not MDI
+
+Vuetify is configured with the **`md` iconset** (`vuetify/iconsets/md` +
+`material-design-icons-iconfont`), so icon names are Material Icons **ligatures**:
+`delete`, `add`, `expand_more`, `visibility_off`. Never `mdi-*`.
+
+Material Icons is a ligature font, which is what makes this trap quiet: an
+unrecognised name does not error, does not warn, and does not render a
+placeholder — the font simply draws the string. `icon="mdi-delete-outline"`
+paints the literal text *mdi-delete-outline*, about 280px wide where a 24px
+glyph belongs. Tests pass, the console is clean, and the accessibility tree
+looks plausible because the name IS the text content of a real ligature icon.
+Only a screenshot shows it.
+
+Vuetify's own docs and most snippets on the internet assume the `mdi` set, so
+copied markup is the usual source. `bin/lint` in the modules repo greps for
+`mdi-` for exactly this reason.

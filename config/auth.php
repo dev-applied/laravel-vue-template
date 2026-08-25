@@ -168,6 +168,22 @@ return [
         // when the provider must redirect somewhere the API is not, e.g. a
         // deep-link host for a Capacitor build.
         'callback_url' => env('SSO_CALLBACK_URL'),
+
+        // Where the browser is sent once the provider round trip succeeds,
+        // carrying a single-use handoff code the app redeems for a token. The
+        // callback NEVER renders a token itself: a provider redirect is a
+        // top-level navigation, and in a Capacitor build it lands in a system
+        // browser the app cannot read. Always config-derived, never taken from
+        // the request — a caller-supplied return target is an open redirect
+        // that arrives holding a credential.
+        'return_url' => env('SSO_RETURN_URL'),
+
+        // PKCE on the authorization code. On by default: `start` is
+        // unauthenticated and hands a valid `state` to anyone who asks, so
+        // state alone does not bind a code to the request that produced it —
+        // the verifier does. Turn off only for a provider that rejects
+        // code_challenge (Google, Microsoft, Okta and Auth0 all accept it).
+        'pkce' => env('SSO_PKCE', true),
     ],
 
 ];

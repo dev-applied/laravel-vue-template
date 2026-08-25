@@ -117,7 +117,7 @@
       <template #append-item>
         <VListItem
           v-if="allowCustomItems && canCreateCustomItem"
-          prepend-icon="mdi-plus"
+          prepend-icon="add"
           @click="createItem"
         >
           <VListItemTitle>Create “{{ search }}”</VListItemTitle>
