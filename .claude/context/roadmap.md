@@ -52,8 +52,8 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [x] **Settings** — registry-declared typed settings, self-generating UI, secret masking, one-entry cache, 22 tests — 2026-08-24
 - [x] **Tags** — HasTags trait, TaggableRegistry, slug-as-identity normalisation, AND-by-default scopes, merge endpoint, tags:dedupe for legacy data, 29 tests — 2026-08-24
 - [ ] **Billing** — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
-- [ ] **Booking** — resource + availability scheduling.
-- [~] **FormBuilder** — modules repo `main` (direct) — dynamic form definitions rendered through the field component library.
+- [~] **Booking** — modules repo `main` (direct) — resource + availability scheduling.
+- [x] **FormBuilder** — schema-snapshotted submissions, server-derived validation, save-time schema validation, kernel field components inside AppServerValidationForm, 28 tests — 2026-08-24
 - [x] **Tasks** — HasTasks trait, StatusMachine transition table surfaced as nextStatuses, derived completed_at, event seams, `board` option (list | +kanban), 30 tests — 2026-08-24
 
 ## Modules — evidence-ranked candidates (research 2026-08-24)
