@@ -100,7 +100,9 @@ export default defineComponent({
       this.$router.push(this.$routeTo(this.ROUTES.ITEMS_CREATE))
     },
     goEdit(id: number) {
-      this.$router.push(this.$routeTo(this.ROUTES.ITEMS_EDIT, { id }))
+      // Route params are strings; passing a number relied on the router
+      // stringifying it, which the param type does not promise.
+      this.$router.push(this.$routeTo(this.ROUTES.ITEMS_EDIT, {id: String(id)}))
     },
     onRowClick(_event: PointerEvent, { item }: { item: { id: number } }) {
       this.goEdit(item.id)

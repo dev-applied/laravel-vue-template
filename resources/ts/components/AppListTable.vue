@@ -136,13 +136,17 @@ export const AppListTableProps = {
 <script lang="ts" setup>
 import {ref, computed, useAttrs, toValue, watch, toRefs} from "vue"
 import {useDisplay} from "vuetify"
+import {VList} from "vuetify/components/VList"
 import usePaginationData from "@/composables/usePaginationData"
 import {useDebounceFn} from "@vueuse/core"
 import cloneDeep from "lodash.clonedeep"
 
 const props = defineProps(AppListTableProps)
 
-const pass = {...props, ...useAttrs()}
+// Filtered to VList's own props. The previous spread pushed this component's
+// props (`endpoint`, `filters`, `showSearchBar`, ...) onto <v-list>, which
+// renders them as stray DOM attributes.
+const pass = computed(() => VList.filterProps({...props, ...useAttrs()} as any))
 
 defineEmits(['showFilter', 'click:item'])
 
@@ -151,9 +155,15 @@ const items = ref<any[]>([])
 const errorMsg = ref<undefined | string>(undefined)
 const loading = ref<boolean>(false)
 const mergedProps = ref({...toRefs(props.filters), ...(props.showSearchBar ? {search} : {})})
-const infiniteScrollEvents = ref<((value: 'ok' | 'empty' | 'error' | 'canceled') => void) | undefined>(undefined)
+// Holds Vuetify's own `done` callback, so it takes Vuetify's four statuses —
+// not the composable's, which has `canceled` instead of `loading`.
+const infiniteScrollEvents = ref<((status: 'ok' | 'empty' | 'loading' | 'error') => void) | undefined>(undefined)
 const internalStatus = ref<'ok' | 'empty' | 'error' | 'canceled'>('ok')
-const {endpoint, method} = toRefs(props)
+const {method} = toRefs(props)
+// `endpoint` is declared `required: true`, but the props come from a plain
+// object literal rather than defineProps<T>(), so vue-tsc never sees that
+// requiredness and infers `string | undefined`.
+const endpoint = computed(() => props.endpoint as string)
 
 const {pagination, loadData, setPagination} = usePaginationData(endpoint, mergedProps, method)
 
@@ -191,8 +201,14 @@ watch(() => props?.filters, (newValue: any) => {
   oldFilters.value = cloneDeep(newValue)
 }, {deep: true})
 
-async function reload() {
-  setPagination({page: 1})
+/**
+ * `resetPage` is honoured, not ignored. AppTable has always called
+ * `reload(resetPage)`, but this took no arguments and unconditionally reset to
+ * page 1 — so `reload(false)`, which exists to refresh a row in place, jumped
+ * the user back to the first page every time.
+ */
+async function reload(resetPage = true) {
+  if (resetPage) setPagination({page: 1})
   loading.value = true
   const {data, status, error} = await loadData()
   loading.value = false
@@ -207,7 +223,9 @@ async function reload() {
   }
 }
 
-async function handleLoad({done}: { done: (value: 'ok' | 'empty' | 'error' | 'canceled') => void }) {
+// Vuetify does not re-export InfiniteScrollStatus from the components entry,
+// so the four statuses it accepts are spelled out rather than imported.
+async function handleLoad({done}: { done: (status: 'ok' | 'empty' | 'loading' | 'error') => void }) {
   if (internalStatus.value === 'empty') {
     done('empty')
     return
@@ -216,6 +234,17 @@ async function handleLoad({done}: { done: (value: 'ok' | 'empty' | 'error' | 'ca
   loading.value = true
   const {data, status, error} = await loadData()
   loading.value = false
+
+  // `canceled` is the composable's own status for a request superseded by a
+  // newer one. It is NOT one of Vuetify's four, so passing it straight through
+  // handed the scroller a value it does not handle. Worse, the old code then
+  // advanced the page — while the superseding request was still fetching this
+  // same page — so the skipped page never loaded at all.
+  if (status === 'canceled') {
+    done('ok')
+    return
+  }
+
   errorMsg.value = error
   items.value = items.value.concat(data)
   setPagination({page: pagination.value.page + 1})

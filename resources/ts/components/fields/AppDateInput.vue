@@ -31,11 +31,15 @@
 
 <script lang="ts">
 import {IMask} from 'vue-imask'
+import type {PropType} from "vue"
 
 export default {
   props: {
     modelValue: {
-      type: String,
+      // Nullable: a date column is nullable far more often than not, so every
+      // caller binding `form.due_date` (string | null) failed the check and had
+      // to coerce at the call site.
+      type: String as PropType<string | null>,
       default: '',
     },
     prependInnerIcon: {

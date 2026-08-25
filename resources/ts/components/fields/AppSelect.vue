@@ -2,7 +2,7 @@
   <v-select
     v-model="internalValue"
     class="field"
-    hide-details="auto"
+    :hide-details="'auto'"
     v-bind="selectProps"
   />
 </template>
@@ -27,7 +27,10 @@ const props = defineProps<Props>()
 // Make all useAttrs keys camelCase
 const selectProps = computed(() => {
   const attrs = mapKeys(useAttrs(), (_value, key) => key.replace(/-(\w)/g, (_match, letter) => letter.toUpperCase()))
-  return VSelect.filterProps(attrs)
+  // Typed at the source: v-bind of a loosely-typed object merges with the
+  // literal attributes beside it, so an untyped spread widens `hide-details`
+  // and friends to `string`/`unknown` and every one of them fails the check.
+  return VSelect.filterProps(attrs) as Partial<InstanceType<typeof VSelect>["$props"]>
 })
 
 const emits = defineEmits({

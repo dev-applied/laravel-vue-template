@@ -89,7 +89,7 @@ export const AppPaginationTableProps = {
 }
 </script>
 <script lang="ts" setup>
-import {ref, toRefs, toValue, watch, watchEffect} from "vue"
+import {computed, ref, toRefs, toValue, watch, watchEffect} from "vue"
 import usePaginationData from "@/composables/usePaginationData"
 import cloneDeep from "lodash.clonedeep"
 import {useDebounceFn} from "@vueuse/core"
@@ -102,7 +102,11 @@ const props = defineProps(AppPaginationTableProps)
 const items = ref<any[]>([])
 const errorMsg = ref<string | undefined>(undefined)
 const loading = ref<boolean>(false)
-const {endpoint, filters, method} = toRefs(props)
+const {filters, method} = toRefs(props)
+// `endpoint` is declared `required: true`, but the props come from a plain
+// object literal rather than defineProps<T>(), so vue-tsc never sees that
+// requiredness and infers `string | undefined`.
+const endpoint = computed(() => props.endpoint as string)
 
 const {pagination, loadData, setPagination} = usePaginationData(endpoint, filters, method)
 
@@ -137,8 +141,14 @@ watch(() => props?.filters, (newValue: any) => {
   oldFilters = cloneDeep(newValue)
 }, {deep: true})
 
-async function reload() {
-  setPagination({page: 1})
+/**
+ * `resetPage` is honoured, not ignored. AppTable has always called
+ * `reload(resetPage)`, but this took no arguments and unconditionally reset to
+ * page 1 — so `reload(false)`, which exists to refresh a row in place, jumped
+ * the user back to the first page every time.
+ */
+async function reload(resetPage = true) {
+  if (resetPage) setPagination({page: 1})
   loading.value = true
   const {data, status, error} = await loadData()
   loading.value = false

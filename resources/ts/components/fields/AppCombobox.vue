@@ -6,7 +6,7 @@
     :hide-no-data="!search"
     chips
     closable-chips
-    hide-details="auto"
+    :hide-details="'auto'"
     v-bind="comboboxProps"
   >
     <template #no-data>
@@ -53,7 +53,10 @@ withDefaults(defineProps<Props>(), {
 // Make all useAttrs keys camelCase
 const comboboxProps = computed(() => {
   const attrs = mapKeys(useAttrs(), (_value, key) => key.replace(/-(\w)/g, (_match, letter) => letter.toUpperCase()))
-  return VCombobox.filterProps(attrs)
+  // Typed at the source: v-bind of a loosely-typed object merges with the
+  // literal attributes beside it, so an untyped spread widens `chips`,
+  // `hide-details` and the rest to `unknown`/`string`.
+  return VCombobox.filterProps(attrs) as Partial<InstanceType<typeof VCombobox>["$props"]>
 })
 
 const internalValue = defineModel<string[]>()
@@ -63,6 +66,10 @@ const combobox = ref<InstanceType<typeof VCombobox> | null>(null)
 
 function addItem() {
   if (!combobox.value) return
+  // Vuetify's ListItem also requires `children` and `type`; omitting them made
+  // this a structurally different object that only happened to work because the
+  // consumer reads `props` and `value`. Spelled out so a future Vuetify change
+  // to the shape is a compile error rather than a silent behaviour change.
   combobox.value.select({
     props: {
       title: search.value,
@@ -71,6 +78,8 @@ function addItem() {
     raw: search.value,
     title: search.value,
     value: search.value,
+    children: undefined,
+    type: 'item',
   })
 }
 </script>

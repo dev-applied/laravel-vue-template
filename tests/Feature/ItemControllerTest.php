@@ -75,3 +75,16 @@ test('show returns a single item with owner relation loaded', function () {
 test('show 404s for missing item', function () {
     $this->getJson('/api/v1/items/99999', $this->auth)->assertNotFound();
 });
+
+test('show wraps the item in a data envelope', function () {
+    // Pinned because the frontend edit page reads `response.data.data`. When the
+    // controller returns an ItemResource directly, Laravel wraps it — dropping
+    // that envelope (e.g. by switching to response()->json($resource)) would
+    // silently blank every field on the edit form rather than error.
+    $item = Item::factory()->create(['name' => 'Enveloped']);
+
+    $this->getJson("/api/v1/items/{$item->id}", $this->auth)
+        ->assertOk()
+        ->assertJsonPath('data.id', $item->id)
+        ->assertJsonPath('data.name', 'Enveloped');
+});

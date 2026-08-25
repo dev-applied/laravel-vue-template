@@ -82,6 +82,9 @@ const setPlace = async (suggestion: Suggestion | null) => {
 </script>
 
 <template>
+  <!-- `return-object` means the emitted value really is the whole Suggestion,
+       but Vuetify infers the emit type from item-value ("description") and so
+       declares it a string. The cast on @update:model-value states that. -->
   <v-autocomplete
     v-bind="$attrs"
     v-model:search="query"
@@ -93,7 +96,7 @@ const setPlace = async (suggestion: Suggestion | null) => {
     item-value="description"
     :loading="loading"
     no-data-text="No Results Found"
-    @update:model-value="setPlace"
+    @update:model-value="(value: any) => setPlace(value as Suggestion | null)"
   />
 </template>
 

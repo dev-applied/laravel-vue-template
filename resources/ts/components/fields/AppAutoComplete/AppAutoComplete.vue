@@ -155,7 +155,10 @@ import {ensureArray, extractId, extractTitle, groupItems} from "./utils"
 import {useCreateItem} from './useCreateItem'
 
 const props = defineProps({
-  itemValue: {type: String, default: "id"},
+  // String OR function, matching itemTitle below and Vuetify's own
+  // item-value. Declared String-only, every function a caller passed was
+  // used as an object key and resolved to undefined.
+  itemValue: {type: [String, Function] as PropType<any>, default: "id"},
   itemTitle: {type: [String, Function] as PropType<any>, default: "name"},
   modelValue: {type: [String, Number, Array] as PropType<PrimitiveId | PrimitiveId[] | null>, default: null},
   object: {type: [Object, Array] as PropType<AutocompleteItem | AutocompleteItem[] | null>, default: null},
@@ -214,7 +217,9 @@ const {
   itemsPerPage: props.static ? -1 : 10,
   filters: combinedFilters,
   // minSearchChars: props.minSearchChars,
-  $http,
+  // `axios`, not `$http` — the option has always been named `axios`, so the
+  // instance was silently dropped and each composable fell back to its default.
+  axios: $http,
 })
 
 /* --------------------------------------------------------------------------
@@ -283,7 +288,7 @@ function handleSearchUpdate(newSearch: string) {
 
 
 // Setup create item composable
-const {create} = useCreateItem({endpoint: props.endpoint!, newItemKey: props.newItemKey, $http})
+const {create} = useCreateItem({endpoint: props.endpoint!, newItemKey: props.newItemKey, axios: $http})
 
 /* --------------------------------------------------------------------------
  * Watcher Logic

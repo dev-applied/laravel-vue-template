@@ -10,6 +10,7 @@ import type {
   Router
 } from "vue-router"
 import type {VBtn} from "vuetify/lib/components/VBtn"
+import type {ConfirmOptions} from "@/plugins/confirm"
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -26,7 +27,16 @@ declare module '@vue/runtime-core' {
     $router: Router
     $route: RouteLocationNormalizedLoaded
     $http: AxiosInstance & { download: (url: string, params = {}, method = "get") => void }
-    $confirm: (message: string, title = "Confirm", options = {}) => Promise<boolean>
+    // Matches plugins/confirm/index.ts `show()`. The previous declaration had
+    // the first two parameters in the OPPOSITE order (message, title) and
+    // omitted `color` entirely, so every call site was typed against a
+    // signature the implementation never had.
+    $confirm: (
+      title: string,
+      message?: string | Partial<ConfirmOptions>,
+      color?: string,
+      options?: Partial<ConfirmOptions>
+    ) => Promise<boolean>
   }
 
   interface GlobalComponents {
