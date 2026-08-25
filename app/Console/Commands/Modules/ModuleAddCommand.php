@@ -119,11 +119,29 @@ class ModuleAddCommand extends Command
               php artisan migrate                       # module migrations
               php artisan route:clear                   # BEFORE any build — Wayfinder reads the cached route table
               composer typescript
-            Then restart the vite dev server so the route/page globs pick the module(s) up.
-            A plain restart is not always enough: the Vuetify plugin caches its
-            virtual modules, and after a module is added or removed every
-            component can 404 on its .sass until that cache is cleared. This
-            command deletes node_modules/.vite for you when it finds one.
+            Then RESTART the vite dev server — the route/page globs only pick the
+            module(s) up on a restart.
+
+            Restart it even though this command already cleared node_modules/.vite,
+            and especially BECAUSE it did. Deleting that directory under a running
+            dev server leaves Vite holding optimizer metadata that points at files
+            it no longer has, and it then answers 404 for every dependency:
+
+              The file does not exist at ".../node_modules/.vite/deps/vue.js"
+              which is in the optimize deps directory.
+
+            The page renders blank with console errors that look like a fault in
+            your own code, and no amount of reloading clears it — the metadata is
+            wrong, not the cache cold. If you hit that state, delete the directory
+            again and then restart, in that order:
+
+              docker compose exec <node-service> rm -rf node_modules/.vite
+              docker compose restart <node-service>
+
+            After the restart the first page load can still 504 while Vite
+            re-optimises each dependency on demand. That one IS just a cold cache:
+            reload once or twice and it settles. Polling a single dep is not a
+            reliable readiness check, because they are optimised separately.
             NEXT);
 
         return $failures === 0 ? self::SUCCESS : self::FAILURE;
