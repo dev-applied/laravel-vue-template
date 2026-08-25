@@ -12,10 +12,10 @@ return [
     // while PHP reaches the container directly, and conflating the two is the
     // single most common way this is misconfigured.
     'client' => [
-        'key' => env('VITE_REVERB_APP_KEY', env('REVERB_APP_KEY', '')),
-        'host' => env('VITE_REVERB_HOST', env('APP_DOMAIN', 'localhost')),
-        'port' => (int) env('VITE_REVERB_PORT', 443),
-        'scheme' => env('VITE_REVERB_SCHEME', 'https'),
+        'key'     => env('VITE_REVERB_APP_KEY', env('REVERB_APP_KEY', '')),
+        'host'    => env('VITE_REVERB_HOST', env('APP_DOMAIN', 'localhost')),
+        'port'    => (int) env('VITE_REVERB_PORT', 443),
+        'scheme'  => env('VITE_REVERB_SCHEME', 'https'),
         'cluster' => env('VITE_PUSHER_APP_CLUSTER', 'mt1'),
     ],
 

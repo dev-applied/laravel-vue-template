@@ -24,12 +24,12 @@ class RealtimeConfigController extends Controller
     {
         return response()->json([
             'data' => [
-                'server' => config('realtime.server'),
-                'key' => config('realtime.client.key'),
-                'host' => config('realtime.client.host'),
-                'port' => config('realtime.client.port'),
-                'scheme' => config('realtime.client.scheme'),
-                'cluster' => config('realtime.client.cluster'),
+                'server'            => config('realtime.server'),
+                'key'               => config('realtime.client.key'),
+                'host'              => config('realtime.client.host'),
+                'port'              => config('realtime.client.port'),
+                'scheme'            => config('realtime.client.scheme'),
+                'cluster'           => config('realtime.client.cluster'),
                 'staleAfterSeconds' => config('realtime.stale_after_seconds'),
                 // A client that is told the server is not configured can say so
                 // instead of retrying a socket that will never open.
