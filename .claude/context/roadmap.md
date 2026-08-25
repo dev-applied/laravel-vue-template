@@ -85,14 +85,15 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Template health
 
-- [ ] **41 open Dependabot alerts, all npm** (2 critical, 22 high, 15 moderate, 2 low) — `chore/dependabot-sweep` IS merged, so these are advisories that landed since: axios <1.18, vitest <3.2.6, tar, vite <=7.3.4, brace-expansion, nanoid, js-yaml, ws, form-data, postcss, esbuild, immutable, @babel/core. Zero composer alerts. A template propagates every one of these into each project bootstrapped from it. Mostly transitive — likely an `npm audit fix` plus a lockfile refresh, but it has to clear `npm run build` + vitest before it lands.
+- [x] **41 open npm Dependabot alerts cleared** (2 critical, 22 high) — `npm audit fix`, lockfile only, 0 vulnerabilities after; build + vitest + eslint green. Root cause was not a broken config: npm sat at exactly `open-pull-requests-limit: 10`, and at the limit Dependabot stops opening new PRs INCLUDING security ones, so every advisory queued behind five routine bumps nobody merged — 2026-08-24
 
-- [ ] Re-enable the template's own `.github/workflows/ci.yml` — currently `workflow_dispatch` only, everything else commented out
-- [ ] `vue-tsc --noEmit` type errors on master (73 recorded 2026-05-14) — never gated by CI
+- [~] Re-enable the template's own `.github/workflows/ci.yml` — currently `workflow_dispatch` only. Blocked on nothing now that type-check is clean; proving the workflow green by dispatch before wiring it to `pull_request` — master (direct)
+- [x] `vue-tsc --noEmit` clean — 42 errors (not the recorded 73; the Vuetify v4 work had already cut it) down to 0. Most were wrong DECLARATIONS hiding real bugs: `$confirm` declared with its first two parameters reversed, AppAutoComplete passing its axios instance under the wrong option name so creates went out unauthenticated, `extractId` using a function as an object key, `reload(resetPage)` ignoring its argument, AppListTable skipping a page on a cancelled request, and ItemFormPage reading past the `data` envelope so the canonical CRUD example could never edit a record — 2026-08-24
 - [x] Vitest drops the dev server to a stale bundle — RETESTED 2026-08-24, does not reproduce. `npm run test:ci` run the sanctioned way (`docker compose exec frontend`) leaves `public/hot` untouched (same mtime and contents before/after, app still 200s), across three runs. `git stash list` is also empty, so the recorded fix location no longer exists. Reopen with a fresh repro if it returns — the old blocker record was stale and was keeping a non-issue on the board — 2026-08-24
 
 ## Recently Done (last 30 days)
 
+- Frontend type safety — 42 vue-tsc errors to 0 on 2026-08-24, and the six real bugs the broken declarations were hiding (unauthenticated autocomplete creates, an edit form that silently wiped records, a reversed `$confirm` signature).
 - Modules — extraction from the template — all leaves shipped 2026-08-24 (Files and Users lifted out of the kernel; the kernel keeps only a read-only `users` typeahead).
 - Kernel slot-forwarding bug fixed 2026-08-24 — six components blanked the ENTIRE page when the wrapped Vuetify component invoked a zero-argument slot (`no-data`, `loading`, `top`, `bottom`). Any list screen using `#no-data` was dead. Pinned by a vitest spec that reproduces the throw.
 - Modules CI harness — went from every-run-red to fully green 2026-08-24 (4 real bugs: public-repo token, phantom COMPOSER_AUTH, unbuilt frontend, Example collision).
