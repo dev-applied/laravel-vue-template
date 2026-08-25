@@ -89,6 +89,30 @@ tonight: a wrong declaration masking a real defect.
 - [x] `SetPasswordPage` bound its error string to `v-alert`'s `v-model`, which is a BOOLEAN visibility flag — dismissing the alert assigned `false` into the message field — 2026-08-24
 - [ ] **Run vue-tsc against installed modules in CI.** The gap is structural, not a one-off: module frontends are only type-checked once copied into a template checkout, and nothing does that automatically.
 
+## Module frontends were never type-checked
+
+`npm run build` does not type-check — Vite strips types with esbuild — so `vue-tsc` had only
+ever run against the bare kernel. Running it with modules INSTALLED, for the first time, found
+53 errors across 21 modules. Most were not cosmetic. Each was swept as a CLASS rather than at
+the reported line.
+
+- [x] **Three modules' submit buttons never rendered** — Announcements, Booking and FormBuilder each put their actions in an `#actions` slot on `AppServerValidationForm`, which has exactly one slot (the default). The booking flow could not be booked, an announcement could not be saved, no builder-made form could be submitted. All three also passed `:loading`/`@submit`, which it does not declare, so it made no request either — 2026-08-24
+- [x] **The Announcements dialog had no card or title** — `AppDialog`'s default-slot fallback IS the whole `v-card` — 2026-08-24
+- [x] **OTP sign-in broken three ways in two lines** — `$auth.setToken?.()` silently no-opped (no such method; the optional chaining hid it), `ROUTES.HOME` is undefined so the `?? "/"` fallback made `$routeTo` throw, and `$routeTo` was never passed to `$router.push` — 2026-08-24
+- [x] **`this.$messages` does not exist** — nothing registers it, but `resources/ts/CLAUDE.md` documented it, which is how two modules came to call it. Doc corrected — 2026-08-24
+- [x] **Vuetify v4 slot props** — Tags read `item.raw`; v4 makes `item` the raw value and moves the wrapper to `internalItem`. The kernel took that change in 8ae8c70e; the modules did not — 2026-08-24
+- [x] **Tags `setup()` returned composable OBJECTS** — Vue unwraps refs only at the top level, so `.map` was undefined and a loading flag was an always-truthy `Ref` — 2026-08-24
+- [x] **`useFileUpload` silently dropped two options it never declared** — the dropzone's `onProgress` (progress bar never moved) and the button's `folderId` (uploads ignored the folder). Both are real settings now, threaded through the direct and presigned paths — 2026-08-24
+- [x] **AppFileDropzone's row type** — was `App.Models.File | FakeFile`, never narrowed, while the template reads `.src`/`.status`/`.progress` on every row. One row type now, keeping the server record alongside for `returnObject` — 2026-08-24
+- [x] **`vue-tsc` added to modules CI** — the gap was structural, not a one-off — 2026-08-24
+- [x] **A module can ship its own ambient types**, and the two halves need OPPOSITE file kinds: augmenting `ComponentCustomProperties` needs a module file, declaring an untyped npm package needs a script file. Backwards in one direction fails silently; in the other it shadows Vue's own module (823 errors, measured). Files ships `types.d.ts` + `shims.d.ts` as the worked example — 2026-08-24
+
+## A module could not replace a kernel route
+
+- [x] **modules/Dashboard was completely inert** — it registered its page at `/dashboard` and the kernel's placeholder won every time. Two causes, each hiding the other: the module exported `DASHBOARD: "dashboard.index"`, which did not add a name but RENAMED the kernel's contract out from under it; and a module cannot win that race by construction, because Vite compiles an eager `import.meta.glob` into hoisted static imports, so every module's routes.ts runs before a line of `paths.ts` and the kernel's registration always lands second. The kernel now yields when an installed module exports the name — 2026-08-24
+- [x] **Signing in landed on a 404** — `$router.push()` with a bare string is a PATH, and `ROUTES.DASHBOARD` is a NAME, so every successful login went to `/dashboard.index`. `mounted()` five lines above had it right — 2026-08-24
+- [x] **`ROUTES` typed as `typeof ROUTES & Record<string, string>`** — the kernel's static literal was the whole type, so every module route name was an error at every call site — 2026-08-24
+
 ## Modules — Favorites (org-wide sweep 2026-08-24)
 
 A read-only sweep of all 445 non-archived `dev-applied` repos (39 are Laravel; 1,282 controllers,
