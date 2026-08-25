@@ -87,6 +87,17 @@ the reported line.
 - [x] **Signing in landed on a 404** — `$router.push()` with a bare string is a PATH, and `ROUTES.DASHBOARD` is a NAME, so every successful login went to `/dashboard.index`. `mounted()` five lines above had it right — 2026-08-24
 - [x] **`ROUTES` typed as `typeof ROUTES & Record<string, string>`** — the kernel's static literal was the whole type, so every module route name was an error at every call site — 2026-08-24
 
+## Auth — SAML deferrals, re-questioned
+
+The two things the SAML option shipped without. Both are half-wired already, which is the worst of
+the three states: `SamlSettings` builds `singleLogoutService` from `SAML_IDP_SLO_URL` and the SP
+metadata ADVERTISES an SLS endpoint, so a correctly-configured Azure or Okta will POST LogoutRequests
+at a URL nothing serves. `wantAssertionsEncrypted` is passed to the toolkit but the SP keypair path
+has never been exercised.
+
+- [x] **Single Logout (SLO)** — SLS taking both message kinds plus an SP-initiated endpoint, a `name_id`/`session_index` migration, and a kernel `onBeforeLogout` seam so ordinary sign-out drives it. Found a real hole doing it: `wantMessagesSigned` is optional for sign-in (the assertion signs itself) but a LogoutRequest has no assertion, and php-saml only demands a signature when that flag is set — so at the default the endpoint accepted an unsigned LogoutRequest naming any NameID, from anyone. `forSlo()` forces it. 13 tests, all four variants green (14/54/53/93), browser-verified — 2026-08-24
+- [~] **Encrypted assertions** — SP keypair, decryption exercised by a test that encrypts with the SP's public key. Untested config is not a feature.
+
 ## Modules — evidence-ranked candidates (research 2026-08-24)
 
 Counts are DISTINCT projects, machine-derived from 1,074 controllers and 2,828
