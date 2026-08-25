@@ -1,0 +1,36 @@
+{
+    "name": "Otp",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-24; one-time-code flows recur across client repos, usually coupled directly to one SMS vendor)",
+    "template_version_tested": "2026-08",
+    "description": "One-time codes for passwordless sign-in and step-up verification. Ships an email channel; SMS is a contract a project binds, so no vendor is baked in. Rate limited, single use, hashed at rest, with an env-gated QA bypass.",
+    "composer_requires": [],
+    "options": {
+        "purpose": {
+            "prompt": "What are the codes for?",
+            "type": "select",
+            "default": "login",
+            "choices": {
+                "login": {
+                    "label": "Passwordless sign-in \u2014 request a code, get a token back",
+                    "drop": [
+                        "Http/Controllers/StepUpController.php",
+                        "Http/Middleware/RequiresStepUp.php",
+                        "Support/StepUpStore.php",
+                        "Routes/step-up.php",
+                        "Tests/Feature/StepUpTest.php"
+                    ],
+                    "env": {
+                        "OTP_STEP_UP": "false"
+                    }
+                },
+                "login+step-up": {
+                    "label": "Both \u2014 sign-in codes AND re-verification before sensitive actions",
+                    "env": {
+                        "OTP_STEP_UP": "true"
+                    }
+                }
+            }
+        }
+    }
+}
