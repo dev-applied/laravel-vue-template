@@ -184,6 +184,35 @@ return [
         // the verifier does. Turn off only for a provider that rejects
         // code_challenge (Google, Microsoft, Okta and Auth0 all accept it).
         'pkce' => env('SSO_PKCE', true),
+
+        // Pin the ISSUER per provider, not just the email domain.
+        //
+        // Needed whenever a provider is multi-tenant — the `common` authority
+        // on Microsoft Entra, an unrestricted Okta org, Google without a
+        // hosted-domain restriction. On one of those, an attacker can create
+        // their own tenant, mint a user carrying one of YOUR addresses, and
+        // sign in through the same provider name you trust. `allowed_domains`
+        // does not stop it: the domain is yours, which is precisely why it is
+        // in the list. Only the tenant claim separates the two identities.
+        //
+        // Keyed by provider, then by claim. A claim may pin one value or a
+        // list. An absent claim is refused, and so is a configured claim whose
+        // expected value resolves empty — a pin that protects nothing while
+        // looking like it does is worse than no pin at all.
+        //
+        //   'azure'  => ['tid' => env('SSO_AZURE_TENANT_ID')],
+        //   'google' => ['hd'  => env('SSO_GOOGLE_HOSTED_DOMAIN')],
+        //   'okta'   => ['iss' => env('SSO_OKTA_ISSUER')],
+        //
+        // Which claim carries it, and whether your Socialite driver surfaces
+        // it at all, is driver-specific — log `$identity->raw` once against the
+        // real provider and pin what is actually there.
+        //
+        // SAML needs no entry: php-saml already rejects an assertion whose
+        // <Issuer> is not the configured SAML_IDP_ENTITY_ID.
+        'required_claims' => [
+            //
+        ],
     ],
 
     /*
