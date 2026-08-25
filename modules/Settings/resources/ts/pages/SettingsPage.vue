@@ -75,8 +75,20 @@ export default defineComponent({
         tab strip and nothing else, with no indication that registering is the
         missing step.
       -->
+      <!--
+        Refused, not empty. Without this branch the page renders "No settings
+        registered yet" over a 403 — telling the user nothing is configured
+        when the truth is that they may not see it.
+      -->
       <AppEmptyState
-        v-if="!loading && !groups.length"
+        v-if="!loading && forbidden"
+        icon="lock"
+        title="You cannot read the settings"
+        description="Ask an administrator to grant you access."
+      />
+
+      <AppEmptyState
+        v-else-if="!loading && !groups.length"
         icon="tune"
         title="No settings registered yet"
         description="Register them from a service provider with SettingRegistry::add()."

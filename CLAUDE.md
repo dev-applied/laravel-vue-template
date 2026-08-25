@@ -69,6 +69,15 @@ auto-registered by `ModuleLoaderServiceProvider`, frontend half in
 (Wayfinder reads the cached route table), `composer typescript`, restart vite.
 `modules/Example` is the living reference — copy its shape.
 
+**Editing a module inside the template: copy the change into `.modules-src/`
+too.** That directory is the tracked source `module:add --from=.modules-src`
+installs from, so a fix applied only to `modules/` runs here and is absent from
+the next project bootstrapped from the template. `module:check` compares the two
+and the test suite runs it, so the gate goes red until they agree — if a batch of
+unrelated `ModuleCheckCommandTest` failures appears after you edit a module, that
+is what it is telling you. `module.json` is exempt; `module:add` writes
+`installed_options` into the installed copy by design.
+
 ## Where to look
 
 - Backend conventions → `app/CLAUDE.md`

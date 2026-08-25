@@ -35,6 +35,8 @@ export default function useSettings() {
   const loading = ref(false)
   const saving  = ref(false)
   const loaded  = ref(false)
+  /** True when the read was refused, as opposed to returning nothing. */
+  const forbidden = ref(false)
 
   async function fetch(): Promise<void> {
     loading.value = true
@@ -42,6 +44,21 @@ export default function useSettings() {
     const response = await $http.get('/settings').catch((e: any) => e)
 
     loading.value = false
+
+    // A 403 is handled here rather than falling through to the generic error
+    // path. That path leaves groups empty, and an empty groups list renders
+    // "No settings registered yet" — which tells the user nothing is
+    // configured when the truth is that they may not see it. Two very
+    // different statements, and the same bug the SMS log page had.
+    if (response.status === 403) {
+      forbidden.value = true
+      groups.value    = []
+
+      return
+    }
+
+    forbidden.value = false
+
     if ($error(response.status, response.data?.message, response.data?.errors)) return
 
     groups.value = response.data.groups
@@ -64,5 +81,5 @@ export default function useSettings() {
     return true
   }
 
-  return {groups, loading, saving, loaded, fetch, save}
+  return {groups, loading, saving, loaded, forbidden, fetch, save}
 }
