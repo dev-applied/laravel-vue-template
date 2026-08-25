@@ -63,6 +63,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureExports();
         $this->configureSearch();
         $this->configureOnboarding();
+        $this->configureImpersonation();
         $this->configureSmsLog();
         $this->configureChecklists();
     }
@@ -266,6 +267,24 @@ class AppServiceProvider extends ServiceProvider
      *
      *     Gate::define('view-sms-log', fn (User $user) => $user->can('manage-support'));
      */
+    /**
+     * Who may impersonate another user.
+     *
+     * Denies everyone, deliberately. Impersonation lets one account act as
+     * another, so a project has to make this decision on purpose — replace the
+     * closure with your own check, e.g.:
+     *
+     *     Gate::define('impersonate-users', fn (User $user) => $user->hasRole('admin'));
+     */
+    public function configureImpersonation(): void
+    {
+        if (! is_dir(base_path('modules/Auth'))) {
+            return;
+        }
+
+        Gate::define('impersonate-users', fn (User $user) => false);
+    }
+
     public function configureSmsLog(): void
     {
         if (! is_dir(base_path('modules/SmsMessaging'))) {

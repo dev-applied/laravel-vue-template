@@ -74,8 +74,25 @@ class AuthController extends Controller
         // logged out even with a valid token attached.
         $user = $request->user('sanctum');
 
+        // Whether THIS session is an impersonation, so the client can say so.
+        //
+        // impersonate() mints a token carrying the `impersonated` ability, and
+        // until now nothing told the browser about it — so the kernel shipped
+        // an AppImpersonationBanner component that no page could ever decide to
+        // show. An impersonating session that looks identical to a real one is
+        // the whole hazard: somebody forgets, and then acts as that user
+        // believing they are themselves.
+        $token = $user?->currentAccessToken();
+
         return response()->json([
             'user' => $user ? new AuthUserResource($user) : null,
+            // in_array, NOT $token->can(). Sanctum's can() answers true for any
+            // ability when the token holds the `*` wildcard — which every
+            // ordinary login token does — so can('impersonated') reports every
+            // normal session as an impersonation. The ability has to be
+            // explicitly present.
+            'impersonating' => $token !== null
+                && in_array('impersonated', (array) ($token->abilities ?? []), true),
         ]);
     }
 

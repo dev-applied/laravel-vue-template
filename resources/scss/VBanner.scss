@@ -1,0 +1,13 @@
+// Vuetify 4's base .v-banner carries `flex: 1 1`, which assumes the banner sits
+// in a row-direction flex parent where growing means growing WIDE. A banner
+// mounted as a direct child of <v-app> — the normal place for an app-wide
+// notice — sits in the column-direction .v-application__wrap instead, so
+// flex-grow makes it grow TALL: a one-line banner rendered ~270px high on a
+// 900px viewport, with its text at the top and a field of empty colour below.
+//
+// Nothing errors and nothing warns; it just looks broken. Scoped to direct
+// children so banners used inside cards, lists, or dialogs keep Vuetify's
+// intended behaviour.
+.v-application__wrap > .v-banner {
+  flex: 0 0 auto;
+}

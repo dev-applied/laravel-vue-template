@@ -12,8 +12,12 @@ export interface Auth {
   loadUser: (force?: boolean) => Promise<void>
   logout: () => Promise<void>
   impersonate: (userId: number) => Promise<AxiosResponse<{ access_token: string }>>
-  stopImpersonating: () => Promise<AxiosResponse<{ access_token: string }>>
+  stopImpersonating: () => Promise<AxiosResponse<{ message: string }>>
   loggedIn: boolean
+  /** True while `user` is somebody being impersonated. */
+  impersonating: boolean
+  /** Display name of whoever started the impersonation, when known. */
+  impersonator: string | null
 }
 
 export const $auth: Auth = {
@@ -52,6 +56,12 @@ export const $auth: Auth = {
   },
   get loggedIn() {
     return !!this.user
+  },
+  get impersonating(): boolean {
+    return useUserStore().impersonating
+  },
+  get impersonator(): string | null {
+    return useUserStore().impersonator
   },
   async impersonate(userId: number) {
     const userStore = useUserStore()

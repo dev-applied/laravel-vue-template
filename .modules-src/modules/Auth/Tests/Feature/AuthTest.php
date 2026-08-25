@@ -160,3 +160,33 @@ test('impersonating yourself is refused rather than minting a second token', fun
         ->postJson('/api/v1/auth/impersonate', ['user_id' => $actor->id])
         ->assertStatus(422);
 });
+
+test('an impersonation session is reported as one', function () {
+    // The banner cannot decide to show itself otherwise, and an impersonating
+    // session that looks identical to a real one is the whole hazard: somebody
+    // forgets, and then acts as that user believing they are themselves.
+    $user  = User::factory()->create();
+    $token = $user->createToken('impersonation-token', ['impersonated'])->plainTextToken;
+
+    expect($this->withToken($token)->getJson('/api/v1/auth')->assertOk()->json('impersonating'))
+        ->toBeTrue();
+});
+
+test('an ordinary session is not', function () {
+    // Its own test, not a second assertion above: two authenticated requests in
+    // one test share a resolved guard, and the first token's user is still the
+    // one answering when the second arrives.
+    //
+    // A plain login token holds the `*` wildcard, which is why this cannot be
+    // checked with Sanctum's can() — that answers true for any ability, so
+    // every normal session would report as an impersonation.
+    $user  = User::factory()->create();
+    $token = $user->createToken('normal')->plainTextToken;
+
+    expect($this->withToken($token)->getJson('/api/v1/auth')->assertOk()->json('impersonating'))
+        ->toBeFalse();
+});
+
+test('a guest is not reported as impersonating', function () {
+    $this->getJson('/api/v1/auth')->assertOk()->assertJson(['user' => null, 'impersonating' => false]);
+});
