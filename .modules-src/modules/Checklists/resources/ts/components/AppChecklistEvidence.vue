@@ -1,5 +1,5 @@
 <script lang="ts">
-import {defineComponent} from "vue"
+import {defineAsyncComponent, defineComponent, markRaw, type PropType} from "vue"
 
 /**
  * Photo evidence for one checklist line.
@@ -19,13 +19,24 @@ const uploadPath = "/modules/Files/resources/ts/components/AppFileUpload.vue"
 export default defineComponent({
   name: "AppChecklistEvidence",
   props: {
-    modelValue: {type: Number, default: null},
+    // `PropType<number | null>`: the value comes off a JSON response where an
+    // unanswered item is null, and a bare `Number` prop types as
+    // `number | undefined`, which will not accept it.
+    modelValue: {type: Number as PropType<number | null>, default: null},
     label: {type: String, default: "Photo"},
     disabled: {type: Boolean, default: false},
   },
   emits: ["update:modelValue"],
   data() {
-    return {uploader: uploadGlob[uploadPath] ?? null}
+    return {
+      // import.meta.glob hands back a LOADER, not a component: assigning it
+      // straight to `:is` renders the literal text "[object Promise]", which is
+      // exactly what the page showed. defineAsyncComponent turns the loader
+      // into a component; markRaw keeps Vue from deep-proxying the definition.
+      uploader: uploadGlob[uploadPath]
+        ? markRaw(defineAsyncComponent(uploadGlob[uploadPath] as never))
+        : null,
+    }
   },
 })
 </script>

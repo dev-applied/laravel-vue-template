@@ -1,0 +1,38 @@
+{
+    "name": "Realtime",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-25)",
+    "template_version_tested": "2026-08",
+    "description": "Websocket wiring: broadcast auth behind Sanctum so bearer-token clients work too, a served client config so one build runs against any environment, one shared Echo connection, and a banner for when the socket drops. Ships no container \u2014 the Reverb service and its worktree gotcha are documented.",
+    "composer_requires": [
+        "laravel/reverb:^1.6",
+        "pusher/pusher-php-server:^7.2"
+    ],
+    "npm_requires": [
+        "laravel-echo@^2.2",
+        "pusher-js@^8.4"
+    ],
+    "options": {
+        "banner": {
+            "prompt": "Include the dropped-connection banner?",
+            "type": "select",
+            "default": "on",
+            "choices": {
+                "on": {
+                    "label": "Yes \u2014 a bar that appears when live updates stop arriving"
+                },
+                "off": {
+                    "label": "No \u2014 the composable exposes the state and the app decides",
+                    "drop": [
+                        "resources/ts/components/AppConnectionBanner.vue"
+                    ]
+                }
+            }
+        }
+    },
+    "installed_from_commit": "8ae2d0b9986daeb9e9b8967a011fe045f4aae4a4",
+    "installed_at": "2026-08-25",
+    "installed_options": {
+        "banner": "on"
+    }
+}

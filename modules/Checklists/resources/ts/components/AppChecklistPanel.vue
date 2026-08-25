@@ -1,6 +1,12 @@
 <script lang="ts">
-import {defineComponent, type PropType} from "vue"
-import AppChecklistEvidence from "@modules/Checklists/resources/ts/components/AppChecklistEvidence.vue"
+import {defineAsyncComponent, defineComponent, markRaw, type PropType} from "vue"
+
+// import.meta.glob, not a static import: the `evidence=none` variant DROPS this
+// component, and a static path to a missing file fails the whole Vite build —
+// which is exactly how that CI leg went red. A drop list has to be checked
+// against everything that references the dropped file, not just its own test.
+const evidenceGlob = import.meta.glob("/modules/Checklists/resources/ts/components/AppChecklistEvidence.vue")
+const evidencePath = "/modules/Checklists/resources/ts/components/AppChecklistEvidence.vue"
 
 interface Response {
   id: number
@@ -32,7 +38,6 @@ interface Checklist {
  */
 export default defineComponent({
   name: "AppChecklistPanel",
-  components: {AppChecklistEvidence},
   props: {
     subjectType: {type: String, required: true},
     subjectId: {type: [Number, String] as PropType<number | string>, required: true},
@@ -45,6 +50,9 @@ export default defineComponent({
       selectedTemplate: null as number | null,
       loading: false,
       busy: null as number | null,
+      evidence: evidenceGlob[evidencePath]
+        ? markRaw(defineAsyncComponent(evidenceGlob[evidencePath] as never))
+        : null,
       answers: [
         {title: "Pass", value: "pass"},
         {title: "Fail", value: "fail"},
@@ -222,8 +230,9 @@ export default defineComponent({
 
             <template #append>
               <div class="d-flex align-center ga-2">
-                <AppChecklistEvidence
-                  v-if="item.requires_evidence && checklist.status !== 'complete'"
+                <component
+                  :is="evidence"
+                  v-if="evidence && item.requires_evidence && checklist.status !== 'complete'"
                   v-model="item.file_id"
                   label="Photo"
                 />
