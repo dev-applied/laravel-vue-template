@@ -13,9 +13,6 @@
             "choices": {
                 "instant": {
                     "label": "Instant \u2014 a booked slot is confirmed and held immediately",
-                    "drop": [
-                        "Tests/Feature/BookingApprovalTest.php"
-                    ],
                     "env": {
                         "BOOKING_REQUIRES_APPROVAL": "false"
                     }
@@ -29,7 +26,7 @@
             }
         }
     },
-    "installed_from_commit": "a66a6e81814924f7e624b3b7d647be2c67288810",
+    "installed_from_commit": "4eb23d9f3f781b8df6ad29859432648fdfd22d1e",
     "installed_at": "2026-08-25",
     "installed_options": {
         "approval": "instant"

@@ -12,10 +12,7 @@
             "default": "flat",
             "choices": {
                 "flat": {
-                    "label": "Flat \u2014 one list, newest last. Simpler to read and to moderate",
-                    "drop": [
-                        "Tests/Feature/CommentThreadingTest.php"
-                    ],
+                    "label": "Flat \u2014 one list, newest last. Simpler to read and to moderate. Replies still render if any exist; only the reply button is hidden",
                     "env": {
                         "COMMENTS_THREADING": "false"
                     }
@@ -29,7 +26,7 @@
             }
         }
     },
-    "installed_from_commit": "a1086224ba5723ed18577f617fb5acb1cd819fdf",
+    "installed_from_commit": "4eb23d9f3f781b8df6ad29859432648fdfd22d1e",
     "installed_at": "2026-08-25",
     "installed_options": {
         "threading": "flat"

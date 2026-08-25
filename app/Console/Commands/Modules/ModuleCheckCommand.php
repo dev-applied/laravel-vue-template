@@ -25,7 +25,9 @@ use Illuminate\Support\Facades\File;
  */
 class ModuleCheckCommand extends Command
 {
-    protected $signature = 'module:check';
+    protected $signature = 'module:check
+        {--defaults : Also fail if an installed module sits on a non-default option variant}
+        {--allow=* : Drift to permit under --defaults, as Module:axis=choice}';
 
     protected $description = "Check that installed modules' declared dependencies are present in composer.json / package.json";
 
@@ -35,10 +37,23 @@ class ModuleCheckCommand extends Command
         $npm      = $this->packageNames('package.json', ['dependencies', 'devDependencies']);
 
         $missing = [];
+        $drift   = [];
 
         foreach (File::glob(base_path('modules/*/module.json')) as $path) {
-            $module   = basename(dirname($path));
-            $manifest = json_decode((string) File::get($path), true) ?: [];
+            $module = basename(dirname($path));
+
+            // A module can be installed or removed while this is running —
+            // `module:add` writes the manifest last, and a deploy may run both
+            // at once. Reading a path the glob saw a moment ago is therefore
+            // not guaranteed, and throwing there reports a dependency problem
+            // that does not exist. Skip what vanished; the next run sees it.
+            $contents = File::exists($path) ? File::get($path) : null;
+
+            if ($contents === null) {
+                continue;
+            }
+
+            $manifest = json_decode($contents, true) ?: [];
 
             foreach ($this->declared($manifest, 'composer_requires') as $package) {
                 if (! in_array($this->nameOf($package), $composer, true)) {
@@ -51,6 +66,21 @@ class ModuleCheckCommand extends Command
                     $missing[] = [$module, 'package.json', $package];
                 }
             }
+
+            if ($this->option('defaults')) {
+                $drift = array_merge($drift, $this->drift($module, $manifest));
+            }
+        }
+
+        if ($drift !== []) {
+            $this->components->error('Installed modules sit on a non-default option variant:');
+            $this->table(['Module', 'Option', 'Installed', 'Default'], $drift);
+            $this->line('  In the TEMPLATE this is drift, not configuration — a bundled module is meant to');
+            $this->line('  ship the variant its own manifest calls default. It has shipped a QA-only');
+            $this->line('  entitlement switcher this way, left behind by a verification run.');
+            $this->line('  Reinstall at the default, or pass <options=bold>--allow=Module:axis=choice</> if it is deliberate.');
+
+            return self::FAILURE;
         }
 
         if ($missing === []) {
@@ -65,6 +95,40 @@ class ModuleCheckCommand extends Command
         $this->line('  Run the install again, then commit composer.json / composer.lock / package.json.');
 
         return self::FAILURE;
+    }
+
+    /**
+     * Installed choices that differ from the manifest's own stated default.
+     *
+     * Only meaningful with --defaults, and only in the template: a real project
+     * picks variants on purpose, so drift there is the normal case. The template
+     * is the one tree where "whatever the manifest calls default" is the whole
+     * intent, and where a leftover from a verification run is otherwise
+     * invisible — the switcher incident was found by reading a git diff.
+     *
+     * @param  array<string, mixed>  $manifest
+     * @return list<array{0: string, 1: string, 2: string, 3: string}>
+     */
+    private function drift(string $module, array $manifest): array
+    {
+        $allowed = (array) $this->option('allow');
+        $found   = [];
+
+        foreach ((array) ($manifest['installed_options'] ?? []) as $option => $choice) {
+            $default = $manifest['options'][$option]['default'] ?? null;
+
+            if ($default === null || (string) $choice === (string) $default) {
+                continue;
+            }
+
+            if (in_array("{$module}:{$option}={$choice}", $allowed, true)) {
+                continue;
+            }
+
+            $found[] = [$module, $option, (string) $choice, (string) $default];
+        }
+
+        return $found;
     }
 
     /**

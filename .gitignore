@@ -35,3 +35,7 @@ dist
 /.claude/scheduled_tasks.lock
 /.claude/settings.local.json
 .playwright*
+
+# Per-process fixture module written by ModuleCheckCommandTest (deleted in afterEach;
+# ignored so a killed process cannot leave one committable behind).
+modules/__Check*

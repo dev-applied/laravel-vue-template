@@ -74,7 +74,12 @@ jobs:
       # do with that module. Three legs went red exactly that way on
       # 2026-08-25 before this existed.
       - name: Check installed modules have their declared dependencies
-        run: php artisan module:check
+        # --defaults is template-only. A real project picks variants on purpose,
+        # so drift there is normal; here the bundle is meant to be whatever each
+        # manifest calls default. Billing shipped its QA entitlement-switcher
+        # variant this way once, left behind by a verification run and visible
+        # only in a git diff. Announcements is a deliberate, committed exception.
+        run: php artisan module:check --defaults --allow=Announcements:delivery=in-app+email
 
       - name: Run Pint + Pest (composer ci)
         run: composer ci

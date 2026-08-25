@@ -13,9 +13,6 @@
             "choices": {
                 "instant": {
                     "label": "Instant — a booked slot is confirmed and held immediately",
-                    "drop": [
-                        "Tests/Feature/BookingApprovalTest.php"
-                    ],
                     "env": {
                         "BOOKING_REQUIRES_APPROVAL": "false"
                     }
