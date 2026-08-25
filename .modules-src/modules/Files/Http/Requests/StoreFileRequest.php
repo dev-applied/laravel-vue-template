@@ -13,6 +13,10 @@ class StoreFileRequest extends FormRequest
     {
         return [
             'file' => 'required|file|max:20480',
+            // Recorded, not resolved. This module does not own a folders
+            // table — see the migration — so the value is whatever the
+            // project's own folder feature supplied.
+            'folder_id' => 'sometimes|nullable|integer',
         ];
     }
 

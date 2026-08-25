@@ -14,6 +14,7 @@ class GeneratePresignedUrlRequest extends FormRequest
     {
         return [
             'file_name' => 'required|string',
+            'folder_id' => 'sometimes|nullable|integer',
             'file_type' => 'required|string',
             // An allow-list, not a free string.
             //

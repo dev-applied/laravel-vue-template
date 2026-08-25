@@ -60,7 +60,10 @@ class FileController extends Controller
 
     public function store(StoreFileRequest $request): JsonResponse
     {
-        $file = DB::transaction(fn (): File => File::upload($request->file('file')));
+        $file = DB::transaction(fn (): File => File::upload(
+            $request->file('file'),
+            folderId: $request->input('folder_id'),
+        ));
 
         return response()->json(['file' => new FileResource($file)]);
     }

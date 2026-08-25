@@ -116,8 +116,17 @@ second mistake produced 823 errors.
 
 - **Virus scanning.** Uploads are stored as received.
 - **Quotas.** Nothing caps per-user or per-project storage.
-- **A folder UI.** `folderId` is threaded through the upload path for projects
-  that group files, but there is no browser for it.
+- **A folder BROWSER.** `folder_id` is recorded on every upload through both
+  paths, returned on the resource and indexed — but the module ships no UI for
+  navigating folders, and no folders table. It deliberately does not own one:
+  it stores the id the project's folder feature supplied, and the project's own
+  listing filters on it.
+
+  Until 2026-08-25 this bullet said the id was "threaded through the upload
+  path", and it was not. Both paths SENT it and the server had no column, no
+  fillable entry and no rule, so Laravel discarded it silently on every upload —
+  a project could set the prop, watch the upload succeed, and find every file in
+  one undifferentiated pile.
 
 ## Where presigned uploads may write (`s3-presigned` only)
 

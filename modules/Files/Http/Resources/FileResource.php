@@ -21,8 +21,11 @@ class FileResource extends JsonResource
             'size'           => $this->size,
             'size_formatted' => $this->size_formatted,
             'processed'      => (bool) $this->processed,
-            'created_at'     => $this->created_at,
-            'updated_at'     => $this->updated_at,
+            // Returned so a caller can confirm the destination actually stuck.
+            // It silently did not for the whole life of the module.
+            'folder_id'  => $this->folder_id,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

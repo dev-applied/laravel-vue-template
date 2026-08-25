@@ -277,17 +277,25 @@ test('a failed disk write is an error, not an import pointing at nothing', funct
     // could be mapped, and every later step failed for reasons unrelated to the
     // actual cause. Found by driving the wizard against a disk with no
     // credentials, not by any test.
-    Storage::shouldReceive('disk')->andReturnSelf();
+    // UploadedFile::store() delegates to Storage::disk()->putFileAs(), so that
+    // is the one call that has to fail — returning false rather than throwing,
+    // which is precisely what made this survivable enough to ship.
+    $disk = Mockery::mock(Illuminate\Contracts\Filesystem\Filesystem::class);
+    $disk->shouldReceive('putFileAs')->andReturnFalse();
+    Storage::shouldReceive('disk')->andReturn($disk);
 
-    $this->actingAs(User::factory()->create(), 'sanctum')
+    $this->actingAs($this->user)
         ->postJson('/api/v1/imports', [
-            'target' => 'items',
-            'file'   => UploadedFile::fake()->createWithContent('items.csv', "name\nWidget\n"),
+            'target' => 'people',
+            'file'   => UploadedFile::fake()->createWithContent('people.csv', "First name,Email\nAda,ada@example.com\n"),
         ])
         ->assertStatus(500);
 
+    // The point of the guard: no row, rather than a row pointing at a file
+    // called "0" that makes every later step fail for an unrelated-looking
+    // reason.
     expect(DataImport::query()->count())->toBe(0);
-})->skip('Needs a disk double that fails the write; kept as the documented shape.');
+});
 
 test('a csv with backslashes keeps them, and headers still parse', function () {
     // fgetcsv's $escape default is deprecated in PHP 8.4 and changes in PHP 9.

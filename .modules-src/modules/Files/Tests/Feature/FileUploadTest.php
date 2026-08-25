@@ -129,3 +129,33 @@ test('two files with the same name in one request do not overwrite each other', 
     expect($paths)->toHaveCount(4)
         ->and($paths->unique())->toHaveCount(4);
 });
+
+test('the destination folder the uploader chose is actually recorded', function () {
+    // Both upload paths have always SENT `folder_id` — useFileUpload puts it in
+    // the payload and AppFileUploadBtn exposes it as a prop — and the server
+    // had no column, no fillable entry and no validation rule, so Laravel
+    // discarded it on every upload. A project could set the prop, watch the
+    // upload succeed, and find every file in one undifferentiated pile.
+    Storage::fake(config('filesystems.default'));
+
+    $response = $this->actingAs($this->user)
+        ->postJson('/api/v1/files', [
+            'file'      => UploadedFile::fake()->image('receipt.jpg'),
+            'folder_id' => 42,
+        ])
+        ->assertOk();
+
+    expect($response->json('file.folder_id'))->toBe(42)
+        ->and(File::query()->latest('id')->firstOrFail()->folder_id)->toBe(42);
+});
+
+test('an upload with no folder is still fine', function () {
+    // Nullable on purpose: most projects have no folder feature at all, and the
+    // column must not become a required ceremony for them.
+    Storage::fake(config('filesystems.default'));
+
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/files', ['file' => UploadedFile::fake()->image('loose.jpg')])
+        ->assertOk()
+        ->assertJsonPath('file.folder_id', null);
+});

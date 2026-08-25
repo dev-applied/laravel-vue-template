@@ -58,6 +58,7 @@ class PresignedUploadController extends Controller
             'type'             => $fileType,
             'size'             => 0,
             'disk'             => config('filesystems.default'),
+            'folder_id'        => $request->input('folder_id'),
             'responsive_paths' => ['original' => $path],
             'processed'        => false,
         ]);

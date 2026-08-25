@@ -122,3 +122,46 @@ fails the whole build.
   `byStatus(status)`, `fetch(params)`, `create()`, `update()`, `move()`,
   `remove()`. Pass `defaults` (e.g. `{taskable_type, taskable_id}`) to scope
   the whole composable to one record.
+
+## Who can do what
+
+Reads and writes are governed separately, because a task board is collaborative
+and deletion is not.
+
+| Action | Who |
+|---|---|
+| List / show | Anyone the `TaskScope` allows — by default, every signed-in user |
+| Move (status + position) | Anyone who can see the task |
+| Create | Any signed-in user |
+| Edit | The creator, the assignee, or `manage-tasks` |
+| Delete | The creator, or `manage-tasks` |
+
+**`manage-tasks` falls closed.** If no project defines it, nobody gets the
+override, and a warning is logged — a permission that denies everyone looks
+identical to a broken install from the outside. Define it in
+`AppServiceProvider::boot()`:
+
+```php
+Gate::define('manage-tasks', fn (User $user) => $user->hasRole('admin'));
+```
+
+**`TaskScope` narrows visibility.** The shipped `NullTaskScope` shows the whole
+board, which is the common shape and is why it is safe as a default: the
+destructive operations do not rely on it. Bind your own for teams or tenants:
+
+```php
+$this->app->bind(TaskScope::class, TeamScope::class);
+```
+
+A task outside the scope answers **404**, not 403 — once a project narrows
+visibility, the difference between two status codes must not confirm that a task
+exists.
+
+### Why this is here
+
+Every route used to be bare `auth:sanctum` over a table with no owner column.
+Any signed-in user could list, read, retitle and delete every task in the
+install. That was found by driving the endpoints, not by reading them, and the
+whole suite passed throughout — the tests built tasks with a factory, and a
+factory runs outside a request, so `WhoDidIt` recorded no creator and there was
+nothing for a guard to have checked even if one had existed.

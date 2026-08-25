@@ -43,6 +43,7 @@ class File extends Model
         'type',
         'size',
         'disk',
+        'folder_id',
         'responsive_paths',
         'processed',
     ];
@@ -52,7 +53,7 @@ class File extends Model
      * in-request. This is the `storage=local` path; the presigned S3 path
      * creates the row first and calls processVariants() once the object lands.
      */
-    public static function upload(UploadedFile|string $file, string $path = 'uploads', ?string $disk = null, bool $watermark = false): self
+    public static function upload(UploadedFile|string $file, string $path = 'uploads', ?string $disk = null, bool $watermark = false, int|string|null $folderId = null): self
     {
         $file = self::normalizeToUploadedFile($file);
 
@@ -72,6 +73,7 @@ class File extends Model
             'type'             => $file->getMimeType(),
             'size'             => (int) ($file->getSize() / 1000),
             'disk'             => $disk,
+            'folder_id'        => $folderId,
             'responsive_paths' => ['original' => $storedAt],
             'processed'        => true,
         ]);

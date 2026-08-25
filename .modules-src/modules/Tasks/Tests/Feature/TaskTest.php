@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 use App\Models\Item;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Modules\Tasks\Events\TaskAssigned;
 use Modules\Tasks\Events\TaskCompleted;
 use Modules\Tasks\Models\Task;
+use Modules\Tasks\Support\TaskScope;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
+
+    // Sign in BEFORE the factories run. WhoDidIt stamps created_by_id from
+    // Auth::id(), so a task built outside a request has no creator — and since
+    // editing and deleting are now gated on being the creator, every such row
+    // was un-editable by anyone. That is correct behaviour and a badly-set-up
+    // test; the fix belongs here, not in the guard.
+    $this->actingAs($this->user);
 });
 
 test('a task is created and listed', function () {
@@ -306,6 +316,11 @@ test('the overdue command dry run emits nothing', function () {
 });
 
 test('tasks require authentication', function () {
+    // beforeEach signs in so the factories record a creator; this is the one
+    // test that needs the opposite. actingAs() binds the guard for the whole
+    // test, so clearing the resolved guards is what actually signs out.
+    auth()->forgetGuards();
+
     $this->getJson('/api/v1/tasks')->assertUnauthorized();
     $this->postJson('/api/v1/tasks', ['title' => 'x'])->assertUnauthorized();
 });
@@ -374,4 +389,97 @@ test('an ordinary move still works', function () {
         ->assertOk();
 
     expect($task->fresh()->status)->toBe(Task::STATUS_IN_PROGRESS);
+});
+
+// ── Authorization ────────────────────────────────────────────────────────────
+// Every route was bare `auth:sanctum` over a table with no owner column. Proven
+// by driving it before it was fixed: a signed-in stranger listed, read,
+// retitled and DELETED another user's task, and nothing in the suite noticed.
+
+test('a stranger cannot retitle a task they did not create and are not assigned', function () {
+    $task = Task::factory()->create(['title' => 'Board meeting prep']);
+
+    $stranger = User::factory()->create();
+
+    $this->actingAs($stranger)
+        ->putJson("/api/v1/tasks/{$task->id}", ['title' => 'Hijacked', 'status' => $task->status])
+        ->assertForbidden();
+
+    expect($task->fresh()->title)->toBe('Board meeting prep');
+});
+
+test('a stranger cannot delete a task they did not create', function () {
+    $task     = Task::factory()->create();
+    $stranger = User::factory()->create();
+
+    $this->actingAs($stranger)->deleteJson("/api/v1/tasks/{$task->id}")->assertForbidden();
+
+    expect(Task::find($task->id))->not->toBeNull();
+});
+
+test('the person a task is assigned to may edit it but not delete it', function () {
+    // Being handed a job is permission to correct its description; it is not
+    // permission to destroy the record of it.
+    $assignee = User::factory()->create();
+    $task     = Task::factory()->create(['assigned_to' => $assignee->id]);
+
+    $this->actingAs($assignee)
+        ->putJson("/api/v1/tasks/{$task->id}", ['title' => 'Clarified', 'status' => $task->status])
+        ->assertOk();
+
+    $this->actingAs($assignee)->deleteJson("/api/v1/tasks/{$task->id}")->assertForbidden();
+});
+
+test('manage-tasks overrides both, and is denied when nobody defines it', function () {
+    $task     = Task::factory()->create();
+    $stranger = User::factory()->create();
+
+    // The fallback gate falls CLOSED. An open default would restore exactly the
+    // hole this closes, silently.
+    $this->actingAs($stranger)->deleteJson("/api/v1/tasks/{$task->id}")->assertForbidden();
+
+    Gate::define('manage-tasks', fn () => true);
+
+    $this->actingAs($stranger)->deleteJson("/api/v1/tasks/{$task->id}")->assertOk();
+});
+
+test('anyone who can see a task may move it, because that is what a board is for', function () {
+    // Deliberately NOT symmetrical with editing. Dragging someone else's card
+    // into "in progress" is the point of a shared board, and move() changes
+    // only status and position.
+    $task     = Task::factory()->create(['status' => 'todo']);
+    $stranger = User::factory()->create();
+
+    $this->actingAs($stranger)
+        ->postJson("/api/v1/tasks/{$task->id}/move", ['status' => 'in_progress'])
+        ->assertOk();
+
+    expect($task->fresh()->status)->toBe('in_progress');
+});
+
+test('a bound scope hides tasks, and hides them as a 404', function () {
+    app()->bind(TaskScope::class, fn () => new class implements TaskScope
+    {
+        public function apply(Builder $query, mixed $user): void
+        {
+            $query->where('priority', 'high');
+        }
+
+        public function attributes(mixed $user): array
+        {
+            return [];
+        }
+    });
+
+    $visible = Task::factory()->create(['priority' => 'high']);
+    $hidden  = Task::factory()->create(['priority' => 'low']);
+
+    $ids = $this->actingAs($this->user)->getJson('/api/v1/tasks')->assertOk()->json('data.*.id');
+
+    expect($ids)->toContain($visible->id)->not->toContain($hidden->id);
+
+    // 404 and not 403: once a project narrows the scope, the difference between
+    // two status codes must not confirm that a task outside it exists.
+    $this->actingAs($this->user)->getJson("/api/v1/tasks/{$hidden->id}")->assertNotFound();
+    $this->actingAs($this->user)->deleteJson("/api/v1/tasks/{$hidden->id}")->assertNotFound();
 });

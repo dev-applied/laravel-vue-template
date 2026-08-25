@@ -9,20 +9,26 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Modules\Tasks\Events\TaskAssigned;
 use Modules\Tasks\Events\TaskCompleted;
 use Modules\Tasks\Http\Requests\StoreTaskRequest;
 use Modules\Tasks\Http\Resources\TaskResource;
 use Modules\Tasks\Models\Task;
 use Modules\Tasks\Support\StatusMachine;
+use Modules\Tasks\Support\TaskScope;
 
 class TaskController extends Controller
 {
-    public function __construct(private readonly StatusMachine $statuses) {}
+    public function __construct(
+        private readonly StatusMachine $statuses,
+        private readonly TaskScope $scope,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
         $tasks = Task::query()
+            ->tap(fn ($query) => $this->scope->apply($query, $request->user()))
             ->with('assignee')
             ->filter($request->only(['status', 'priority', 'assigned_to', 'search', 'open', 'overdue']))
             ->when($request->boolean('mine'), fn ($q) => $q->assignedTo($request->user()))
@@ -44,20 +50,24 @@ class TaskController extends Controller
 
     public function store(StoreTaskRequest $request): JsonResponse
     {
-        $task = Task::create($request->validated());
+        $task = Task::create($request->validated() + $this->scope->attributes($request->user()));
 
         $this->announceAssignment($task, null);
 
         return response()->json(new TaskResource($task->load('assignee')), 201);
     }
 
-    public function show(Task $task): JsonResponse
+    public function show(Request $request, Task $task): JsonResponse
     {
+        $this->assertVisible($request, $task);
+
         return response()->json(new TaskResource($task->load('assignee')));
     }
 
     public function update(StoreTaskRequest $request, Task $task): JsonResponse
     {
+        $this->assertMayEdit($request, $task);
+
         $previousAssignee = $task->assignee;
         $previousStatus   = $task->status;
 
@@ -96,6 +106,11 @@ class TaskController extends Controller
      */
     public function move(Request $request, Task $task): JsonResponse
     {
+        // Moving a card is board collaboration — dragging someone else's task
+        // into "in progress" is the point of a shared board, and it changes
+        // only status and position. Anyone who can see the task may move it.
+        $this->assertVisible($request, $task);
+
         $data = $request->validate([
             'status'   => ['required', 'string'],
             'position' => ['sometimes', 'integer', 'min:0'],
@@ -119,8 +134,17 @@ class TaskController extends Controller
         return response()->json(new TaskResource($task->fresh()->load('assignee')));
     }
 
-    public function destroy(Task $task): JsonResponse
+    public function destroy(Request $request, Task $task): JsonResponse
     {
+        // Stricter than editing: deleting someone else's task is never
+        // collaboration, and there is no undo. The assignee does not qualify —
+        // being given a job is not permission to destroy the record of it.
+        $this->assertVisible($request, $task);
+
+        if (! $this->isCreator($request, $task) && ! Gate::forUser($request->user())->allows('manage-tasks')) {
+            throw new AppException('You cannot delete a task you did not create.', 403);
+        }
+
         $task->delete();
 
         return response()->json(['message' => 'Task deleted.']);
@@ -160,6 +184,57 @@ class TaskController extends Controller
         }
 
         $task->refresh();
+    }
+
+    /**
+     * Every route used to be bare `auth:sanctum` over a table with no owner
+     * column, so any signed-in user could list, read, retitle and delete every
+     * task in the install. Verified by driving it, not inferred.
+     *
+     * Visibility is the scope's business — the shipped default keeps a board
+     * shared, which is the common shape — so this is 404 rather than 403: once
+     * a project narrows the scope, a task outside it must not be confirmed to
+     * exist by the difference between two status codes.
+     */
+    private function assertVisible(Request $request, Task $task): void
+    {
+        $visible = Task::query()
+            ->tap(fn ($query) => $this->scope->apply($query, $request->user()))
+            ->whereKey($task->getKey())
+            ->exists();
+
+        if (! $visible) {
+            throw new AppException('Task not found.', 404);
+        }
+    }
+
+    /**
+     * Editing: the creator, the person it is assigned to, or someone holding
+     * `manage-tasks`. The assignee is included because being handed a task and
+     * not being able to correct its description is the kind of friction that
+     * makes people keep a private list instead.
+     */
+    private function assertMayEdit(Request $request, Task $task): void
+    {
+        $this->assertVisible($request, $task);
+
+        $userId = (int) $request->user()->getKey();
+
+        if ($this->isCreator($request, $task)
+            || (int) $task->assigned_to === $userId
+            || Gate::forUser($request->user())->allows('manage-tasks')) {
+            return;
+        }
+
+        throw new AppException('You cannot change a task you did not create and are not assigned.', 403);
+    }
+
+    private function isCreator(Request $request, Task $task): bool
+    {
+        $column = $task->getCreatedByColumn();
+
+        return $task->getAttribute($column) !== null
+            && (int) $task->getAttribute($column) === (int) $request->user()->getKey();
     }
 
     /**
