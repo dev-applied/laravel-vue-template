@@ -38,6 +38,7 @@ class ModuleCheckCommand extends Command
 
         $missing = [];
         $drift   = [];
+        $strays  = [];
 
         foreach (File::glob(base_path('modules/*/module.json')) as $path) {
             $module = basename(dirname($path));
@@ -67,9 +68,23 @@ class ModuleCheckCommand extends Command
                 }
             }
 
+            $strays = array_merge($strays, $this->strays($module, $manifest));
+
             if ($this->option('defaults')) {
                 $drift = array_merge($drift, $this->drift($module, $manifest));
             }
+        }
+
+        if ($strays !== []) {
+            $this->components->error('Installed modules contain files their option variant drops:');
+            $this->table(['Module', 'Option', 'Installed', 'File that should not exist'], $strays);
+            $this->line('  Something has copied the module source over the installed copy — an rsync from');
+            $this->line('  the modules repo, a partial <options=bold>git checkout</>, or an editor sync.');
+            $this->line('  The manifest still names the variant, so nothing else notices, and the extra');
+            $this->line('  files RUN: a reinstated test reported 405s that read as a routing bug.');
+            $this->line('  Fix by reinstalling: <options=bold>rm -rf modules/NAME && php artisan module:add NAME</>.');
+
+            return self::FAILURE;
         }
 
         if ($drift !== []) {
@@ -95,6 +110,48 @@ class ModuleCheckCommand extends Command
         $this->line('  Run the install again, then commit composer.json / composer.lock / package.json.');
 
         return self::FAILURE;
+    }
+
+    /**
+     * Files an option variant drops that are nevertheless sitting on disk.
+     *
+     * `module:add` deletes a variant's drop list at install time, so a file
+     * from that list existing afterwards means something has copied the module
+     * SOURCE over the installed copy. That happens constantly while a module is
+     * being developed — an rsync back from the modules repo, a `git checkout`
+     * of the whole directory, an IDE sync — and it is close to undetectable
+     * afterwards, because the manifest still names the chosen variant and every
+     * other check reads the manifest.
+     *
+     * The extra files are not inert. A reinstated test file runs: reinstating
+     * Otp's `StepUpTest.php` into a `purpose=login` install produced seven
+     * failures reporting 405 Method Not Allowed, which reads as a broken route
+     * rather than a file that should not be there. A reinstated class is worse,
+     * because it can be autoloaded and bound.
+     *
+     * Deliberately NOT behind --defaults. A real project picks its variants on
+     * purpose, and a stray file is wrong in exactly the same way there.
+     *
+     * @param  array<string, mixed>  $manifest
+     * @return list<array{0: string, 1: string, 2: string, 3: string}>
+     */
+    private function strays(string $module, array $manifest): array
+    {
+        $found = [];
+
+        foreach ((array) ($manifest['installed_options'] ?? []) as $option => $choice) {
+            $drops = $manifest['options'][$option]['choices'][$choice]['drop'] ?? null;
+
+            foreach ((array) $drops as $relative) {
+                $path = base_path("modules/{$module}/".mb_ltrim((string) $relative, '/'));
+
+                if (File::exists($path)) {
+                    $found[] = [$module, (string) $option, (string) $choice, (string) $relative];
+                }
+            }
+        }
+
+        return $found;
     }
 
     /**

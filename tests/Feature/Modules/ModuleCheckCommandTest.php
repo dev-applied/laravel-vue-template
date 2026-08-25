@@ -203,3 +203,72 @@ test('a module on its pinned variant passes', function () {
     $this->artisan('module:check', ['--defaults' => true, '--allow' => ["{$name}:delivery=in-app+email"]])
         ->doesntExpectOutputToContain($name);
 });
+
+test('a file the installed variant drops is reported', function () {
+    // The accident this exists for: something copies the module SOURCE over the
+    // installed copy — an rsync back from the modules repo, a `git checkout` of
+    // the whole directory, an editor sync — and the files the variant dropped
+    // come back. Nothing else notices, because every other check reads the
+    // manifest and the manifest still names the chosen variant.
+    //
+    // It bit three times in one night. Reinstating Otp's StepUpTest.php into a
+    // `purpose=login` install produced seven failures reporting 405 Method Not
+    // Allowed, which reads as a broken route rather than a file that should not
+    // be on disk.
+    $name = basename($this->sandbox);
+
+    writeManifest($this->sandbox, [
+        'name'    => $name,
+        'options' => ['purpose' => ['default' => 'login', 'choices' => [
+            'login'         => ['drop' => ['Tests/Feature/StepUpTest.php']],
+            'login+step-up' => [],
+        ]]],
+        'installed_options' => ['purpose' => 'login'],
+    ]);
+
+    File::ensureDirectoryExists($this->sandbox.'/Tests/Feature');
+    file_put_contents($this->sandbox.'/Tests/Feature/StepUpTest.php', "<?php\n");
+
+    $this->artisan('module:check')
+        ->expectsOutputToContain('StepUpTest.php')
+        ->assertFailed();
+});
+
+test('the same module passes once the stray is gone', function () {
+    $name = basename($this->sandbox);
+
+    writeManifest($this->sandbox, [
+        'name'    => $name,
+        'options' => ['purpose' => ['default' => 'login', 'choices' => [
+            'login'         => ['drop' => ['Tests/Feature/StepUpTest.php']],
+            'login+step-up' => [],
+        ]]],
+        'installed_options' => ['purpose' => 'login'],
+    ]);
+
+    $this->artisan('module:check')->assertSuccessful();
+});
+
+test('the check is not behind --defaults', function () {
+    // A real project picks its variants on purpose, so option DRIFT there is
+    // normal and only the template gates on it. A stray file is not drift — it
+    // is a file that should not exist, and it is wrong in a project for exactly
+    // the same reason it is wrong here.
+    $name = basename($this->sandbox);
+
+    writeManifest($this->sandbox, [
+        'name'    => $name,
+        'options' => ['purpose' => ['default' => 'login', 'choices' => [
+            'login'         => ['drop' => ['Support/StepUpStore.php']],
+            'login+step-up' => [],
+        ]]],
+        // A non-default variant, so --defaults would have complained anyway.
+        // Without the flag, only the stray should be reported.
+        'installed_options' => ['purpose' => 'login'],
+    ]);
+
+    File::ensureDirectoryExists($this->sandbox.'/Support');
+    file_put_contents($this->sandbox.'/Support/StepUpStore.php', "<?php\n");
+
+    $this->artisan('module:check')->assertFailed();
+});
