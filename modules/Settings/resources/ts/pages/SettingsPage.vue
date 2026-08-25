@@ -1,11 +1,12 @@
 <script lang="ts">
 import {defineComponent} from "vue"
 import AppSettingField from "@modules/Settings/resources/ts/components/AppSettingField.vue"
+import AppEmptyState from "@/components/AppEmptyState.vue"
 import useSettings, {type SettingGroup} from "@modules/Settings/resources/ts/composables/useSettings"
 
 export default defineComponent({
   name: "SettingsPage",
-  components: {AppSettingField},
+  components: {AppSettingField, AppEmptyState},
   setup() {
     return useSettings()
   },
@@ -68,7 +69,21 @@ export default defineComponent({
         indeterminate
       />
 
+      <!--
+        Settings are registry-driven, so a project that has registered none —
+        every project on day one — otherwise gets a card containing an empty
+        tab strip and nothing else, with no indication that registering is the
+        missing step.
+      -->
+      <AppEmptyState
+        v-if="!loading && !groups.length"
+        icon="tune"
+        title="No settings registered yet"
+        description="Register them from a service provider with SettingRegistry::add()."
+      />
+
       <v-tabs
+        v-if="groups.length"
         v-model="tab"
         show-arrows
       >
