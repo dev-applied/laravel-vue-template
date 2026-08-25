@@ -1,9 +1,11 @@
 <script lang="ts">
 import {defineComponent} from "vue"
 import {useOnboarding, type OnboardingStep} from "@modules/Onboarding/resources/ts/composables/useOnboarding"
+import AppEmptyState from "@/components/AppEmptyState.vue"
 
 export default defineComponent({
   name: "OnboardingPage",
+  components: {AppEmptyState},
   setup() {
     return useOnboarding()
   },
@@ -72,7 +74,23 @@ export default defineComponent({
       :aria-label="`Setup ${percent}% complete`"
     />
 
-    <v-list lines="two">
+    <!--
+      Steps are registry-driven, so an install that has registered none — every
+      project on day one — otherwise gets a progress bar reading "0 of 0 done"
+      above an empty list, with no indication that registering is the missing
+      step.
+    -->
+    <AppEmptyState
+      v-if="!state.steps.length"
+      icon="checklist"
+      title="No onboarding steps registered yet"
+      description="Register them from a service provider with OnboardingRegistry::register()."
+    />
+
+    <v-list
+      v-else
+      lines="two"
+    >
       <v-list-item
         v-for="step in state.steps"
         :key="step.key"
@@ -144,8 +162,14 @@ export default defineComponent({
       </v-list-item>
     </v-list>
 
+    <!--
+      `state.complete` is true when nothing required is outstanding, which is
+      also true when NOTHING IS REGISTERED — so a fresh install showed "No
+      onboarding steps registered yet" and "You are all set" one above the
+      other, which cannot both be useful.
+    -->
     <v-alert
-      v-if="state.complete"
+      v-if="state.complete && state.steps.length"
       type="success"
       variant="tonal"
       class="mt-6"
