@@ -188,6 +188,15 @@ migrations across 44 local Laravel repos. Full report:
 
 ## Recently Done (last 30 days)
 
+- **Option drop-list symmetry** — all leaves shipped 2026-08-25 (three variants dropped a TEST while keeping the
+  code it covered, and it was the DEFAULT choice carrying the drop in each — Comments `threading=flat` 28→33,
+  Booking `approval=instant` 36→42, Billing `admin=none` 60→64. `bin/check-drop-symmetry` gates the mechanical
+  half from the CI discover job; Auth `sso=saml` declared as the one exception with its evidence).
+- **Template bundle variant drift** — all leaves shipped 2026-08-25 (Billing was bundled at `admin=switcher`, the
+  QA entitlement-switcher variant, left over from a verification run and inert only because the route self-gates.
+  `module:check --defaults` now compares installed_options against each manifest's stated default; template-only
+  flag so client projects, which choose variants on purpose, are unaffected).
+
 - Auth SAML deferrals — all leaves shipped 2026-08-24 (both re-questioned and both real: the metadata had been ADVERTISING an SLS endpoint that served nothing, and encryption was wired but never exercised. Building SLO turned up an unauthenticated log-anybody-out — php-saml only requires a LogoutRequest signature when `wantMessagesSigned` is set, which is correctly optional for sign-in but fatal for a message that carries no assertion. Auth's "Not included" list is now empty for SAML.).
 - SSO security review — all leaves shipped 2026-08-24 (six findings from an adversarial review of the OIDC option, closing with the issuer pin: `allowed_domains` cannot catch nOAuth, because on a multi-tenant endpoint the attacker asserts YOUR domain from THEIR tenant and the domain check passes by design. `required_claims` pins the tenant claim, fails closed on an absent claim and on an env var that did not resolve, and applies to already-linked identities so adding a pin actually revokes. SAML needed nothing — php-saml pins `<Issuer>` to `idp.entityId` before reading the assertion.).
 - Auth module type-error bugs — all leaves shipped 2026-08-24 (decorative client-side validation on login and forgot-password, an error string bound to a boolean visibility flag, and the structural gap behind both: module frontends were only type-checked once copied into a template checkout, so nothing ever did it. `vue-tsc --noEmit` now runs on every leg of the module CI matrix.).
