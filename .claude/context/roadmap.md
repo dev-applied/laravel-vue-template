@@ -51,8 +51,8 @@ Decision 2026-08-24: read washwerk's 34 production modules for shape, write fres
 - [x] **AuditLog** — Auditable trait, field-level diffs, secret redaction, gated read API, record timeline, retention prune, 14 tests — 2026-08-24
 - [x] **Settings** — registry-declared typed settings, self-generating UI, secret masking, one-entry cache, 22 tests — 2026-08-24
 - [x] **Tags** — HasTags trait, TaggableRegistry, slug-as-identity normalisation, AND-by-default scopes, merge endpoint, tags:dedupe for legacy data, 29 tests — 2026-08-24
-- [ ] **Billing** — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
-- [~] **Booking** — modules repo `main` (direct) — resource + availability scheduling.
+- [~] **Billing** — modules repo `main` (direct) — Stripe subscriptions, plans, entitlement seams. Carries its entitlement-state QA affordances.
+- [x] **Booking** — weekly availability in the resource's timezone, blackouts, capacity, notice/advance windows, lockForUpdate double-booking prevention, `approval` option, 36 tests — 2026-08-24
 - [x] **FormBuilder** — schema-snapshotted submissions, server-derived validation, save-time schema validation, kernel field components inside AppServerValidationForm, 28 tests — 2026-08-24
 - [x] **Tasks** — HasTasks trait, StatusMachine transition table surfaced as nextStatuses, derived completed_at, event seams, `board` option (list | +kanban), 30 tests — 2026-08-24
 
