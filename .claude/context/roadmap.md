@@ -87,6 +87,49 @@ the reported line.
 - [x] **Signing in landed on a 404** — `$router.push()` with a bare string is a PATH, and `ROUTES.DASHBOARD` is a NAME, so every successful login went to `/dashboard.index`. `mounted()` five lines above had it right — 2026-08-24
 - [x] **`ROUTES` typed as `typeof ROUTES & Record<string, string>`** — the kernel's static literal was the whole type, so every module route name was an error at every call site — 2026-08-24
 
+## Modules — browser verification sweep
+
+22 modules shipped tonight with green suites, and tonight's own evidence is that a green suite says
+very little about whether a screen works: the icon bug, the inert Dashboard module, the 404 login,
+and three modules whose submit button never rendered were ALL invisible to tests and to
+`npm run build`. Most module pages have never been loaded in a browser at all.
+
+- [~] Install every module into a template checkout, migrate, and load every module page — looking at what renders, not at whether it 200s.
+
+## Modules — QA sweep findings (three parallel audits, 2026-08-24)
+
+Three read-only sweeps over all 22 modules — authorization, frontend correctness, data integrity.
+Every CERTAIN claim is verified by hand before it is worked; the impersonation one was, and was real.
+
+**Root cause behind several of these:** the suite runs on SQLite `:memory:` (`phpunit.xml:29-30`, and
+`module-ci.yml` installs only `pdo_sqlite`), while the project's own CLAUDE.md says Feature tests use
+the project's MySQL. So nothing MySQL-specific and nothing concurrent is testable, which is exactly
+how tonight's `timestamp` bug reached main — the Booking migration that outright FAILS on MariaDB
+passes CI green.
+
+- [x] **Auth — impersonation was ungated.** `auth:sanctum` and nothing else on an endpoint that mints a bearer token for any user id: one request, any account, including admins. Zero tests existed. Now fail-closed on `impersonate-users`, token bounded by TTL, every use logged — 2026-08-24
+- [ ] **CI + phpunit run SQLite, not MySQL** — the structural gap behind the above. Feature tests should hit the real engine, per this project's own documented convention.
+- [ ] **Files — no authorization at all.** Every `FileController` method is a bare route-model bind; `created_by` IS recorded by `whoDidIt()` and never read. Sequential ids, so any authenticated user walks `download/1..N` and reads or deletes every file in the system.
+- [ ] **Invitations — self-invite privilege escalation.** Route is `auth:sanctum` only, and `role` validates as a free string never checked against the roles table. Any user invites themselves as `super-admin` and accepts it. The controller docblock claims an `invitations.manage` gate that does not exist anywhere.
+- [ ] **Support — open ticket queue, and the reply endpoint is a mail relay.** No gate on index/show/update/destroy, so any user reads every ticket. Worse: `TicketReplyController::store` has no gate and mails an arbitrary body to the ticket's email, from our domain, into a thread the customer already trusts.
+- [ ] **Booking — anyone can cancel any booking, and the public lookup leaks PII.** The reference is the sole credential for a destructive change, and the public endpoint returns the ADMIN resource (name, email, 2000-char notes).
+- [ ] **Announcements — forged acknowledgement.** `dismiss()` applies neither the `live()` scope nor the audience resolver that `index()` does, so any user can acknowledge a draft or an announcement targeted at someone else. `requires_acknowledgement` exists precisely to be a defensible record.
+- [ ] **SavedViews — screen-key enumeration.** No allow-list of keys and no ability check, so guessing `admin.users.index` returns every shared view's payload and owner name.
+- [ ] **Files — `time()` filenames collide and silently overwrite.** Same-named files uploaded in the same second share a path; N rows, one object. Deleting any one unlinks the bytes for all of them. A phone posting four `image.jpg` hits this on the first try.
+- [ ] **Support — reference space is 36^6 with no collision retry.** ~1% collision by 6,600 tickets, and a collision 500s the PUBLIC contact form with the message lost.
+- [ ] **Billing — no event ordering guard.** Nothing reads `event_timestamp_ms`; last-received wins. A reordered EXPIRATION after an INITIAL_PURCHASE leaves a paying customer at `tier=free`.
+- [ ] **DataImport — double dispatch and replay-on-retry.** No in-flight guard, and a throw re-enters the CSV at row 1, so a worker killed at row 18k re-imports 18k rows.
+- [ ] **Booking — `approve()` has neither transaction nor lock**, while `book()` twelve lines up has both. Two approvals on a capacity-1 slot both pass the check and both confirm.
+- [ ] **Users — the last-active-admin guard is a check-then-act.** Two admins deactivating each other concurrently both see "1 remaining" and both write. Zero active users, no in-app recovery.
+- [ ] **Announcements — publish double-dispatch, and the email job re-sends from recipient 1 on retry.** The job's own comment states the bug.
+- [ ] **Tasks — status transitions validated then written unconditionally.** Two drags on the same card mean the transition that actually happened was never validated.
+- [ ] **Otp — the attempt cap is bypassable by concurrency.** Read, then increment, then compare: N parallel guesses all pass `usable()`. The real cap is the route throttle (~200 over the code's life), not 5.
+- [ ] **Frontend — DataImport's wizard can never be completed.** `onFinish` guards `step === 3` but the Finish button only emits at `step === 4`. "Start import" does nothing: no request, no error.
+- [ ] **Frontend — RolesPermissions loses permissions across groups.** One `v-chip-group` per group, all bound to the same array; Vuetify's group transform drops values it does not own, so ticking a permission in a second group clears the first.
+- [ ] **Frontend — forgot-password feedback is invisible.** `<v-messages v-model=...>` — VMessages has no `modelValue`; it takes `:messages` + `active`. Every error on that path is silently dropped.
+- [ ] **Frontend — four empty states pass `text=` to `AppEmptyState`, which declares `description`.** The explanatory line never renders (Comments, Tasks, Announcements, FormBuilder).
+- [ ] **Smaller, batched**: SetPasswordPage's dead `validate()` guard; Comments edit/delete never re-check the parent record's ability; FormBuilder internal-form 401-vs-404 oracle; 403-vs-404 record oracles in Comments/Tags/Favorites; Booking + Support reference entropy; raw exception text returned by Exports/DataImport; global tag pool readable by every user; Files presigned upload writes to a caller-controlled prefix; password reset returns the raw User model; Settings `rememberForever` + `forget` can cache a stale map permanently; Invitations resend revokes before sending; Announcements re-dismiss overwrites the acknowledgement timestamp; Files hardcodes hex colours against the no-hex rule.
+
 ## Modules — evidence-ranked candidates (research 2026-08-24)
 
 Counts are DISTINCT projects, machine-derived from 1,074 controllers and 2,828
