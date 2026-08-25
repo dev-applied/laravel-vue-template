@@ -30,7 +30,7 @@ The `dev-applied/laravel-vue-modules` repo and the `module:add` / `module:config
 - [x] `module:add` prunes directories an option drop leaves empty — an empty `Mail/` reads as a broken install — 2026-08-24
 - [ ] `module:update` — the automated three-way merge described in docs/modules.md but not built
 - [x] `bin/lint` in the modules repo — pint AND eslint the whole repo from a template checkout in ONE direction, so a later rsync cannot silently revert the fixes. The round trip ate pint fixes once and eslint fixes once; covering only pint just moved which CI leg went red — 2026-08-24
-- [ ] Module scaffolding command (`module:make`) so new modules start from the Example shape
+- [x] `module:make` — scaffolds the full module anatomy from stubs that encode 21 modules' worth of review (newFactory, grouped search, through(), sometimes-on-update, ungated Vue route, flex-nowrap actions). Proven by generating a module and running it through the real pipeline: installs, 8 tests pass first try, pint/eslint clean, builds, vue-tsc 0, page loads in a browser — 2026-08-24
 - [ ] Resource key casing is split-brain: the kernel returns snake_case (`due_date`, `full_name`, `owner_id`) while all 13 modules return camelCase (`dueAt`, `isSelf`). A project installing modules gets a mixed API. Decide one and sweep — the modules are internally consistent, so the cheaper direction is probably the kernel.
 - [ ] `@vue/test-utils` is not a dependency, so component tests mount by hand via `createApp`. Add it, or document the hand-rolled pattern in `resources/ts/CLAUDE.md` — right now the next person will assume it exists.
 
@@ -87,12 +87,14 @@ migrations across 44 local Laravel repos. Full report:
 
 - [x] **41 open npm Dependabot alerts cleared** (2 critical, 22 high) — `npm audit fix`, lockfile only, 0 vulnerabilities after; build + vitest + eslint green. Root cause was not a broken config: npm sat at exactly `open-pull-requests-limit: 10`, and at the limit Dependabot stops opening new PRs INCLUDING security ones, so every advisory queued behind five routine bumps nobody merged — 2026-08-24
 
-- [~] Re-enable the template's own `.github/workflows/ci.yml` — currently `workflow_dispatch` only. Blocked on nothing now that type-check is clean; proving the workflow green by dispatch before wiring it to `pull_request` — master (direct)
+- [x] Template CI re-enabled on `pull_request` (no branch filter, so it runs whether the repo calls its trunk `master` or `main`) and feature pushes. Dispatched first rather than uncommenting and hoping: it caught ExampleTest demanding a built Vite manifest in a job that never runs npm. All three jobs green — 2026-08-24
 - [x] `vue-tsc --noEmit` clean — 42 errors (not the recorded 73; the Vuetify v4 work had already cut it) down to 0. Most were wrong DECLARATIONS hiding real bugs: `$confirm` declared with its first two parameters reversed, AppAutoComplete passing its axios instance under the wrong option name so creates went out unauthenticated, `extractId` using a function as an object key, `reload(resetPage)` ignoring its argument, AppListTable skipping a page on a cancelled request, and ItemFormPage reading past the `data` envelope so the canonical CRUD example could never edit a record — 2026-08-24
 - [x] Vitest drops the dev server to a stale bundle — RETESTED 2026-08-24, does not reproduce. `npm run test:ci` run the sanctioned way (`docker compose exec frontend`) leaves `public/hot` untouched (same mtime and contents before/after, app still 200s), across three runs. `git stash list` is also empty, so the recorded fix location no longer exists. Reopen with a fresh repro if it returns — the old blocker record was stale and was keeping a non-issue on the board — 2026-08-24
 
 ## Recently Done (last 30 days)
 
+- Template CI is live again 2026-08-24 — nothing had gated a PR; now pint+pest, eslint+vue-tsc+vitest, and a Capacitor build smoke all run on every pull request.
+- `module:make` 2026-08-24 — new modules start from the canonical shape, green on every check before a line is edited.
 - Frontend type safety — 42 vue-tsc errors to 0 on 2026-08-24, and the six real bugs the broken declarations were hiding (unauthenticated autocomplete creates, an edit form that silently wiped records, a reversed `$confirm` signature).
 - Modules — extraction from the template — all leaves shipped 2026-08-24 (Files and Users lifted out of the kernel; the kernel keeps only a read-only `users` typeahead).
 - Kernel slot-forwarding bug fixed 2026-08-24 — six components blanked the ENTIRE page when the wrapped Vuetify component invoked a zero-argument slot (`no-data`, `loading`, `top`, `bottom`). Any list screen using `#no-data` was dead. Pinned by a vitest spec that reproduces the throw.
