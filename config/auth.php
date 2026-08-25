@@ -186,4 +186,80 @@ return [
         'pkce' => env('SSO_PKCE', true),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | SAML 2.0 (Auth module, `sso` option — the `saml` choices)
+    |--------------------------------------------------------------------------
+    |
+    | A third choice on the same axis as `oidc`, not a variant of it: SAML is a
+    | different protocol, where an enterprise IdP POSTs a signed XML assertion
+    | to our ACS endpoint. Typical of AD FS, Azure, Okta and PingFederate.
+    |
+    | A project federates with ONE IdP, so there is no provider allow-list here
+    | the way there is for OIDC — the IdP's certificate IS the allow-list.
+    |
+    | IMPORTANT: a signature-validated assertion is treated as proof the email
+    | is verified, because the IdP is the system of record for its own users.
+    | That trust does not extend to addresses the IdP has no authority over, so
+    | when federating with someone else's IdP set SSO_ALLOWED_DOMAINS — the
+    | resolver applies it to account LINKING as well as registration.
+    |
+    */
+
+    'saml' => [
+        'enabled' => env('SAML_ENABLED', false),
+        // Shown on the login button: "Sign in with {label}".
+        'label' => env('SAML_LABEL', 'SSO'),
+
+        'idp' => [
+            'entity_id' => env('SAML_IDP_ENTITY_ID'),
+            'sso_url'   => env('SAML_IDP_SSO_URL'),
+            'slo_url'   => env('SAML_IDP_SLO_URL'),
+            // The IdP's signing certificate, base64 body. PEM headers and
+            // newlines are stripped, so it can be pasted either way.
+            'x509' => env('SAML_IDP_X509'),
+        ],
+
+        'sp' => [
+            // Defaults to our own metadata URL, which is what most IdPs expect.
+            'entity_id' => env('SAML_SP_ENTITY_ID'),
+            // Only needed to SIGN AuthnRequests or to receive encrypted
+            // assertions. Most integrations need neither.
+            'x509'           => env('SAML_SP_X509'),
+            'private_key'    => env('SAML_SP_PRIVATE_KEY'),
+            'name_id_format' => env('SAML_SP_NAME_ID_FORMAT'),
+        ],
+
+        'security' => [
+            'want_messages_signed'      => env('SAML_WANT_MESSAGES_SIGNED', false),
+            'want_assertions_encrypted' => env('SAML_WANT_ASSERTIONS_ENCRYPTED', false),
+            'sign_authn_requests'       => env('SAML_SIGN_AUTHN_REQUESTS', false),
+
+            // OFF by default. An unsolicited assertion is one we never asked
+            // for, which is the login-CSRF shape — an attacker replays an
+            // assertion minted for their own account and the victim's browser
+            // lands signed in as them. IdP-initiated sign-in (the tile in an
+            // Okta or Azure dashboard) is a real requirement, so it is
+            // available; turning it on accepts that the InResponseTo binding
+            // no longer protects the flow.
+            'allow_idp_initiated' => env('SAML_ALLOW_IDP_INITIATED', false),
+        ],
+
+        // Enterprise IdPs disagree about attribute naming more than any other
+        // part of SAML. A sensible candidate list is tried (WS-Federation claim
+        // URIs, urn:oid values, bare names); set these when yours uses
+        // something else. `subject` is worth setting when the IdP sends a
+        // transient NameID, which changes per session.
+        'attributes' => [
+            'email'      => env('SAML_ATTR_EMAIL', ''),
+            'first_name' => env('SAML_ATTR_FIRST_NAME', ''),
+            'last_name'  => env('SAML_ATTR_LAST_NAME', ''),
+            'subject'    => env('SAML_ATTR_SUBJECT', ''),
+        ],
+
+        // Falls back to sso.return_url, then /auth/sso/complete. Both protocols
+        // finish at the same page and redeem the same handoff code.
+        'return_url' => env('SAML_RETURN_URL'),
+    ],
+
 ];
