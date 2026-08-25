@@ -98,4 +98,10 @@ Emits TS into `resources/ts/types/laravel/`. Use those types when calling APIs �
 
 ## Tests
 
-`vitest` is installed but coverage is light. When you write a composable, add a sibling `.spec.ts`. Run with `npm run test` (add the script if missing).
+`vitest` + `@vue/test-utils`. Coverage is light — when you write a composable, add a sibling `.spec.ts`; component specs go in `__tests__/` beside the component.
+
+- **Run**: `npm run test` (watch) or `npm run test:ci` (once). CI runs `test:ci`.
+- **Environment**: jsdom is not the default. A spec that touches the DOM needs `// @vitest-environment jsdom` on its first line.
+- **Mounting**: `mount()` from `@vue/test-utils`. Do not hand-roll `createApp(...).mount(el)` — it works, but you lose `find`, `trigger`, `setProps` and the automatic teardown.
+- **Vuetify components**: mounting one needs the Vuetify plugin in `global.plugins`. Prefer testing your own logic against a stub over mounting a whole Vuetify tree.
+- Assert on behaviour, not on the rendered class soup. `resources/ts/components/__tests__/slot-forwarding.spec.ts` is the model: it reproduces the actual bug, proves the guard fixes it, and pins the guard so a future "simplification" fails the suite.

@@ -8,6 +8,7 @@ use App\Support\Modules\ModuleManifest;
 use App\Support\Modules\ModuleOptionApplier;
 use App\Support\Modules\ModuleOptionResolver;
 use App\Support\Modules\ModuleSource;
+use App\Support\Modules\ViteCache;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
@@ -105,6 +106,12 @@ class ModuleAddCommand extends Command
         Process::path(base_path())->run('composer dump-autoload --quiet');
         $this->components->info('composer dump-autoload complete');
 
+        // Once, after every module is in place: the route/page globs only
+        // settle then, and one re-bundle covers the whole batch.
+        if (ViteCache::clear()) {
+            $this->components->info('Cleared node_modules/.vite — Vite re-bundles on the next dev-server start');
+        }
+
         $this->runHooks($plan['run']);
 
         note(<<<'NEXT'
@@ -113,6 +120,10 @@ class ModuleAddCommand extends Command
               php artisan route:clear                   # BEFORE any build — Wayfinder reads the cached route table
               composer typescript
             Then restart the vite dev server so the route/page globs pick the module(s) up.
+            A plain restart is not always enough: the Vuetify plugin caches its
+            virtual modules, and after a module is added or removed every
+            component can 404 on its .sass until that cache is cleared. This
+            command deletes node_modules/.vite for you when it finds one.
             NEXT);
 
         return $failures === 0 ? self::SUCCESS : self::FAILURE;

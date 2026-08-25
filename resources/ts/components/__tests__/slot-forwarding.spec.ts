@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import {describe, expect, it} from "vitest"
-import {createApp, defineComponent, h} from "vue"
+import {defineComponent, h} from "vue"
+import {mount} from "@vue/test-utils"
 import {readFileSync} from "node:fs"
 import {resolve} from "node:path"
 
@@ -35,8 +36,8 @@ const SlotCallerStub = defineComponent({
   },
 })
 
-function mountWithNoDataSlot(forwardExpression: string): HTMLElement {
-  const Forwarder = defineComponent({
+function mountWithNoDataSlot(forwardExpression: string) {
+  const SlotForwarder = defineComponent({
     name: 'SlotForwarder',
     components: {SlotCallerStub},
     template: `
@@ -48,21 +49,14 @@ function mountWithNoDataSlot(forwardExpression: string): HTMLElement {
     `,
   })
 
-  const Host = defineComponent({
-    name: 'SlotHost',
-    components: {Forwarder},
-    template: `<Forwarder><template #no-data><span class="empty">Nothing here</span></template></Forwarder>`,
+  return mount(SlotForwarder, {
+    slots: {'no-data': '<span class="empty">Nothing here</span>'},
   })
-
-  const el = document.createElement('div')
-  createApp(Host).mount(el)
-
-  return el
 }
 
 describe('slot forwarding', () => {
   it('survives a child invoking a forwarded slot with no arguments', () => {
-    expect(mountWithNoDataSlot('slotData || {}').querySelector('.empty')).not.toBeNull()
+    expect(mountWithNoDataSlot('slotData || {}').find('.empty').exists()).toBe(true)
   })
 
   it('renders the same guarded or not, because Vue fixed the throw upstream', () => {

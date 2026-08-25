@@ -89,6 +89,7 @@
     "@types/lodash.merge": "^4.6.9",
     "@types/lodash.omit": "^4.5.9",
     "@types/lodash.union": "^4.6.9",
+    "@vue/test-utils": "^2.4.11",
     "axios-logger": "^2.8.1",
     "jsdom": "^25.0.0"
   }
