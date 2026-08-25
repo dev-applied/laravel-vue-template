@@ -53,7 +53,9 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .back-container {
-  background: #f4f4f4;
+  // A faint tint of the surface's own foreground, so the chip stays a subtle
+  // step off the page on any theme instead of a fixed near-white.
+  background: rgba(var(--v-theme-on-surface), 0.04);
   width: fit-content;
   cursor: pointer;
 }

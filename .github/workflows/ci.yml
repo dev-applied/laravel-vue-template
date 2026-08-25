@@ -98,6 +98,17 @@ jobs:
         run: npm ci
       - name: ESLint
         run: npm run lint
+      # Four conventions that are invisible to eslint and vue-tsc because the
+      # code is valid and only the RENDER is wrong: a Material Icons ligature
+      # name that does not exist draws the string instead of a glyph, a Vuetify
+      # v3 typography class contributes nothing in v4, a hardcoded hex never
+      # follows a brand theme, and an icon-only button announces nothing to a
+      # screen reader. The modules repo's bin/lint has covered modules/ for a
+      # while; it globs modules/*/resources/ts and has never been able to see
+      # this repo's own pages, which is how three unlabelled buttons and a dead
+      # 404 page shipped here.
+      - name: Kernel conventions (icons, typography, theming, a11y)
+        run: ./bin/lint-kernel
       - name: vue-tsc type check
         run: npm run type-check
       - name: Vitest

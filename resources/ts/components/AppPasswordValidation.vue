@@ -8,7 +8,6 @@
     >
       <v-badge
         class="password-condition"
-        color="#02d9c1"
         dot
         inline
       />
@@ -63,14 +62,14 @@ export default defineComponent({
   :deep() {
     .password-condition {
       .v-badge__badge {
-        background: linear-gradient(168.24deg, #FD5F76 51.64%, #FE805A 100%) !important;
+        background: linear-gradient(168.24deg, rgb(var(--v-theme-error)) 51.64%, rgb(var(--v-theme-warning)) 100%) !important;
       }
     }
 
     .satisfied {
       .password-condition {
         .v-badge__badge {
-          background: #5DFDCB !important;
+          background: rgb(var(--v-theme-success)) !important;
         }
       }
     }

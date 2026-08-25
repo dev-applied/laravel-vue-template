@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Conventions the kernel's own Vue must follow — the checks bin/lint applies to
+# modules/, applied to resources/ts/.
+#
+# Why this exists separately: bin/lint lives in dev-applied/laravel-vue-modules
+# and globs `modules/*/resources/ts/`. It has never been able to see this repo's
+# own pages and components. That gap shipped three icon-only buttons with no
+# accessible name and a non-wrapping header row in resources/ts/pages/items/,
+# both of which the module-side sweeps had already fixed everywhere else.
+#
+# Every check here is a grep on purpose. Each catches a failure INVISIBLE to
+# eslint, to vue-tsc and to the test suite, because the code is valid and only
+# the rendered result is wrong.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+status=0
+SRC="resources/ts"
+
+echo "── icon names ──"
+# Vuetify here uses the `md` iconset, so names are Material Icons ligatures.
+# Material Icons is a LIGATURE font: an unknown name neither errors nor warns,
+# it DRAWS THE STRING. `icon="mdi-delete-outline"` paints ~280px of text where a
+# 24px glyph belongs, with a clean console and passing tests.
+if grep -rn --include='*.vue' --include='*.ts' "mdi-" "$SRC" 2>/dev/null; then
+  echo "x mdi-* icon names found - this project uses the Material Icons (md) iconset." >&2
+  status=1
+else
+  echo "ok  no mdi-* icon names"
+fi
+
+echo "── typography classes ──"
+# Vuetify 4 renamed these to the Material Design 3 scale. The v3 names do not
+# merely change meaning, they DO NOT EXIST - so the class contributes nothing
+# and the element falls back to a browser default. 81 usages survived the v4
+# upgrade this way, which was the whole typographic hierarchy.
+if grep -rnE --include='*.vue' --include='*.ts' --include='*.scss' "text-(h[1-6]|body-[12]|subtitle-[12]|caption|overline)\b" "$SRC" 2>/dev/null; then
+  echo "x Vuetify v3 typography classes found - these do not exist in v4." >&2
+  echo "  h1..h6 -> display-*/headline-*/title-large; body-1/2 -> body-large/medium;" >&2
+  echo "  caption -> body-small; overline -> label-medium" >&2
+  status=1
+else
+  echo "ok  no v3 typography classes"
+fi
+
+echo "── hardcoded colours ──"
+# Colours come from the Vuetify theme so a brand palette reaches every screen.
+if find "$SRC" -type f \( -name '*.vue' -o -name '*.scss' -o -name '*.css' \) -print0 2>/dev/null \
+   | xargs -0 grep -n '#[0-9a-fA-F]\{3\}\b\|#[0-9a-fA-F]\{6\}\b\|#[0-9a-fA-F]\{8\}\b' 2>/dev/null \
+   | grep -viE 'var\(--v|^\s*//|// '; then
+  echo "x hardcoded colours found - use Vuetify theme tokens." >&2
+  status=1
+else
+  echo "ok  no hardcoded colours"
+fi
+
+echo "── icon-only buttons ──"
+# A v-btn whose only content is an icon has no accessible name: a screen reader
+# announces nothing, or the ligature word. These are usually the destructive
+# actions. prepend-icon/append-icon are fine - those decorate a button that
+# still has text. A mustache resolving to a ligature name is NOT a label.
+if python3 bin/find-unlabelled-buttons.py "$SRC"; then
+  echo "ok  every icon-only button has an accessible name"
+else
+  echo "x icon-only v-btn with no aria-label - a screen reader announces nothing." >&2
+  status=1
+fi
+
+echo "── Vuetify 2 class names ──"
+# A v2 class name is not an error and not a warning - it simply matches no rule,
+# so the element silently keeps its default. Two shipped here that way:
+# `.theme--light.v-application` (v3/v4 use `v-theme--<name>`), which let the app
+# paint an opaque background over the 404 illustration until the page rendered
+# as white-on-white; and `mediumgray--text` on the file-upload label, a colour
+# that was never defined and a `--text` suffix v3 replaced with `text-`.
+# The leading [^-] matters: v4's own `v-theme--lightTheme` CONTAINS the v2
+# string `theme--light`, so a naive match reports the correct class as the
+# broken one.
+if grep -rnE --include='*.vue' --include='*.ts' --include='*.scss' \
+   '(^|[^-])theme--(light|dark)|v-application--wrap|[a-z]+--text\b|text--(primary|secondary|disabled)|v-btn--(flat|depressed)' \
+   "$SRC" 2>/dev/null | grep -v 'v2 class'; then
+  echo "x Vuetify 2 class names found - these match nothing in v4." >&2
+  echo "  theme--light -> v-theme--<name>; <colour>--text -> text-<colour>;" >&2
+  echo "  text--secondary -> text-medium-emphasis" >&2
+  status=1
+else
+  echo "ok  no Vuetify 2 class names"
+fi
+
+exit "$status"

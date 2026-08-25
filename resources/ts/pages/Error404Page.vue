@@ -44,16 +44,28 @@ export default defineComponent({
 </script>
 
 <style>
+/* The whole page is a themed illustration: `primary` is the sky, `on-primary`
+   is the clouds, the rules, the text and the button face. Using tokens rather
+   than a fixed mint green means a brand palette reaches the 404 page too. */
 body.not-found {
-  background: #33cc99 !important;
-  color: #fff;
+  background: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-on-primary));
   font-family: 'Open Sans', sans-serif;
   max-height: 700px;
   overflow: hidden;
 }
 
-.not-found .theme--light.v-application {
+/* Without this the app root paints its own opaque background over the body and
+   the entire illustration disappears — which is exactly what happened between
+   the Vuetify 2 and 3 upgrades. This selector used to read
+   `.theme--light.v-application`, a v2 class pair that matches nothing in v3/v4
+   (the root carries `v-theme--<name>` now), so it silently stopped applying:
+   white app over green body, white clouds on white, white text on white. The
+   page rendered as three dark words and a stripe of green at the bottom.
+   `color` is set here too — v-application sets its own, so the body's never won. */
+.not-found .v-application {
   background: transparent !important;
+  color: rgb(var(--v-theme-on-primary));
 }
 </style>
 
@@ -68,11 +80,11 @@ body.not-found {
 }
 
 ._404 {
-  font-size: 220px;
+  font-size: clamp(96px, 28vw, 220px);
   position: relative;
   display: inline-block;
   z-index: 2;
-  height: 250px;
+  height: auto;
   letter-spacing: 15px;
 }
 
@@ -81,7 +93,7 @@ body.not-found {
   display: block;
   position: relative;
   letter-spacing: 12px;
-  font-size: 4em;
+  font-size: clamp(1.75rem, 9vw, 4em);
   line-height: 80%;
 }
 
@@ -93,26 +105,28 @@ body.not-found {
 }
 
 .btn {
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(var(--v-theme-on-primary));
   position: relative;
   display: inline-block;
   width: 358px;
+  max-width: 90vw;
   padding: 5px;
   z-index: 5;
   font-size: 25px;
-  color: #33cc99;
+  color: rgb(var(--v-theme-primary));
   text-decoration: none;
-  margin: 0 10px 0 auto;
+  margin: 12px auto 0;
 }
 
 hr {
   padding: 0;
   border: none;
-  border-top: 5px solid #fff;
-  color: #fff;
+  border-top: 5px solid rgb(var(--v-theme-on-primary));
+  color: rgb(var(--v-theme-on-primary));
   text-align: center;
-  margin: 0 auto;
+  margin: 0 auto 18px;
   width: 420px;
+  max-width: 100%;
   height: 10px;
   z-index: -10;
 }
@@ -121,12 +135,7 @@ hr {
   width: 350px;
   height: 120px;
 
-  background: #FFF;
-  background-image: linear-gradient(to bottom, #FFF 100%);
-  background-image: -webkit-linear-gradient(to bottom, #FFF 100%);
-  background-image: -moz-linear-gradient(to bottom, #FFF 100%);
-  background-image: -ms-linear-gradient(to bottom, #FFF 100%);
-  background-image: -o-linear-gradient(to bottom, #FFF 100%);
+  background: rgb(var(--v-theme-on-primary));
 
   border-radius: 100px;
   -webkit-border-radius: 100px;
@@ -141,7 +150,7 @@ hr {
 .cloud:after, .cloud:before {
   content: '';
   position: absolute;
-  background: #FFF;
+  background: rgb(var(--v-theme-on-primary));
   z-index: -1
 }
 

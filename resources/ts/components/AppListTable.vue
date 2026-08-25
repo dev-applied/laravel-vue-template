@@ -283,7 +283,7 @@ function refreshItems(): void {
   &__no-items {
     text-align: center;
     font-size: 1.2rem;
-    color: #999;
+    color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
     padding: 1rem;
   }
 }

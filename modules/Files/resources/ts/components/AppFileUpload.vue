@@ -1,7 +1,7 @@
 <template>
   <div class="mb-3">
     <v-row no-gutters>
-      <div class="font-weight-bold mb-2 mediumgray--text">
+      <div class="font-weight-bold mb-2 text-medium-emphasis">
         {{ props.label }}
       </div>
     </v-row>
