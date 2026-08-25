@@ -9,7 +9,7 @@ interface SearchResult {
   icon: string | null
   title: string
   subtitle: string | null
-  route: {name: string, params?: Record<string, unknown>} | null
+  route: {name: string, params?: Record<string, string | number | string[] | number[]>} | null
 }
 
 interface SearchGroup {

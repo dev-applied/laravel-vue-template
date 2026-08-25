@@ -28,7 +28,7 @@ class SearchRequest extends FormRequest
             // reach: an unauthorised type is dropped later by the registry, and
             // rejecting it here would answer "that type exists" to anyone who
             // guessed a name.
-            'types' => ['sometimes', 'array'],
+            'types'   => ['sometimes', 'array'],
             'types.*' => ['string', Rule::in(app(SearchRegistry::class)->keys())],
 
             'limit' => ['sometimes', 'integer', 'min:1', 'max:25'],

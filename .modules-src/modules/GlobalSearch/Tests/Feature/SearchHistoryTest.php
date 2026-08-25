@@ -6,7 +6,7 @@ use App\Models\User;
 use Modules\GlobalSearch\Models\SearchHistory;
 
 beforeEach(function () {
-    $this->user = User::factory()->create();
+    $this->user  = User::factory()->create();
     $this->other = User::factory()->create();
 });
 
@@ -41,8 +41,8 @@ test('storing records the term for the caller', function () {
         ->assertNoContent();
 
     $this->assertDatabaseHas('search_histories', [
-        'user_id' => $this->user->id,
-        'term' => 'quarterly',
+        'user_id'      => $this->user->id,
+        'term'         => 'quarterly',
         'result_count' => 4,
     ]);
 });

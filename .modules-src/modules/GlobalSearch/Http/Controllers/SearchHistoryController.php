@@ -21,10 +21,10 @@ class SearchHistoryController extends Controller
 
         return response()->json([
             'data' => $entries->map(fn (SearchHistory $entry) => [
-                'id' => $entry->id,
-                'term' => $entry->term,
+                'id'          => $entry->id,
+                'term'        => $entry->term,
                 'resultCount' => $entry->result_count,
-                'searchedAt' => $entry->updated_at?->toIso8601String(),
+                'searchedAt'  => $entry->updated_at?->toIso8601String(),
             ])->all(),
         ]);
     }
@@ -36,7 +36,7 @@ class SearchHistoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'term' => ['required', 'string', 'min:2', 'max:255'],
+            'term'         => ['required', 'string', 'min:2', 'max:255'],
             'result_count' => ['sometimes', 'integer', 'min:0'],
         ]);
 

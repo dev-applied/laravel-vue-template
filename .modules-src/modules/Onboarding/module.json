@@ -1,0 +1,43 @@
+{
+    "name": "Onboarding",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-25)",
+    "template_version_tested": "2026-08",
+    "description": "First-run checklist: a project declares its setup steps, the module tracks each user's progress, auto-detects steps already satisfied elsewhere in the app, and optionally refuses gated routes until the required ones are done.",
+    "composer_requires": [],
+    "options": {
+        "gate": {
+            "prompt": "Ship the middleware that blocks gated routes until required steps are done?",
+            "type": "select",
+            "default": "middleware",
+            "choices": {
+                "middleware": {
+                    "label": "Yes — an `onboarded` middleware alias the project applies per route"
+                },
+                "none": {
+                    "label": "No — the API reports what is outstanding and the project decides",
+                    "drop": [
+                        "Http/Middleware/RequireOnboarding.php",
+                        "Tests/Feature/RequireOnboardingTest.php"
+                    ]
+                }
+            }
+        },
+        "banner": {
+            "prompt": "Include the persistent progress banner?",
+            "type": "select",
+            "default": "on",
+            "choices": {
+                "on": {
+                    "label": "Yes — a dismissible bar showing what is left, for any layout"
+                },
+                "off": {
+                    "label": "No — the checklist page only",
+                    "drop": [
+                        "resources/ts/components/AppOnboardingBanner.vue"
+                    ]
+                }
+            }
+        }
+    }
+}

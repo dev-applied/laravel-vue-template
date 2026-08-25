@@ -50,13 +50,13 @@ class SearchSource
     public function present(Model $model): array
     {
         return [
-            'id' => $model->getKey(),
-            'type' => $this->key,
+            'id'        => $model->getKey(),
+            'type'      => $this->key,
             'typeLabel' => $this->label,
-            'icon' => $this->icon,
-            'title' => ($this->title)($model),
-            'subtitle' => $this->subtitle ? ($this->subtitle)($model) : null,
-            'route' => $this->route ? ($this->route)($model) : null,
+            'icon'      => $this->icon,
+            'title'     => ($this->title)($model),
+            'subtitle'  => $this->subtitle ? ($this->subtitle)($model) : null,
+            'route'     => $this->route ? ($this->route)($model) : null,
         ];
     }
 }

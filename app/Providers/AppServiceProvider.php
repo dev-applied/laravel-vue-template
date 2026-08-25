@@ -25,6 +25,7 @@ use Illuminate\Validation\Rules\Password;
 use Modules\DataImport\Support\ImportRegistry;
 use Modules\Exports\Support\ExportRegistry;
 use Modules\GlobalSearch\Support\SearchRegistry;
+use Modules\Onboarding\Support\OnboardingRegistry;
 use ReflectionException;
 
 class AppServiceProvider extends ServiceProvider
@@ -59,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureImports();
         $this->configureExports();
         $this->configureSearch();
+        $this->configureOnboarding();
     }
 
     /**
@@ -184,6 +186,65 @@ class AppServiceProvider extends ServiceProvider
             subtitle: fn (User $user) => $user->email,
             icon: 'person',
             order: 10,
+        );
+    }
+
+    /**
+     * Worked example steps for the Onboarding module.
+     *
+     * Same guard and same reason as the three above — the registry is the whole
+     * configuration surface, so a freshly-installed checklist is an empty page
+     * until a project declares something, and an empty page reads as broken
+     * rather than unconfigured.
+     *
+     * The three shapes a project needs to see are all here: a required step
+     * with a `completedWhen` that satisfies itself from work done elsewhere, a
+     * required step completed by an explicit click, and an optional one that
+     * can be skipped.
+     */
+    public function configureOnboarding(): void
+    {
+        if (! is_dir(base_path('modules/Onboarding'))) {
+            return;
+        }
+
+        if (! class_exists(OnboardingRegistry::class)) {
+            return;
+        }
+
+        $registry = app(OnboardingRegistry::class);
+
+        $registry->register(
+            key: 'verify-email',
+            label: 'Verify your email address',
+            description: 'We sent you a link when your account was created.',
+            icon: 'mark_email_read',
+            required: true,
+            completedWhen: fn (User $user) => $user->email_verified_at !== null,
+            order: 0,
+        );
+
+        $registry->register(
+            key: 'read-the-basics',
+            label: 'Read the getting-started notes',
+            description: 'Two minutes on what this app does and where things live.',
+            icon: 'menu_book',
+            required: true,
+            order: 10,
+        );
+
+        $registry->register(
+            key: 'first-item',
+            label: 'Create your first item',
+            description: 'Optional — you can always do this later.',
+            icon: 'inventory_2',
+            route: ['name' => 'items.create'],
+            required: false,
+            // `created_by_id`, not `created_by` — the WhoDidIt trait names its columns
+            // with the _id suffix, and guessing the other way cost a 500 on the very
+            // first load of this page.
+            completedWhen: fn (User $user) => Item::query()->where('created_by_id', $user->getKey())->exists(),
+            order: 20,
         );
     }
 

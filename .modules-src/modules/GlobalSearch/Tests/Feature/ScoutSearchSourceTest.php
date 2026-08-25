@@ -9,13 +9,13 @@ test('it builds a registry query closure from a Scout model', function () {
     // configured engine in the suite. What is asserted here is the CONTRACT the
     // registry depends on — a closure taking a term and returning an Eloquent
     // builder — not that a search engine returned anything.
-    if (! class_exists(\Laravel\Scout\Searchable::class)) {
+    if (! class_exists(Laravel\Scout\Searchable::class)) {
         $this->markTestSkipped('laravel/scout is not installed — this is the scout=off variant.');
     }
 
-    $model = new class extends \Illuminate\Database\Eloquent\Model
+    $model = new class extends Illuminate\Database\Eloquent\Model
     {
-        use \Laravel\Scout\Searchable;
+        use Laravel\Scout\Searchable;
 
         protected $table = 'users';
     };
@@ -25,5 +25,5 @@ test('it builds a registry query closure from a Scout model', function () {
     $closure = ScoutSearchSource::for($model::class, with: []);
 
     expect($closure)->toBeCallable()
-        ->and($closure('anything'))->toBeInstanceOf(\Illuminate\Database\Eloquent\Builder::class);
+        ->and($closure('anything'))->toBeInstanceOf(Illuminate\Database\Eloquent\Builder::class);
 });

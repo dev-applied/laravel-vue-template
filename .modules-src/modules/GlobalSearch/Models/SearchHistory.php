@@ -19,11 +19,6 @@ class SearchHistory extends Model
 
     protected $fillable = ['user_id', 'term', 'result_count'];
 
-    protected function casts(): array
-    {
-        return ['result_count' => 'integer'];
-    }
-
     /**
      * Record a search, collapsing a repeat rather than appending it.
      *
@@ -46,8 +41,8 @@ class SearchHistory extends Model
         }
 
         return static::query()->create([
-            'user_id' => $userId,
-            'term' => $term,
+            'user_id'      => $userId,
+            'term'         => $term,
             'result_count' => $resultCount,
         ]);
     }
@@ -56,5 +51,10 @@ class SearchHistory extends Model
     public function scopeRecentFor(Builder $query, int $userId): void
     {
         $query->where('user_id', $userId)->latest('updated_at');
+    }
+
+    protected function casts(): array
+    {
+        return ['result_count' => 'integer'];
     }
 }

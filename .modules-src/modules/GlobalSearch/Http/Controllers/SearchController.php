@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Modules\GlobalSearch\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\GlobalSearch\Http\Requests\SearchRequest;
-use Illuminate\Http\Request;
 use Modules\GlobalSearch\Support\SearchRegistry;
 
 class SearchController extends Controller
@@ -24,8 +24,8 @@ class SearchController extends Controller
      */
     public function __invoke(SearchRequest $request): JsonResponse
     {
-        $term = trim((string) $request->string('q'));
-        $limit = (int) $request->integer('limit', 5);
+        $term   = mb_trim((string) $request->string('q'));
+        $limit  = (int) $request->integer('limit', 5);
         $wanted = $request->array('types');
 
         $sources = $this->registry->authorisedFor($request->user());
@@ -39,7 +39,7 @@ class SearchController extends Controller
         foreach ($sources as $key => $source) {
             // One extra row, then sliced off: that is how `hasMore` is known
             // without a second COUNT query per source per keystroke.
-            $rows = $source->resolveQuery($term)->limit($limit + 1)->get();
+            $rows    = $source->resolveQuery($term)->limit($limit + 1)->get();
             $hasMore = $rows->count() > $limit;
 
             $results = $rows->take($limit)
@@ -52,9 +52,9 @@ class SearchController extends Controller
             }
 
             $groups[] = [
-                'type' => $key,
-                'label' => $source->label,
-                'icon' => $source->icon,
+                'type'    => $key,
+                'label'   => $source->label,
+                'icon'    => $source->icon,
                 'hasMore' => $hasMore,
                 'results' => $results,
             ];
@@ -62,9 +62,9 @@ class SearchController extends Controller
 
         return response()->json([
             'data' => [
-                'query' => $term,
+                'query'  => $term,
                 'groups' => $groups,
-                'total' => array_sum(array_map(fn (array $g) => count($g['results']), $groups)),
+                'total'  => array_sum(array_map(fn (array $g) => count($g['results']), $groups)),
             ],
         ]);
     }
@@ -79,9 +79,9 @@ class SearchController extends Controller
 
         return response()->json([
             'data' => array_values(array_map(fn ($source) => [
-                'type' => $source->key,
+                'type'  => $source->key,
                 'label' => $source->label,
-                'icon' => $source->icon,
+                'icon'  => $source->icon,
             ], $sources)),
         ]);
     }
