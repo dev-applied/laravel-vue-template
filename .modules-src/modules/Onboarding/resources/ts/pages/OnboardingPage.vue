@@ -115,7 +115,7 @@ export default defineComponent({
               Go
             </v-btn>
             <v-btn
-              v-if="!step.completed && !step.route"
+              v-if="!step.completed && !step.route && !step.autoDetected"
               color="primary"
               variant="tonal"
               size="small"
@@ -124,6 +124,12 @@ export default defineComponent({
             >
               Mark done
             </v-btn>
+            <span
+              v-if="!step.completed && !step.route && step.autoDetected"
+              class="text-body-small text-medium-emphasis"
+            >
+              Ticks itself
+            </span>
             <v-btn
               v-if="!step.completed && !step.skipped && !step.required"
               variant="text"

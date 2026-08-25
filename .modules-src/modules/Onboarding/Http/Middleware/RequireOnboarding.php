@@ -44,10 +44,10 @@ class RequireOnboarding
         }
 
         return response()->json([
-            'message' => 'Finish setting up your account first.',
+            'message'    => 'Finish setting up your account first.',
             'onboarding' => [
-                'complete' => false,
-                'nextStep' => $state['nextStep'],
+                'complete'            => false,
+                'nextStep'            => $state['nextStep'],
                 'outstandingRequired' => $state['outstandingRequired'],
             ],
         ], 403);

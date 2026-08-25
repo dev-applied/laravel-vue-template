@@ -26,7 +26,7 @@ class OnboardingState
             ->get()
             ->keyBy('step_key');
 
-        $steps = [];
+        $steps               = [];
         $outstandingRequired = 0;
 
         foreach ($this->registry->all() as $key => $step) {
@@ -38,15 +38,15 @@ class OnboardingState
             // and then did the work elsewhere sees it as done rather than
             // passed over.
             $completed = $row?->completed_at !== null || $step->isSatisfiedBy($user);
-            $skipped = ! $completed && $row?->skipped_at !== null;
+            $skipped   = ! $completed && $row?->skipped_at !== null;
 
             if ($step->required && ! $completed) {
                 $outstandingRequired++;
             }
 
             $steps[] = $step->toArray() + [
-                'completed' => $completed,
-                'skipped' => $skipped,
+                'completed'   => $completed,
+                'skipped'     => $skipped,
                 'completedAt' => $row?->completed_at?->toIso8601String(),
             ];
         }
@@ -56,19 +56,20 @@ class OnboardingState
         foreach ($steps as $step) {
             if (! $step['completed'] && ! $step['skipped']) {
                 $next = $step['key'];
+
                 break;
             }
         }
 
         return [
-            'steps' => $steps,
-            'nextStep' => $next,
+            'steps'               => $steps,
+            'nextStep'            => $next,
             'outstandingRequired' => $outstandingRequired,
             // "Finished" means no REQUIRED step is outstanding. An optional step
             // left untouched does not hold anybody up, which is what makes it
             // optional.
-            'complete' => $outstandingRequired === 0,
-            'total' => count($steps),
+            'complete'       => $outstandingRequired === 0,
+            'total'          => count($steps),
             'completedCount' => count(array_filter($steps, fn (array $s) => $s['completed'])),
         ];
     }

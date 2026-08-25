@@ -1,0 +1,54 @@
+{
+    "name": "SmsMessaging",
+    "version": "0.1.0",
+    "harvested_from": "laravel-vue-template (built generic 2026-08-25)",
+    "template_version_tested": "2026-08",
+    "description": "SMS as a first-class channel: a `sms` notification channel, a delivery log, and carrier-required STOP/START/HELP opt-out handling that every send is checked against. Installs with no vendor account — the default driver logs. Binds the Otp module's SMS seam when both are present.",
+    "composer_requires": [],
+    "options": {
+        "driver": {
+            "prompt": "Which SMS driver?",
+            "type": "select",
+            "default": "log",
+            "choices": {
+                "log": {
+                    "label": "Log only — no account needed, still logs and honours opt-outs",
+                    "drop": [
+                        "Drivers/TwilioSmsSender.php",
+                        "Tests/Feature/TwilioSmsSenderTest.php"
+                    ],
+                    "env": {
+                        "SMS_DRIVER": "log"
+                    }
+                },
+                "twilio": {
+                    "label": "Twilio over its REST API (no SDK dependency)",
+                    "env": {
+                        "SMS_DRIVER": "twilio",
+                        "TWILIO_SID": "",
+                        "TWILIO_TOKEN": "",
+                        "TWILIO_FROM": ""
+                    }
+                }
+            }
+        },
+        "inbound": {
+            "prompt": "Handle the carrier's inbound STOP/START/HELP webhook?",
+            "type": "select",
+            "default": "webhook",
+            "choices": {
+                "webhook": {
+                    "label": "Yes — POST /api/v1/sms/inbound, replies in TwiML"
+                },
+                "none": {
+                    "label": "No — the opt-out list is maintained some other way",
+                    "drop": [
+                        "Http/Controllers/InboundSmsController.php",
+                        "Routes/webhook.php",
+                        "Tests/Feature/InboundSmsTest.php"
+                    ]
+                }
+            }
+        }
+    }
+}

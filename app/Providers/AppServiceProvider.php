@@ -18,6 +18,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -61,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureExports();
         $this->configureSearch();
         $this->configureOnboarding();
+        $this->configureSmsLog();
     }
 
     /**
@@ -246,6 +248,29 @@ class AppServiceProvider extends ServiceProvider
             completedWhen: fn (User $user) => Item::query()->where('created_by_id', $user->getKey())->exists(),
             order: 20,
         );
+    }
+
+    /**
+     * Who may read the SMS delivery log.
+     *
+     * Unlike the registries above, this is NOT a "wire it up so the page is
+     * reachable" case. The log holds phone numbers and message bodies, and the
+     * module leaves `view-sms-log` undefined so it falls closed — deciding to
+     * expose that has to be an act.
+     *
+     * The template defines it and grants nobody, so a developer who opens the
+     * page gets a 403 they can trace to one line rather than a silent refusal
+     * from a module they have not read. Replace the body with your own check:
+     *
+     *     Gate::define('view-sms-log', fn (User $user) => $user->can('manage-support'));
+     */
+    public function configureSmsLog(): void
+    {
+        if (! is_dir(base_path('modules/SmsMessaging'))) {
+            return;
+        }
+
+        Gate::define('view-sms-log', fn (User $user) => false);
     }
 
     public function configureModels(): void

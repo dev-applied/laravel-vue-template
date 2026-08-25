@@ -19,14 +19,6 @@ class OnboardingProgress extends Model
 
     protected $fillable = ['user_id', 'step_key', 'completed_at', 'skipped_at'];
 
-    protected function casts(): array
-    {
-        return [
-            'completed_at' => 'datetime',
-            'skipped_at' => 'datetime',
-        ];
-    }
-
     /**
      * Completed and skipped are mutually exclusive, and setting one clears the
      * other on purpose.
@@ -41,16 +33,24 @@ class OnboardingProgress extends Model
     {
         return static::updateOrCreateFor($userId, $stepKey, [
             'completed_at' => now(),
-            'skipped_at' => null,
+            'skipped_at'   => null,
         ]);
     }
 
     public static function markSkipped(int $userId, string $stepKey): self
     {
         return static::updateOrCreateFor($userId, $stepKey, [
-            'skipped_at' => now(),
+            'skipped_at'   => now(),
             'completed_at' => null,
         ]);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'completed_at' => 'datetime',
+            'skipped_at'   => 'datetime',
+        ];
     }
 
     /** @param  array<string, mixed>  $attributes */

@@ -8,6 +8,7 @@ export interface OnboardingStep {
   icon: string | null
   route: {name: string, params?: Record<string, string | number>} | null
   required: boolean
+  autoDetected: boolean
   completed: boolean
   skipped: boolean
   completedAt: string | null

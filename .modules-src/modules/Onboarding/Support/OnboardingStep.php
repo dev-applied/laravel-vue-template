@@ -34,6 +34,12 @@ class OnboardingStep
         public readonly int $order = 0,
     ) {}
 
+    /** Does this step detect its own completion rather than waiting for a click? */
+    public function isAutoDetected(): bool
+    {
+        return $this->completedWhen !== null;
+    }
+
     /** Has the user satisfied this step somewhere else in the app already? */
     public function isSatisfiedBy(Authenticatable $user): bool
     {
@@ -44,12 +50,13 @@ class OnboardingStep
     public function toArray(): array
     {
         return [
-            'key' => $this->key,
-            'label' => $this->label,
-            'description' => $this->description,
-            'icon' => $this->icon,
-            'route' => $this->route,
-            'required' => $this->required,
+            'key'          => $this->key,
+            'label'        => $this->label,
+            'description'  => $this->description,
+            'icon'         => $this->icon,
+            'route'        => $this->route,
+            'required'     => $this->required,
+            'autoDetected' => $this->isAutoDetected(),
         ];
     }
 }

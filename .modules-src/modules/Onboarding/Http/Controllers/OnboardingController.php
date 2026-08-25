@@ -28,6 +28,17 @@ class OnboardingController extends Controller
     {
         abort_unless($this->registry->has($step), 404);
 
+        // A step with a `completedWhen` reports itself, so accepting a POST for
+        // it is a bypass: "verify your email" would be marked done by clicking
+        // a button, which is the one thing it must not be. Noticed by loading
+        // the page rather than by a test — the checklist rendered a "Mark done"
+        // button beside an email-verification step.
+        abort_if(
+            $this->registry->get($step)->isAutoDetected(),
+            422,
+            'That step completes itself once the work is done — it cannot be ticked off by hand.',
+        );
+
         OnboardingProgress::markCompleted($request->user()->getKey(), $step);
 
         return response()->json(['data' => $this->state->for($request->user())]);
