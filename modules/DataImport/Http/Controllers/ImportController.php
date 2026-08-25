@@ -124,7 +124,20 @@ class ImportController extends Controller
         // one the progress numbers would not reveal. The already-written rows
         // are committed and cannot be taken back, so the honest answer is to
         // refuse and let them upload the file again.
-        if ((int) $import->processed_rows > 0 && $mapping !== (array) $import->mapping) {
+        // Compared order-insensitively, and that is not defensive coding.
+        // MySQL 8 stores JSON in a normalised binary form that SORTS object
+        // keys; MariaDB stores it as text and preserves them. So the same
+        // mapping written as [first_name, email] reads back as [email,
+        // first_name] on MySQL and matches on MariaDB — and `!==` on arrays
+        // compares order. Left strict, this guard fired on every legitimate
+        // resume in production while passing locally, which is exactly how it
+        // was found: green on MariaDB here, red on MySQL 8 in CI.
+        $submitted = $mapping;
+        $stored    = (array) $import->mapping;
+        ksort($submitted);
+        ksort($stored);
+
+        if ((int) $import->processed_rows > 0 && $submitted !== $stored) {
             throw new AppException(
                 'This import has already written '.$import->imported_rows.' rows using the previous column mapping. Upload the file again to import it a different way.',
                 409

@@ -472,6 +472,33 @@ test('re-mapping an import that has already written rows is refused', function (
         ->assertStatus(202);
 });
 
+test('the same mapping is still the same mapping with its keys in another order', function () {
+    // MySQL 8 stores JSON in a normalised binary form that SORTS object keys;
+    // MariaDB stores it as text and preserves them. A strict !== on the two
+    // arrays therefore fired on every legitimate resume on MySQL — which is
+    // what clients deploy — while passing on the MariaDB used for local
+    // development. It shipped green and CI caught it on the first run.
+    //
+    // Written so it fails on EITHER engine: the submitted order is deliberately
+    // the reverse of the stored one, so nothing about it depends on which
+    // engine normalises what.
+    Queue::fake();
+
+    $import = uploadedImport();
+    $import->update([
+        'mapping'        => ['first_name' => 'First name', 'email' => 'Email'],
+        'status'         => DataImport::STATUS_FAILED,
+        'processed_rows' => 2,
+        'imported_rows'  => 1,
+    ]);
+
+    $this->actingAs($this->user)
+        ->postJson("/api/v1/imports/{$import->id}/run", [
+            'mapping' => ['email' => 'Email', 'first_name' => 'First name'],
+        ])
+        ->assertStatus(202);
+});
+
 test('the import is marked failed once the attempts are exhausted, not on the first throw', function () {
     // This lived in a catch block, which runs on EVERY attempt: the first
     // transient blip flipped the status to failed while two retries were still
