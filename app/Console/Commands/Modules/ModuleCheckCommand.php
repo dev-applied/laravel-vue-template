@@ -27,7 +27,7 @@ class ModuleCheckCommand extends Command
 {
     protected $signature = 'module:check
         {--defaults : Also fail if an installed module sits on a non-default option variant}
-        {--allow=* : Drift to permit under --defaults, as Module:axis=choice}';
+        {--allow=* : Declared exception under --defaults, as Module:axis=choice — a PIN, not just permission}';
 
     protected $description = "Check that installed modules' declared dependencies are present in composer.json / package.json";
 
@@ -73,8 +73,8 @@ class ModuleCheckCommand extends Command
         }
 
         if ($drift !== []) {
-            $this->components->error('Installed modules sit on a non-default option variant:');
-            $this->table(['Module', 'Option', 'Installed', 'Default'], $drift);
+            $this->components->error('Installed modules are not on the option variant this bundle expects:');
+            $this->table(['Module', 'Option', 'Installed', 'Expected'], $drift);
             $this->line('  In the TEMPLATE this is drift, not configuration — a bundled module is meant to');
             $this->line('  ship the variant its own manifest calls default. It has shipped a QA-only');
             $this->line('  entitlement switcher this way, left behind by a verification run.');
@@ -117,15 +117,31 @@ class ModuleCheckCommand extends Command
         foreach ((array) ($manifest['installed_options'] ?? []) as $option => $choice) {
             $default = $manifest['options'][$option]['default'] ?? null;
 
-            if ($default === null || (string) $choice === (string) $default) {
+            if ($default === null) {
                 continue;
             }
 
-            if (in_array("{$module}:{$option}={$choice}", $allowed, true)) {
+            // A declared exception is a PIN, not merely permission. Reinstalling
+            // that module at its default silently DROPS whatever the exception
+            // was there for — Announcements is pinned to `in-app+email`, and a
+            // plain `module:add Announcements` deleted the job, the mailable,
+            // the migration, the blade view and the test, all of them tracked
+            // files. That passed a version of this check that only permitted.
+            $pinned = null;
+
+            foreach ($allowed as $entry) {
+                if (str_starts_with((string) $entry, "{$module}:{$option}=")) {
+                    $pinned = mb_substr((string) $entry, mb_strlen("{$module}:{$option}="));
+                }
+            }
+
+            $expected = $pinned ?? (string) $default;
+
+            if ((string) $choice === $expected) {
                 continue;
             }
 
-            $found[] = [$module, $option, (string) $choice, (string) $default];
+            $found[] = [$module, $option, (string) $choice, $expected];
         }
 
         return $found;

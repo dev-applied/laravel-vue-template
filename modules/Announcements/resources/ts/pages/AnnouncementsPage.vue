@@ -84,7 +84,7 @@ export default defineComponent({
 
 <template>
   <v-container>
-    <div class="d-flex align-center ga-2 mb-4">
+    <div class="d-flex align-center flex-wrap ga-2 mb-4">
       <h1 class="text-h4">
         Announcements
       </h1>

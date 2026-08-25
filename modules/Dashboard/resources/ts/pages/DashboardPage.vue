@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <div class="d-flex align-center ga-2 mb-4">
+    <div class="d-flex align-center flex-wrap ga-2 mb-4">
       <h1 class="text-h5">
         {{ title }}
       </h1>

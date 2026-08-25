@@ -42,7 +42,7 @@ export default defineComponent({
 
 <template>
   <v-container fluid>
-    <div class="d-flex align-center ga-2 mb-4">
+    <div class="d-flex align-center flex-wrap ga-2 mb-4">
       <v-btn
         aria-label="Back to the task list"
         icon="list"

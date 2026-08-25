@@ -7,6 +7,6 @@
     "composer_requires": [
         "spatie/laravel-permission:^6.10"
     ],
-    "installed_from_commit": "a66a6e81814924f7e624b3b7d647be2c67288810",
+    "installed_from_commit": "7216e0ad7faff21a540d3798c0beb262003da6a4",
     "installed_at": "2026-08-25"
 }

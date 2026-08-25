@@ -16,6 +16,12 @@ export default defineComponent({
       title: this.$route?.meta?.title || this.humanise(this.$route?.name) || undefined
     }
   },
+  computed: {
+    layout(): string | null{
+      if (!this.$route) return null
+      return this.$route.meta?.layout ? this.$route.meta.layout + "Layout" : "EmptyLayout"
+    }
+  },
   methods: {
     /**
      * Last-resort title for a route that never called .title().
@@ -43,12 +49,6 @@ export default defineComponent({
         .replace(/([a-z])([A-Z])/g, (_m, a: string, b: string) => `${a} ${b.toLowerCase()}`)
         .replace(/^./, c => c.toUpperCase())
     },
-  },
-  computed: {
-    layout(): string | null{
-      if (!this.$route) return null
-      return this.$route.meta?.layout ? this.$route.meta.layout + "Layout" : "EmptyLayout"
-    }
   }
 })
 </script>

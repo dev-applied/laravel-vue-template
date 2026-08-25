@@ -170,3 +170,36 @@ test('drift is invisible without the flag, so a real project is not broken by it
     $this->artisan('module:check', ['--defaults' => true])->assertFailed();
     $this->artisan('module:check')->doesntExpectOutputToContain('non-default')->assertSuccessful();
 });
+
+test('a declared exception is a pin, not merely permission', function () {
+    // --allow says "this bundle intentionally ships that variant". Treating it
+    // as permission only means reinstalling the module at its DEFAULT passes
+    // silently — which is what happened to Announcements: a plain
+    // `module:add Announcements` dropped the job, the mailable, the migration,
+    // the blade view and the test, all tracked files, and the check said fine.
+    $name = basename($this->sandbox);
+
+    writeManifest($this->sandbox, [
+        'name'              => $name,
+        'options'           => ['delivery' => ['default' => 'in-app', 'choices' => ['in-app' => [], 'in-app+email' => []]]],
+        'installed_options' => ['delivery' => 'in-app'],
+    ]);
+
+    // Pinned to the non-default: sitting on the default is now the failure.
+    $this->artisan('module:check', ['--defaults' => true, '--allow' => ["{$name}:delivery=in-app+email"]])
+        ->expectsOutputToContain($name)
+        ->assertFailed();
+});
+
+test('a module on its pinned variant passes', function () {
+    $name = basename($this->sandbox);
+
+    writeManifest($this->sandbox, [
+        'name'              => $name,
+        'options'           => ['delivery' => ['default' => 'in-app', 'choices' => ['in-app' => [], 'in-app+email' => []]]],
+        'installed_options' => ['delivery' => 'in-app+email'],
+    ]);
+
+    $this->artisan('module:check', ['--defaults' => true, '--allow' => ["{$name}:delivery=in-app+email"]])
+        ->doesntExpectOutputToContain($name);
+});

@@ -51,7 +51,7 @@ export default defineComponent({
 
 <template>
   <v-container>
-    <div class="d-flex align-center mb-4">
+    <div class="d-flex align-center flex-wrap mb-4 ga-2">
       <h1 class="text-h4">
         Exports
       </h1>

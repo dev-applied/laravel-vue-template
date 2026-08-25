@@ -5,6 +5,6 @@
     "template_version_tested": "2026-08",
     "description": "User management: list, search, create, edit, deactivate and delete, with the protections that stop an admin locking everyone out. Deactivation is the default; deletion is separate and deliberate.",
     "composer_requires": [],
-    "installed_from_commit": "0b825197f6d6e03ce8862e069f3f3796f38e6f53",
+    "installed_from_commit": "7216e0ad7faff21a540d3798c0beb262003da6a4",
     "installed_at": "2026-08-25"
 }

@@ -112,7 +112,7 @@ export default defineComponent({
       </v-list>
     </v-menu>
 
-    <div class="d-flex align-center ga-2 mt-2">
+    <div class="d-flex align-center flex-wrap ga-2 mt-2">
       <v-switch
         v-if="allowInternal"
         v-model="isInternal"
