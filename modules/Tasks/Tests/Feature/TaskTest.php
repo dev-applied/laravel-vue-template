@@ -483,3 +483,86 @@ test('a bound scope hides tasks, and hides them as a 404', function () {
     $this->actingAs($this->user)->getJson("/api/v1/tasks/{$hidden->id}")->assertNotFound();
     $this->actingAs($this->user)->deleteJson("/api/v1/tasks/{$hidden->id}")->assertNotFound();
 });
+
+test('the resource tells the UI exactly what it may offer', function () {
+    // A visible button that 403s is the failure this module's README rules out,
+    // and adding server-side authorization without this would have created
+    // exactly that: TasksPage rendered a delete button on every card.
+    $assignee = User::factory()->create();
+    $task     = Task::factory()->create(['assigned_to' => $assignee->id]);
+
+    // The creator may do both.
+    $mine = $this->actingAs($this->user)->getJson("/api/v1/tasks/{$task->id}")->assertOk();
+    expect($mine->json('canEdit'))->toBeTrue()->and($mine->json('canDelete'))->toBeTrue();
+
+    // The assignee may edit, not delete.
+    $theirs = $this->actingAs($assignee)->getJson("/api/v1/tasks/{$task->id}")->assertOk();
+    expect($theirs->json('canEdit'))->toBeTrue()->and($theirs->json('canDelete'))->toBeFalse();
+
+    // A stranger may do neither.
+    $stranger = $this->actingAs(User::factory()->create())->getJson("/api/v1/tasks/{$task->id}")->assertOk();
+    expect($stranger->json('canEdit'))->toBeFalse()->and($stranger->json('canDelete'))->toBeFalse();
+});
+
+test('the flags agree with what the endpoints actually do', function () {
+    // The resource and the controller compute this separately, so they can
+    // drift. Asserting them against each other is what stops a UI that offers
+    // an action the API refuses — or hides one it would have allowed.
+    $assignee = User::factory()->create();
+    $task     = Task::factory()->create(['assigned_to' => $assignee->id]);
+
+    foreach ([$this->user, $assignee, User::factory()->create()] as $actor) {
+        $flags = $this->actingAs($actor)->getJson("/api/v1/tasks/{$task->id}")->json();
+
+        $edit = $this->actingAs($actor)
+            ->putJson("/api/v1/tasks/{$task->id}", ['title' => 'Edited', 'status' => $task->status]);
+
+        expect($edit->status() === 200)->toBe($flags['canEdit']);
+    }
+});
+
+test('saving a task without changing anything is not a conflict', function () {
+    // Found by a test asserting the resource's canEdit flags against what the
+    // endpoints actually do — not by reading the code.
+    //
+    // The compare-and-swap that stops two concurrent drags from clobbering each
+    // other reads AFFECTED rows, and MySQL counts rows it CHANGED rather than
+    // rows it matched. An update writing the values already there affects
+    // nothing, so opening a task, changing nothing and pressing Save answered
+    // "Somebody else moved this task while you were working on it" — with
+    // nobody else involved. `updated_at` did not rescue it either: second
+    // precision means a same-second save is not a change.
+    $task = Task::factory()->create(['title' => 'Unchanged', 'status' => 'todo']);
+
+    $payload = ['title' => 'Unchanged', 'status' => 'todo'];
+
+    $this->actingAs($this->user)->putJson("/api/v1/tasks/{$task->id}", $payload)->assertOk();
+
+    // And again — still a no-op, still not a conflict.
+    $this->actingAs($this->user)->putJson("/api/v1/tasks/{$task->id}", $payload)->assertOk();
+
+    expect($task->fresh()->title)->toBe('Unchanged');
+});
+
+test('a genuine status race is still a conflict', function () {
+    // Cannot be provoked over HTTP: route-model binding re-reads the task, so
+    // by the time the controller runs, the "concurrent" change IS the expected
+    // status and there is nothing stale to catch. Same constraint the SQL
+    // predicate test above documents.
+    //
+    // So the branch is driven directly, with an expected status the row no
+    // longer has — which is precisely the state a lost race leaves behind.
+    $task = Task::factory()->create(['status' => 'todo']);
+
+    $method = new ReflectionMethod(Modules\Tasks\Http\Controllers\TaskController::class, 'applyStatusChange');
+
+    expect(fn () => $method->invoke(
+        app(Modules\Tasks\Http\Controllers\TaskController::class),
+        $task,
+        ['status' => 'done'],
+        'in_progress',   // the row says 'todo'; somebody moved it under us
+    ))->toThrow(App\Exceptions\AppException::class);
+
+    // And the row was not touched.
+    expect($task->fresh()->status)->toBe('todo');
+});

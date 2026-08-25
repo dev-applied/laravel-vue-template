@@ -19,6 +19,14 @@ export interface Task {
   assignee?:     {id: number, name: string} | null
   taskableType?: string | null
   taskableId?:   number | null
+  /**
+   * What the API will actually accept from THIS user for THIS task, so the UI
+   * never offers an action that 403s. Editing is creator / assignee /
+   * `manage-tasks`; deleting drops the assignee, because being given a job is
+   * not permission to destroy the record of it.
+   */
+  canEdit:       boolean
+  canDelete:     boolean
   createdAt?:    string | null
 }
 

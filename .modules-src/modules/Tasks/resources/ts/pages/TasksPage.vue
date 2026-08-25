@@ -189,7 +189,10 @@ export default defineComponent({
               >
                 {{ statusLabel(next) }}
               </v-btn>
+              <!-- Only rendered when the API would accept it. A visible button
+                   that 403s is the failure this module's README rules out. -->
               <v-btn
+                v-if="task.canDelete"
                 color="error"
                 icon="delete_outline"
                 size="x-small"

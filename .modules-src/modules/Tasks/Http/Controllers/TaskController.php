@@ -176,11 +176,32 @@ class TaskController extends Controller
             ->where('status', $expectedStatus)
             ->update($data);
 
+        // Zero affected rows has TWO causes and they mean opposite things.
+        //
+        // MySQL reports rows it CHANGED, not rows it matched, so an update
+        // that writes the values already there affects nothing — which is what
+        // saving a task without editing anything does. Treating that as a lost
+        // race told people "somebody else moved this task" when nobody had, and
+        // the same second-precision `updated_at` meant even the timestamp did
+        // not count as a change.
+        //
+        // So: only ask the second question when the first one comes back zero.
+        // The UPDATE is still the atomic operation and still the only thing
+        // that decides a real race; this just separates "no-op" from "the row
+        // moved". If the status has since changed, our write did nothing and a
+        // conflict is the honest answer.
         if ($changed === 0) {
-            throw new AppException(
-                'Somebody else moved this task while you were working on it. Refresh and try again.',
-                409
-            );
+            $unchanged = Task::query()
+                ->whereKey($task->getKey())
+                ->where('status', $expectedStatus)
+                ->exists();
+
+            if (! $unchanged) {
+                throw new AppException(
+                    'Somebody else moved this task while you were working on it. Refresh and try again.',
+                    409
+                );
+            }
         }
 
         $task->refresh();

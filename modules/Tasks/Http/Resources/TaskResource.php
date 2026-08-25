@@ -6,6 +6,7 @@ namespace Modules\Tasks\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Gate;
 use Modules\Tasks\Models\Task;
 use Modules\Tasks\Support\StatusMachine;
 
@@ -37,7 +38,50 @@ class TaskResource extends JsonResource
             ]),
             'taskableType' => $this->taskable_type,
             'taskableId'   => $this->taskable_id,
-            'createdAt'    => $this->created_at?->toIso8601String(),
+            // Drives whether the UI offers edit/delete, so it never offers and
+            // then 403s — the same contract CommentResource::canEdit has, and
+            // the module's own README states it as a rule: a visible button can
+            // never produce an error.
+            'canEdit'   => $this->mayEdit($request),
+            'canDelete' => $this->mayDelete($request),
+            'createdAt' => $this->created_at?->toIso8601String(),
         ];
+    }
+
+    /** Creator, assignee, or the override. Mirrors TaskController::assertMayEdit. */
+    private function mayEdit(Request $request): bool
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        return $this->isCreator($user)
+            || (int) $this->assigned_to === (int) $user->getKey()
+            || Gate::forUser($user)->allows('manage-tasks');
+    }
+
+    /**
+     * Stricter than editing: the assignee does not qualify. Being given a job
+     * is not permission to destroy the record of it.
+     */
+    private function mayDelete(Request $request): bool
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        return $this->isCreator($user) || Gate::forUser($user)->allows('manage-tasks');
+    }
+
+    private function isCreator(mixed $user): bool
+    {
+        $column = $this->resource->getCreatedByColumn();
+
+        return $this->resource->getAttribute($column) !== null
+            && (int) $this->resource->getAttribute($column) === (int) $user->getKey();
     }
 }
