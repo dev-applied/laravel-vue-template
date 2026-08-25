@@ -1,0 +1,8 @@
+{
+    "name": "{{ Module }}",
+    "version": "0.1.0",
+    "harvested_from": "scaffolded by module:make",
+    "template_version_tested": "{{ templateVersion }}",
+    "description": "{{ description }}",
+    "composer_requires": []
+}

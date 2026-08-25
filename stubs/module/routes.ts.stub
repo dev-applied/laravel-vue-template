@@ -1,0 +1,31 @@
+import RouteDesigner from "@/router/RouteDesigner"
+import Authentication from "@/middleware/Authentication"
+import Authorization from "@/middleware/Authorization.ts"
+import ForceTypes from "@/middleware/ForceTypes"
+
+// Module route-name constants. Exported so paths.ts merges them into the app
+// ROUTES object. Prefix with the module slug to avoid collisions.
+export const ROUTES = {
+  {{ CONST }}: "{{ slug }}.index",
+}
+
+// A module declares its OWN layout and middleware stack — module routes are
+// registered outside the core groups in paths.ts and inherit nothing. Pages are
+// passed as lazy imports, never strings: the string resolver only sees
+// resources/ts/pages/, and the lazy form code-splits per module.
+//
+// Deliberately not permission-gated. The client-side check reads
+// `all_permissions`, which the RolesPermissions module contributes — gating this
+// route in a project without that module bounces EVERYONE to the dashboard. Gate
+// the API instead, and add `.addPermissionAny("{{ slug }}.manage")` here only if
+// the project runs RolesPermissions.
+RouteDesigner.group('', function () {
+  RouteDesigner.route(
+    "/{{ kebabPlural }}",
+    () => import("@modules/{{ Module }}/resources/ts/pages/{{ Module }}Page.vue"),
+    ROUTES.{{ CONST }}
+  )
+})
+  .layout("Default")
+  .middleware([ForceTypes, Authentication, Authorization])
+  .props()

@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use Modules\{{ Module }}\Http\Controllers\{{ Model }}Controller;
+
+// Registered by ModuleServiceProvider under the api/v1 prefix. Add a `can:`
+// middleware here if this surface should be gated — and define that gate in the
+// PROJECT, never in the module: who counts as an administrator is a project
+// decision. Ship a fail-closed fallback in the provider if you do.
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/{{ kebabPlural }}', [{{ Model }}Controller::class, 'index'])->name('{{ slug }}.index');
+    Route::post('/{{ kebabPlural }}', [{{ Model }}Controller::class, 'store'])->name('{{ slug }}.store');
+    Route::get('/{{ kebabPlural }}/{{{ singular }}}', [{{ Model }}Controller::class, 'show'])->name('{{ slug }}.show');
+    Route::put('/{{ kebabPlural }}/{{{ singular }}}', [{{ Model }}Controller::class, 'update'])->name('{{ slug }}.update');
+    Route::delete('/{{ kebabPlural }}/{{{ singular }}}', [{{ Model }}Controller::class, 'destroy'])->name('{{ slug }}.destroy');
+});

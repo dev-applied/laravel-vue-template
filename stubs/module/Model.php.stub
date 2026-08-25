@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{ Module }}\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Modules\{{ Module }}\Database\Factories\{{ Model }}Factory;
+
+class {{ Model }} extends Model
+{
+    /** @use HasFactory<{{ Model }}Factory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+    ];
+
+    // Module factories live inside the module, outside Laravel's default
+    // Database\Factories\ discovery — every module model points at its factory
+    // explicitly. Omitting this is the single most common module authoring bug:
+    // ::factory() resolves to Database\Factories\{{ Model }}Factory, which does
+    // not exist, and the failure only surfaces in a test.
+    protected static function newFactory(): {{ Model }}Factory
+    {
+        return {{ Model }}Factory::new();
+    }
+}

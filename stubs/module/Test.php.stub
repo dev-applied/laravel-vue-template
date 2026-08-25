@@ -1,0 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\User;
+use Modules\{{ Module }}\Models\{{ Model }};
+
+beforeEach(function () {
+    $this->user = User::factory()->create();
+});
+
+test('unauthenticated requests are rejected', function () {
+    $this->getJson('/api/v1/{{ kebabPlural }}')->assertUnauthorized();
+});
+
+test('index returns a paginated list', function () {
+    {{ Model }}::factory()->count(3)->create();
+
+    $this->actingAs($this->user)
+        ->getJson('/api/v1/{{ kebabPlural }}')
+        ->assertOk()
+        ->assertJsonCount(3, 'data')
+        ->assertJsonStructure(['data' => [['id', 'name', 'createdAt']], 'total', 'per_page', 'current_page']);
+});
+
+test('search filters by name', function () {
+    {{ Model }}::factory()->create(['name' => 'Findable']);
+    {{ Model }}::factory()->create(['name' => 'Other']);
+
+    // ->all(), not the Collection itself: toBe() compares objects by identity,
+    // so two equal collections still fail.
+    $names = collect(
+        $this->actingAs($this->user)->getJson('/api/v1/{{ kebabPlural }}?search=Findable')->assertOk()->json('data')
+    )->pluck('name')->all();
+
+    expect($names)->toBe(['Findable']);
+});
+
+test('store creates a record', function () {
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/{{ kebabPlural }}', ['name' => 'Created'])
+        ->assertCreated()
+        ->assertJsonPath('name', 'Created');
+
+    expect({{ Model }}::where('name', 'Created')->exists())->toBeTrue();
+});
+
+test('store validates', function () {
+    $this->actingAs($this->user)
+        ->postJson('/api/v1/{{ kebabPlural }}', [])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('name');
+});
+
+test('update accepts a partial payload', function () {
+    // `sometimes` rather than `required` on update: a save that changes one
+    // field sends only that field.
+    ${{ singular }} = {{ Model }}::factory()->create(['name' => 'Before']);
+
+    $this->actingAs($this->user)
+        ->putJson("/api/v1/{{ kebabPlural }}/{${{ singular }}->id}", ['name' => 'After'])
+        ->assertOk();
+
+    expect(${{ singular }}->fresh()->name)->toBe('After');
+});
+
+test('show returns one record', function () {
+    ${{ singular }} = {{ Model }}::factory()->create();
+
+    $this->actingAs($this->user)
+        ->getJson("/api/v1/{{ kebabPlural }}/{${{ singular }}->id}")
+        ->assertOk()
+        ->assertJsonPath('id', ${{ singular }}->id);
+});
+
+test('destroy removes the record', function () {
+    ${{ singular }} = {{ Model }}::factory()->create();
+
+    $this->actingAs($this->user)
+        ->deleteJson("/api/v1/{{ kebabPlural }}/{${{ singular }}->id}")
+        ->assertOk();
+
+    expect({{ Model }}::find(${{ singular }}->id))->toBeNull();
+});

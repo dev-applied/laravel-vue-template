@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{ Module }}\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class Update{{ Model }}Request extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return $this->user() !== null;
+    }
+
+    /** @return array<string, mixed> */
+    public function rules(): array
+    {
+        // `sometimes`, not `required`: a PATCH-style save sends only the fields
+        // that changed, and `required` would reject every partial update.
+        return [
+            'name' => ['sometimes', 'string', 'max:255'],
+        ];
+    }
+}

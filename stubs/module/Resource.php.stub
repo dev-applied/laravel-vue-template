@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{ Module }}\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\{{ Module }}\Models\{{ Model }};
+
+/** @mixin {{ Model }} */
+class {{ Model }}Resource extends JsonResource
+{
+    /** @return array<string, mixed> */
+    public function toArray(Request $request): array
+    {
+        // camelCase keys, matching every other module. The kernel's own
+        // resources use snake_case; pick one per project and be consistent.
+        return [
+            'id'        => $this->id,
+            'name'      => $this->name,
+            'createdAt' => $this->created_at?->toIso8601String(),
+            'updatedAt' => $this->updated_at?->toIso8601String(),
+        ];
+    }
+}
