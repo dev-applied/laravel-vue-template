@@ -30,7 +30,7 @@ After cloning this template into a new project directory:
 
 | Package                            | Purpose                                                       |
 | ---------------------------------- | ------------------------------------------------------------- |
-| `laravel/framework ^12`            | App framework (PHP ^8.4)                                      |
+| `laravel/framework ^13`            | App framework (PHP ^8.4)                                      |
 | `laravel/sanctum ^4.3`             | API token + SPA cookie auth (used by the Auth module)         |
 | `sentry/sentry-laravel ^4.20`      | Error & log monitoring                                        |
 | `imagine/imagine ^1.3`             | Image manipulation (used by file pipeline)                    |

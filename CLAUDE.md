@@ -4,7 +4,7 @@ Project-level instructions for AI agents (Claude Code primarily) working in this
 
 ## Project type
 
-Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 12 / PHP 8.4 / Sanctum / Pest 4. Frontend: Vue 3 / Vuetify 4 / Pinia / Vite 7. Designed to be re-bootstrapped per client project, then customized.
+Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 13 / PHP 8.4 / Sanctum / Pest 4. Frontend: Vue 3 / Vuetify 4 / Pinia / Vite 7. Designed to be re-bootstrapped per client project, then customized.
 
 ## Things to NEVER do
 

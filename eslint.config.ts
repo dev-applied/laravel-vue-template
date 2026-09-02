@@ -9,7 +9,18 @@ export default defineConfigWithVueTs(
     name: 'app/files-to-lint',
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  // `resources/ts/types/laravel/` is emitted by `php artisan wayfinder:generate`
+  // (via `composer typescript`) and is gitignored, so CI never sees it — a fresh
+  // checkout lints a tree where it does not exist. Locally it does exist, and
+  // wayfinder's codegen style is not ours: v0.1.21 started emitting statement
+  // semicolons, which `semi: never` below flags 47 times in a file no one can
+  // fix, because the next generate overwrites it. Ignore generated output.
+  globalIgnores([
+    '**/dist/**',
+    '**/dist-ssr/**',
+    '**/coverage/**',
+    'resources/ts/types/laravel/**',
+  ]),
   pluginVue.configs['flat/recommended'],
   vueTsConfigs.recommended,
   vuetify.configs['flat/recommended'],

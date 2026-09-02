@@ -4,7 +4,7 @@ Backend (Laravel) conventions for this template. Read after the root `CLAUDE.md`
 
 ## Stack & posture
 
-- Laravel 12, PHP ^8.4, `declare(strict_types=1);` at the top of every file.
+- Laravel 13, PHP ^8.4, `declare(strict_types=1);` at the top of every file.
 - `Model::automaticallyEagerLoadRelationships()` is enabled in `AppServiceProvider` — N+1s log a warning in dev. Don't disable it.
 - `Http::preventStrayRequests($this->app->runningUnitTests())` — tests must mock external HTTP explicitly.
 - `DB::prohibitDestructiveCommands($this->app->isProduction())` — `migrate:fresh` etc. blocked in prod.
