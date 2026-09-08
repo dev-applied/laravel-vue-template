@@ -1,11 +1,29 @@
 // Padding offsets for mobile
 @forward 'vuetify/settings';
 
-// Allows detecting safe areas from devices
-// --c-safe-area... is set by https://chromewebstore.google.com/detail/capacitor-safe-area-simul/ddaaodgcccedhjbjeollookhompnlfhi which can be used to emulate safe areas in browser for different devices
+// Safe-area insets, resolved from three sources in priority order.
+//
+// 1. var(--safe-area-inset-*):  injected by Capacitor 8's SystemBars core
+//    plugin (plugins.SystemBars.insetsHandling: "css", which is the default).
+//    Capacitor reads the real insets from WindowInsetsCompat and writes them
+//    here. This is the ONLY reliable source on Android.
+// 2. env(safe-area-inset-*):    the browser-native values. Correct on iOS.
+//    On Android WebView < 140 a Chromium bug makes these return 0px, which is
+//    why source 1 has to win when it is present.
+// 3. var(--c-safe-area-*):      set by the Capacitor Safe Area Simulator
+//    extension so safe areas can be emulated in a desktop browser:
+//    https://chromewebstore.google.com/detail/capacitor-safe-area-simul/ddaaodgcccedhjbjeollookhompnlfhi
+//    max() lets the simulator override a real device value of 0px on web.
+//
+// Do not read env(safe-area-inset-*) directly anywhere else in the app. Read
+// --v-safe-area-* so this resolution order applies everywhere at once.
+//
+// Capacitor 7 could paper over the Android env() bug natively with
+// `android.adjustMarginsForEdgeToEdge`. That option was REMOVED in Capacitor 8,
+// so the CSS chain below is now the whole story on Android.
 :root {
-  --v-safe-area-top: max(env(safe-area-inset-top, 0px), var(--c-safe-area-top, 0px));
-  --v-safe-area-right: max(env(safe-area-inset-right, 0px), var(--c-safe-area-right, 0px));
-  --v-safe-area-bottom: max(env(safe-area-inset-bottom, 0px), var(--c-safe-area-bottom, 0px));
-  --v-safe-area-left: max(env(safe-area-inset-left, 0px), var(--c-safe-area-left, 0px));
+  --v-safe-area-top: max(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)), var(--c-safe-area-top, 0px));
+  --v-safe-area-right: max(var(--safe-area-inset-right, env(safe-area-inset-right, 0px)), var(--c-safe-area-right, 0px));
+  --v-safe-area-bottom: max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)), var(--c-safe-area-bottom, 0px));
+  --v-safe-area-left: max(var(--safe-area-inset-left, env(safe-area-inset-left, 0px)), var(--c-safe-area-left, 0px));
 }

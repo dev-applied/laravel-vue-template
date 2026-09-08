@@ -13,6 +13,12 @@ import type { CapacitorConfig } from "@capacitor/cli"
  *   4. `npm run build:capacitor && npm run cap:sync`
  *   5. `npm run cap:run:ios`  or  `npm run cap:run:android`
  *
+ * Toolchain floor (Capacitor 8): Node 22+, Xcode 26.0+, Android Studio Otter
+ * (2025.2.1) or newer, JDK 21. Xcode 26 is a hard requirement, not advice --
+ * Capacitor 8's iOS binary is built with Swift 6.2 and part of its API is
+ * gated behind a feature flag an older compiler cannot see, so Xcode 16 fails
+ * with misleading "no member getString" / "incorrect argument label" errors.
+ *
  * For hot-reload during native dev against a local Laravel server, uncomment
  * the `server.url` line and point it at the dev Vite URL the device can reach
  * (use your machine's LAN IP, not localhost).
@@ -49,11 +55,31 @@ const config: CapacitorConfig = {
       splashFullScreen:      true,
       splashImmersive:       true,
     },
-    StatusBar: {
-      style:           "DEFAULT",
-      backgroundColor: "#FFFFFF",
-      overlaysWebView: false,
+
+    // Capacitor 8 replaced the old non-edge-to-edge model with the SystemBars
+    // core plugin (bundled in @capacitor/core -- there is nothing to install).
+    //
+    // Two Capacitor 7 levers are GONE and must not be reintroduced here:
+    //   - `android.adjustMarginsForEdgeToEdge` (removed from the config schema)
+    //   - `StatusBar.overlaysWebView: false`   (SystemBars does not implement
+    //     setOverlaysWebView or setBackgroundColor; on Android 15+ the platform
+    //     forces edge-to-edge regardless)
+    //
+    // `insetsHandling: "css"` is the default and is stated explicitly here so a
+    // reader knows edge-to-edge is a deliberate choice. It makes Capacitor read
+    // the real insets from WindowInsetsCompat and inject them as
+    // --safe-area-inset-* CSS variables. resources/scss/settings.scss folds
+    // those into --v-safe-area-*, which is what the app actually reads.
+    //
+    // Set `insetsHandling: "disable"` ONLY if a project takes over inset
+    // handling with a third-party plugin. Disabling it without a replacement
+    // puts content under the status and navigation bars on Android.
+    SystemBars: {
+      insetsHandling: "css",
+      style:          "DEFAULT",
+      hidden:         false,
     },
+
     Keyboard: {
       resize:     "body",
       style:      "DEFAULT",
