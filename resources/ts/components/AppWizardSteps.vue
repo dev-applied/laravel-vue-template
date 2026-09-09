@@ -27,7 +27,7 @@
           Previous
         </v-btn>
         <v-spacer />
-        <span class="text-body-small text-medium-emphasis me-2">
+        <span class="text-body-small text-medium-emphasis me-2 tabular-nums">
           Step {{ current }} of {{ steps.length }}
         </span>
         <v-btn

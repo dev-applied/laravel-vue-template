@@ -1,0 +1,17 @@
+// Tabular (monospaced) figures.
+//
+// Any number that CHANGES in place needs tabular figures, or the text reflows
+// as digits swap: counters, timers, durations, percentages, live totals, and
+// numeric table columns. Proportional figures are correct for prose, so this is
+// opt in rather than global.
+//
+// `font-variant-numeric` is an inherited property, so putting `.tabular-nums`
+// on a wrapper covers every number inside it. That is the intended use on
+// tables, where the footer counter and the cells should agree.
+//
+// AppNumberDisplay and AppMoneyDisplay already apply this to themselves. Use
+// the class for markup that should not be wrapped in a component: a raw table
+// cell, a chip, a badge, an inline counter.
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

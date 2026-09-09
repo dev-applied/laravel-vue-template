@@ -1,6 +1,6 @@
 <template>
   <v-data-table-server
-    :class="{'app-pagination-table--striped': stripedRows}"
+    :class="['tabular-nums', {'app-pagination-table--striped': stripedRows}]"
     :items="items"
     :items-length="pagination.total"
     :loading="loading"
