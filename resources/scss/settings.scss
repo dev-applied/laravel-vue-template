@@ -4,6 +4,14 @@
 // Allows detecting safe areas from devices
 // --c-safe-area... is set by https://chromewebstore.google.com/detail/capacitor-safe-area-simul/ddaaodgcccedhjbjeollookhompnlfhi which can be used to emulate safe areas in browser for different devices
 :root {
+  // The app font. vue.blade.php loads DM Sans (variable, 100..1000, both italics)
+  // from Google Fonts, but Vuetify resolves body text through
+  // `var(--v-font-body, "Roboto", sans-serif)`. With this unset the app fell back
+  // to Roboto, which is never shipped, so every page downloaded DM Sans and then
+  // rendered in the OS default sans. --v-font-heading falls back to --v-font-body,
+  // so setting this one covers headings too.
+  --v-font-body: "DM Sans", sans-serif;
+
   --v-safe-area-top: max(env(safe-area-inset-top, 0px), var(--c-safe-area-top, 0px));
   --v-safe-area-right: max(env(safe-area-inset-right, 0px), var(--c-safe-area-right, 0px));
   --v-safe-area-bottom: max(env(safe-area-inset-bottom, 0px), var(--c-safe-area-bottom, 0px));
