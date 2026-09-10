@@ -8,6 +8,7 @@ Starting point for Applied Imagination client projects on the Laravel + Vue stac
 - [Stack](#stack)
 - [Running locally](#running-locally)
 - [Common commands](#common-commands)
+- [Mobile (Capacitor)](#mobile-capacitor)
 - [Architecture notes](#architecture-notes)
 - [Deployment](#deployment)
 - [For AI agents](#for-ai-agents)
@@ -58,6 +59,7 @@ After cloning this template into a new project directory:
 | `axios ^1`               | HTTP — wrapped in the `axios.ts` plugin              |
 | `dayjs`                  | Dates — wrapper in `utils/dayjs.ts`                  |
 | `vite ^7`, `vitest ^3`   | Build + tests                                        |
+| `@capacitor/core ^8.5`   | Native runtime (see [Mobile (Capacitor)](#mobile-capacitor)) |
 
 **Component library** (`resources/ts/components/`):
 `AppDialog`, `AppListTable`, `AppPaginationTable`, `AppTable`, `AppLoader`, `AppMessages`, `AppPasswordValidation`, `AppServerValidationForm`, `UpdateDetector`, plus form fields: `AppAddressField`, `AppAutoComplete` (own folder), `AppCombobox`, `AppDateInput`, `AppMaskField`.
@@ -132,6 +134,109 @@ docker compose exec webserver php artisan module:add
 ```
 
 `npm run dev` / `npm run build` run on the host (or in the `frontend` service if you'd rather).
+
+## Mobile (Capacitor)
+
+The template ships Capacitor 8 wiring but **no `ios/` or `android/` directory**.
+Both are gitignored and generated per-machine. A project that never goes native
+can ignore this whole section; nothing here runs on a web-only build.
+
+### Toolchain floor
+
+Capacitor 8 raised the minimums. These are hard requirements, not advice:
+
+| Tool           | Minimum                      |
+| -------------- | ---------------------------- |
+| Node           | 22 (`.nvmrc` pins the major) |
+| Xcode          | 26.0                         |
+| Android Studio | Otter (2025.2.1)             |
+| JDK            | 21                           |
+| Android SDK    | platform 36 + build-tools 36 |
+
+**Xcode 26 is the one that bites.** Capacitor 8's iOS binary is built with Swift
+6.2 and part of its API sits behind a compiler feature flag that Xcode 16 cannot
+see. Building on an older Xcode fails with misleading errors that look like a
+broken plugin rather than a stale toolchain: `PluginConfig has no member
+getString`, `incorrect argument label (have 'fromHex:', expected 'argb:')`,
+`CAPPluginCall has no member reject`. If you see those, check `xcodebuild
+-version` before you touch any code. This is [capacitor#8333]
+(https://github.com/ionic-team/capacitor/issues/8333), closed as
+working-as-intended.
+
+### Activating mobile on a project
+
+```sh
+npm install
+npm run cap:add:ios          # generates ./ios/     (per-machine, gitignored)
+npm run cap:add:android      # generates ./android/ (per-machine, gitignored)
+
+npm run build:capacitor      # web assets -> dist/
+npm run cap:sync             # dist/ -> both native projects
+
+npm run cap:run:ios          # or: npm run cap:run:android
+```
+
+Set `appId` / `appName` in `capacitor.config.ts` first. App ID convention is
+`com.appliedimagination.<projectname>`, no dashes.
+
+`cap sync` is not a build. It copies web assets and refreshes plugin wiring; it
+will happily succeed against a native project that cannot compile. Verify with a
+real build:
+
+```sh
+# Android
+cd android && ANDROID_HOME=$HOME/Library/Android/sdk \
+  JAVA_HOME=$(/usr/libexec/java_home -v 21) ./gradlew assembleDebug
+
+# iOS
+xcodebuild -project ios/App/App.xcodeproj -scheme App \
+  -sdk iphonesimulator -configuration Debug \
+  -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO build
+```
+
+### iOS uses Swift Package Manager, deliberately
+
+`cap:add:ios` passes `--packagemanager SPM` explicitly. Do not drop that flag.
+The bare `cap add ios` command means CocoaPods on Capacitor 7 and SPM on
+Capacitor 8, so leaving it off makes the native project depend on which CLI
+version the developer happened to have. Two people on the same commit get
+different projects.
+
+SPM over CocoaPods because the CocoaPods Specs repo goes read-only at the end of
+2026, and the official plugins have already begun skipping CocoaPods publishes.
+A project with a genuine reason to stay on CocoaPods can change the flag to
+`--packagemanager CocoaPods` and set `platform :ios, '15.0'` in its Podfile, but
+that is a per-project exception, not the template default.
+
+### Edge-to-edge and safe areas
+
+Capacitor 8 removed `android.adjustMarginsForEdgeToEdge`. The replacement is the
+**SystemBars** plugin, which is bundled inside `@capacitor/core`. There is
+nothing to install. It is configured under `plugins.SystemBars` in
+`capacitor.config.ts` and is on by default (`insetsHandling: "css"`).
+
+Capacitor reads the real insets from `WindowInsetsCompat` and injects them as
+`--safe-area-inset-*` CSS variables. That injection exists because
+`env(safe-area-inset-*)` returns `0px` on Android WebView below 140, so
+`resources/scss/settings.scss` prefers the injected value and falls back to
+`env()`:
+
+```scss
+--v-safe-area-top: max(var(--safe-area-inset-top, env(safe-area-inset-top, 0px)), var(--c-safe-area-top, 0px));
+```
+
+**Read `--v-safe-area-*`, never `env(safe-area-inset-*)` directly.** Doing the
+latter reintroduces the Android bug in whatever component does it. The
+`.pt-safe` / `.pa-safe` / `.fab-safe-bottom` helpers in
+`resources/scss/safe-area.scss` already resolve correctly.
+
+Styling the bars at runtime goes through `SystemBars.setStyle()` (see
+`resources/ts/plugins/nativeInit.ts`), which styles the status bar and the
+navigation bar together. `@capacitor/status-bar` is still a dependency for
+projects that need its legacy overlay/background APIs, but the kernel no longer
+calls it: its `setBackgroundColor()` and `setOverlaysWebView()` have no meaning
+under edge-to-edge and Android 15+ ignores them.
 
 ## Architecture notes
 
