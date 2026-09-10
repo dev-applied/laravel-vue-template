@@ -55,21 +55,27 @@
       </template>
 
       <template #[`item.actions`]="{ item }">
-        <v-btn
-          icon="edit"
-          aria-label="Edit item"
-          variant="text"
-          size="small"
-          @click.stop="goEdit(item.id)"
-        />
-        <v-btn
-          icon="delete"
-          aria-label="Delete item"
-          variant="text"
-          size="small"
-          color="error"
-          @click.stop="confirmDelete(item)"
-        />
+        <!-- flex-nowrap: two small buttons are 40px each, which overflows the
+             actions column once cell padding is taken off, so the second wraps
+             onto a line of its own and doubles the row height. Same fix as
+             modules/Users/resources/ts/pages/UsersPage.vue. -->
+        <div class="d-flex justify-end flex-nowrap ga-1">
+          <v-btn
+            icon="edit"
+            aria-label="Edit item"
+            variant="text"
+            size="small"
+            @click.stop="goEdit(item.id)"
+          />
+          <v-btn
+            icon="delete"
+            aria-label="Delete item"
+            variant="text"
+            size="small"
+            color="error"
+            @click.stop="confirmDelete(item)"
+          />
+        </div>
       </template>
     </app-pagination-table>
   </v-container>
@@ -106,7 +112,7 @@ export default defineComponent({
         { title: "Priority", key: "priority", sortable: true },
         { title: "Due",      key: "due_date", sortable: true },
         { title: "Owner",    key: "owner",    sortable: false },
-        { title: "",         key: "actions",  sortable: false, align: "end" as const, width: 110 },
+        { title: "",         key: "actions",  sortable: false, align: "end" as const, width: 120, nowrap: true },
       ],
     }
   },
