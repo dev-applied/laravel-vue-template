@@ -3,7 +3,7 @@ services:
         image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-apache
         volumes:
             - ./:/var/www/html/:delegated
-            - ~/.composer/docker-cache/:/root/.composer:cached
+            - ~/.composer/docker-cache/cache/:/home/docker/.composer/cache:cached
         extra_hosts:
             - "$DOCKER_DOMAIN:host-gateway"
         environment:
