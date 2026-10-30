@@ -1,6 +1,6 @@
 services:
     webserver:
-        image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-apache
+        image: thecodingmachine/php:8.4-v5-apache
         volumes:
             - ./:/var/www/html/:delegated
             - ~/.composer/docker-cache/cache/:/home/docker/.composer/cache:cached
@@ -58,7 +58,7 @@ services:
 
 # Uncomment the service below to enable horizon
 #    horizon:
-#        image: thecodingmachine/php:${DOCKER_PHP_VERSION}-v4-cli-node16
+#        image: thecodingmachine/php:8.4-v5-cli-node22
 #        command: php artisan horizon
 #        volumes:
 #            - ./:/usr/src/app/
