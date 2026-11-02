@@ -249,7 +249,9 @@ class ModuleUpdateCommand extends Command
         // -L labels are what the client sees in the conflict markers, so they
         // name the two sides in the vocabulary of a module update rather than
         // as three temp paths.
-        $result = Process::run([
+        // Run from the temp directory: in an Orca worktree .git is a file pointing
+        // at a host path the container cannot see.
+        $result = Process::path(sys_get_temp_dir())->run([
             'git', 'merge-file',
             '-L', 'yours (this project)', '-L', 'module base', '-L', 'upstream',
             $target, $base, $theirs,
