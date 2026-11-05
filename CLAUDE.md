@@ -6,6 +6,8 @@ Project-level instructions for AI agents (Claude Code primarily) working in this
 
 Applied Imagination Laravel + Vue + Vuetify SPA template. Backend: Laravel 13 / PHP 8.4 / Sanctum / Pest 4. Frontend: Vue 3 / Vuetify 4 / Pinia / Vite 7. Designed to be re-bootstrapped per client project, then customized.
 
+Work on the template itself is tracked in `docs/template-maintenance/` (roadmap, known issues, ideas). `.gitattributes` keeps that folder out of bootstrapped projects, so in a client project it does not exist.
+
 ## Things to NEVER do
 
 - **Never run `artisan`, `composer`, or `npm` on the host.** Always `docker compose exec webserver <cmd>`. MySQL and Redis live on the Traefik network and host commands can't see them.
@@ -93,56 +95,12 @@ is what it is telling you. `module.json` is exempt; `module:add` writes
 If this file disagrees with the code, trust the code. Open a PR fixing this file.
 
 ## Project Context
+<!-- context-init:block 3 -->
 
-Context docs in `.claude/context/`. Index: `.claude/context/index.md`.
+Business and persona docs live in `.claude/context/` (start at `index.md`). Code shows what; these show why, for whom, and what is in flight.
 
-**Read before feature work:**
-- `.claude/context/roadmap.md` — in-flight work + integration points (parallel-session sync)
-- `.claude/context/features/<area>/<feature>.md` — feature spec + per-persona matrix
-- `.claude/context/personas/index.md` — affected personas
-
-**Persona × feature split:** Feature file = spec (matrix). Persona file = narrative (why). Read both.
-
-**Decisions:** Use supersession. New ADR with `supersedes:` frontmatter; old ADR set `status: Superseded` + `superseded-by:`. Never edit history.
-
-**Roadmap format (status must stay scannable at a glance):**
-
-The roadmap groups work **by concept** — one `##` heading per initiative / area / standalone item — NOT by status. Status lives entirely in a per-leaf marker:
-
-- `- [x]` **done** — append `— YYYY-MM-DD`
-- `- [~]` **in progress** — append its `branch` / `worktree` (a parallel session greps this to avoid collisions; never omit it)
-- `- [ ]` **queued** / not started
-- `- [!]` **blocked** — append the reason / `blocked-on:`
-
-**One line carries one status. Never encode status in prose, and never mix statuses in the same bullet.** A queued leaf may carry one *why-not* qualifier (`depends-on:` / `awaiting:`) but never a completion claim.
-
-❌ Never (done + pending crammed into one prose bullet):
-`P1 · Customer forms: F-15/F-16 done 2026-06-24. Remaining: F-23`
-
-✅ Always (one status per line — scan the left gutter):
-```
-- [x] F-15 launcher presence cue — 2026-06-24
-- [~] F-16 phone-optional-on-Video — feature/phone-optional
-- [ ] F-23 retain name/email/phone on cancel
-```
-
-**Heat-ordering is load-bearing** (it replaces a status `In Progress` section): a concept with any `[~]` leaf sorts to the **top** of the file; fully-queued concepts sit below. This is how a fresh parallel session finds what's hot at a glance.
-
-**Recently Done (last 30 days)** is the one status-named section — keep it at the bottom as a time-bounded shipping log with merge detail. A concept whose every leaf is `[x]` collapses to a one-line entry there and drops off the active list. A substantial `[x]` leaf may carry a `*(detail in Recently Done)*` pointer; small leaves just stay `[x]` in place. Never duplicate a leaf's full detail in both places. Trim entries older than 30 days.
-
-**Roadmap status transitions (load-bearing for parallel sessions):**
-
-The roadmap is the bridge between parallel Claude sessions — keep it accurate. **The only maintenance action is flipping a leaf's marker in place. Leaves never move between concepts**, and there are no status sections to move them into.
-
-- **Starting work** on a leaf (brainstorming or first edit): flip it `[ ]`→`[~]` and append its `branch` / `worktree`. Re-sort its concept to the top if it isn't already there. If the work isn't in the roadmap at all, ADD its concept (a new `##` group) with the started leaf `[~]`.
-- **Mid-flight**: keep the `[~]` leaf's `branch` / `worktree` current; append newly-discovered sub-leaves or integration points to the concept.
-- **Stopping work** (paused): flip the leaf `[~]`→`[ ]`, or `[!]` with a reason if it's blocked. Done `[x]` leaves keep their state.
-- **Shipping work** (merged / `/ship` / `/finishing-a-development-branch`): flip the leaf `[~]`→`[x]` + ship date, in place. Add a Recently Done entry **only** for a substantial ship or a now-fully-done concept (then collapse that concept into Recently Done). Never double-book the same item in two places. Trim Recently Done past 30 days.
-
-**Detecting the work item:**
-If the user mentions a ticket ID (e.g., `ZKL-279`, `LIN-123`, `#456`), use it as the roadmap entry identifier. Fetch full details via the appropriate MCP (Jira: `mcp__plugin_atlassian_atlassian__getJiraIssue`).
-
-**Before `/ship`:**
-- Change touches code referenced in `.claude/context/features/<x>` → prompt to update that doc.
-- Change is part of a roadmap leaf → apply the "Shipping work" transition above (flip `[~]`→`[x]` + date in place).
-- Always flip any shipped leaf in `.claude/context/roadmap.md` to `[x]` + date before the final commit, and re-sort / collapse its concept if it changes the file's heat-order.
+- **Before feature work:** read `roadmap.md`, the feature's doc under `features/` (the spec), and the personas it affects (the why).
+- **Starting work:** flip its roadmap leaf `[ ]` to `[~]` and add the branch or worktree; add the leaf if it is missing. A ticket ID is the leaf's identifier.
+- **Shipping:** flip the leaf to `[x]` with `: YYYY-MM-DD`, and update any feature doc whose cited code you changed.
+- **Roadmap format:** the rules are in the comment at the top of `roadmap.md`. Run `python3 .claude/context/check-roadmap.py` after editing it and before committing.
+- **Decisions:** never edit an old ADR. Write a new one with `supersedes:` and set the old one to `Superseded`.

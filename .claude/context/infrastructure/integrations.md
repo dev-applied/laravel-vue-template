@@ -14,7 +14,7 @@ updated: YYYY-MM-DD  # date last verified against code; stamp today on every wri
 - **sdk:** [package + version]
 - **owner:** [team/person]
 - **dashboard:** [URL]
-- **keys-location:** [vault reference — NEVER raw values]
+- **keys-location:** [vault reference: NEVER raw values]
 - **webhooks:** [our endpoints receiving their events]
 - **webhook-auth:** [middleware/library used]
 - **used-by-features:** [list of `.claude/context/features/<area>/<feature>.md`]
@@ -26,4 +26,4 @@ updated: YYYY-MM-DD  # date last verified against code; stamp today on every wri
 
 ## Considered, Not Used
 
-- **[Service]** — [why rejected]
+- **[Service]**: [why rejected]
