@@ -14,4 +14,4 @@ type: infrastructure-index
 Integrations: [integrations.md](integrations.md)
 
 ---
-Access policy: never store raw secrets in `.claude/context/`. SSH access via `~/.ssh/config.d/<project-slug>` (host alias `<slug>-<env>`); no DB credentials stored — query via the app's CLI on the box. Raw secret found = incident → rotate.
+Access policy: never store raw secrets in `.claude/context/`. SSH access via `~/.ssh/config.d/<project-slug>` (host alias `<slug>-<env>`); no DB credentials stored: query via the app's CLI on the box. Raw secret found = incident → rotate.

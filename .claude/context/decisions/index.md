@@ -7,9 +7,9 @@ type: decisions-index
 ADRs with supersession. Never edit history; supersede instead.
 
 Statuses:
-- **Accepted** — act on these
-- **Superseded** — archaeology, replaced by newer ADR
-- **Deprecated** — no longer applies, not replaced
+- **Accepted**: act on these
+- **Superseded**: archaeology, replaced by newer ADR
+- **Deprecated**: no longer applies, not replaced
 
 ## Active
 

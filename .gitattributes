@@ -9,3 +9,5 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+/docs/template-maintenance export-ignore
+/.claude/context/TEMPLATE-SKELETON.md export-ignore

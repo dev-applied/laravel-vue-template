@@ -18,4 +18,4 @@ When designing UI: identify which personas use this feature, read those narrativ
 
 People who are NOT target users. Prevents designing for the wrong audience.
 
-- **[Name]** — [why not a target]
+- **[Name]**: [why not a target]
