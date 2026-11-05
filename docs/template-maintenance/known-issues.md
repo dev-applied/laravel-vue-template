@@ -22,6 +22,8 @@ Accepted tech debt. Check here before "discovering" a bug.
 
 ## Resolved (last 90 days)
 
+- **Capacitor build smoke failed on every PR from 2026-11-02:** `android-actions/setup-android@v3` installs the `tools` package by default, and the runner's cmdline-tools 16.0 no longer has it, so `sdkmanager` exited 1 in "Set up Android SDK". Moved to `@v4`, whose v4.0.2 release fixes exactly this and which no longer installs `tools` (2026-11-05)
+
 - **The entire Vuetify typography scale was inert** — v4 renamed `text-h*` / `text-body-*` / `text-caption` to the
   Material Design 3 names, so 81 surviving v3 usages contributed nothing and every heading took a browser default.
   Invisible to every linter and every test; found only because changing a heading's TAG for screen-reader structure
