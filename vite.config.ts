@@ -77,14 +77,20 @@ export default defineConfig(({mode, command}) => {
         /*usePolling: true,
         interval: 300,*/
 
-        // Also reduce what Vite tries to watch in a Laravel repo.
+        // Also reduce what Vite tries to watch in a Laravel repo. In Docker on a
+        // Mac each watched file holds one open file on the host. The Laravel
+        // folders are pinned to the project root: '**/vendor/**' also hid
+        // resources/views/vendor and '**/public/**' hid any pages/public.
+        // ios and android hold a copy of the built app once Capacitor is added.
         ignored: [
           '**/node_modules/**',
           '**/.git/**',
-          '**/vendor/**',
-          '**/storage/**',
-          '**/bootstrap/cache/**',
-          '**/public/**',
+          fileURLToPath(new URL('./vendor/**', import.meta.url)),
+          fileURLToPath(new URL('./storage/**', import.meta.url)),
+          fileURLToPath(new URL('./bootstrap/cache/**', import.meta.url)),
+          fileURLToPath(new URL('./public/**', import.meta.url)),
+          fileURLToPath(new URL('./ios/**', import.meta.url)),
+          fileURLToPath(new URL('./android/**', import.meta.url)),
         ],
       },
       hmr: {
