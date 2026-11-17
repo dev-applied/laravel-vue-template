@@ -1,14 +1,42 @@
 import {fileURLToPath, URL} from 'node:url'
 // @ts-ignore
 import eslint from 'vite-plugin-eslint'
-import {defineConfig, loadEnv, type UserConfig} from "vite"
+import {defineConfig, loadEnv, normalizePath, type Plugin, type UserConfig} from "vite"
 import vue from '@vitejs/plugin-vue'
 import laravel from 'laravel-vite-plugin'
 import Vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
 import UnheadVite from '@unhead/addons/vite'
 import {sentryVitePlugin} from "@sentry/vite-plugin"
-import {resolve} from "path"
+import {relative, resolve} from "path"
 import versioningPlugin from "./resources/ts/plugins/versioning/viteVersioningPlugin"
+
+// Folders Vite never serves, excluded only at the project root. In Docker on a Mac
+// each watched file holds one open file on the host.
+const ROOT_ONLY_WATCH_IGNORED = [
+  'vendor', 'storage', 'bootstrap/cache', 'public', 'ios', 'android', 'dist',
+  'capacitor-cordova-ios-plugins', 'capacitor-cordova-android-plugins',
+  '.worktrees', '.claude', '.codex', '.agents', '.junie', '.idea', '.vscode', '.fleet',
+  'coverage', 'playwright-report', '.playwright-mcp', '.phpunit.cache',
+]
+
+// A root-relative test, not a glob: '**/vendor/**' also hid resources/views/vendor,
+// and a glob built from the absolute root breaks on a path with ( or [.
+export const rootOnlyWatchIgnored = (root: string) => (path: string) => {
+  const fromRoot = normalizePath(relative(root, path))
+  return ROOT_ONLY_WATCH_IGNORED.some((dir) => fromRoot === dir || fromRoot.startsWith(dir + '/'))
+}
+
+let watchRoot = process.cwd()
+
+// configResolved runs before the dev server builds its watcher, so the exclusions follow Vite's resolved root.
+function trackWatchRoot(): Plugin {
+  return {
+    name: 'track-watch-root',
+    configResolved(config) {
+      watchRoot = config.root
+    },
+  }
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode, command}) => {
@@ -20,6 +48,7 @@ export default defineConfig(({mode, command}) => {
       sourcemap: true,
     },
     plugins: [
+      trackWatchRoot(),
       // The Laravel plugin owns public/hot. Under Vitest it loads in non-serve
       // mode and its cleanup hook DELETES public/hot — which silently drops the
       // running dev server back to the stale public/build bundle (the "old
@@ -77,20 +106,11 @@ export default defineConfig(({mode, command}) => {
         /*usePolling: true,
         interval: 300,*/
 
-        // Also reduce what Vite tries to watch in a Laravel repo. In Docker on a
-        // Mac each watched file holds one open file on the host. The Laravel
-        // folders are pinned to the project root: '**/vendor/**' also hid
-        // resources/views/vendor and '**/public/**' hid any pages/public.
-        // ios and android hold a copy of the built app once Capacitor is added.
+        // Also reduce what Vite tries to watch in a Laravel repo.
         ignored: [
           '**/node_modules/**',
           '**/.git/**',
-          fileURLToPath(new URL('./vendor/**', import.meta.url)),
-          fileURLToPath(new URL('./storage/**', import.meta.url)),
-          fileURLToPath(new URL('./bootstrap/cache/**', import.meta.url)),
-          fileURLToPath(new URL('./public/**', import.meta.url)),
-          fileURLToPath(new URL('./ios/**', import.meta.url)),
-          fileURLToPath(new URL('./android/**', import.meta.url)),
+          (path: string) => rootOnlyWatchIgnored(watchRoot)(path),
         ],
       },
       hmr: {
