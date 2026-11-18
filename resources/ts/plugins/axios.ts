@@ -66,7 +66,13 @@ $http.interceptors.request.use((config) => {
   return config
 })
 
-if (import.meta.env.DEV) {
+// The logger prints every request and response body, including passwords and
+// access tokens, to the console. import.meta.hot only exists under the Vite dev
+// server and is compiled to undefined in every `vite build`, so this never runs
+// in a deployed web or mobile build. import.meta.env.DEV is not safe here: any
+// build run with NODE_ENV=development makes it true, and projects built from
+// this template have shipped dev, staging and app store builds that way.
+if (import.meta.hot) {
   $http.interceptors.request.use(requestLogger, errorLogger)
   $http.interceptors.response.use(responseLogger, errorLogger)
 }
