@@ -12,7 +12,8 @@ In-flight + planned work, grouped **by concept** (one `##` per initiative / area
 
 On 2026-11-17 a Mac running several Docker worktree stacks came close to running out of open files: each file a Vite dev server watches through Docker Desktop's file sharing holds one open file on the host. The template already kept Vite off vendor and storage, but with `'**/vendor/**'`-style patterns that match at any depth. Those also hid `resources/views/vendor` (no Blade reload) and any `pages/public` folder (no hot reload; shopr has one). `ios/` and `android/` hold a copy of the built app (`ios/App/App/public`) that only the unpinned `**/public/**` kept out. The same change was verified live in shopr on Vite 7.3.6: 3,339 to 3,107 watches, and a hot update on `pages/public` after a container restart (a config reload in place does not pick up a newly watched folder).
 
-- [~] **Pin vendor, storage, bootstrap/cache and public to the project root; exclude ios and android**: feature/fix-vite-watch-pin
+- [x] **Pin vendor, storage, bootstrap/cache and public to the project root; exclude ios and android**: 2026-11-17
+- [~] **Match root-only watch exclusions by relative path from Vite's resolved root; exclude agent, editor and report folders**: feature/vite-watch-root-matcher
 
 ## Laravel 13 upgrade
 
