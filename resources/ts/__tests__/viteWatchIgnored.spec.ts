@@ -41,6 +41,9 @@ describe("dev server watch exclusions", () => {
     "coverage/index.html",
     "playwright-report/index.html",
     ".playwright-mcp/page.png",
+    ".playwright-cli/page.png",
+    ".husky/_",
+    ".husky/_/husky.sh",
     ".phpunit.cache/test-results",
   ])("ignores %s at the project root", (path) => {
     for (const r of roots) expect(rootOnlyWatchIgnored(r)(`${root}/${path}`)).toBe(true)
@@ -53,6 +56,7 @@ describe("dev server watch exclusions", () => {
     "resources/ts/dist/helper.ts",
     "modules/Example/resources/ts/pages/ExamplePage.vue",
     "routes/web.php",
+    ".husky/pre-commit",
     "publications/notes.ts",
   ])("watches %s", (path) => {
     for (const r of roots) expect(rootOnlyWatchIgnored(r)(`${root}/${path}`)).toBe(false)
