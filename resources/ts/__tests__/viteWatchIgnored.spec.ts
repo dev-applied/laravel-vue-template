@@ -28,6 +28,8 @@ describe("dev server watch exclusions", () => {
     "capacitor-cordova-ios-plugins/sources/x.m",
     "capacitor-cordova-android-plugins/build.gradle",
     "dist/index.html",
+    ".modules-src",
+    ".modules-src/Example/resources/ts/pages/ExamplePage.vue",
     ".worktrees/old/vendor/autoload.php",
     ".claude/worktrees/agent/vendor/autoload.php",
     ".codex/worktrees/agent/vendor/autoload.php",

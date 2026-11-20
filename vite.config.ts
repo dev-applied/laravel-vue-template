@@ -15,6 +15,8 @@ import versioningPlugin from "./resources/ts/plugins/versioning/viteVersioningPl
 const ROOT_ONLY_WATCH_IGNORED = [
   'vendor', 'storage', 'bootstrap/cache', 'public', 'ios', 'android', 'dist',
   'capacitor-cordova-ios-plugins', 'capacitor-cordova-android-plugins',
+  // Install source for `module:add --from=.modules-src`; the live modules are in modules/.
+  '.modules-src',
   '.worktrees', '.claude', '.codex', '.agents', '.junie', '.idea', '.vscode', '.fleet',
   'coverage', 'playwright-report', '.playwright-mcp', '.phpunit.cache',
 ]
