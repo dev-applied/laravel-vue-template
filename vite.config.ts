@@ -15,8 +15,12 @@ import versioningPlugin from "./resources/ts/plugins/versioning/viteVersioningPl
 const ROOT_ONLY_WATCH_IGNORED = [
   'vendor', 'storage', 'bootstrap/cache', 'public', 'ios', 'android', 'dist',
   'capacitor-cordova-ios-plugins', 'capacitor-cordova-android-plugins',
+  // Install source for `module:add --from=.modules-src`; the live modules are in modules/.
+  '.modules-src',
   '.worktrees', '.claude', '.codex', '.agents', '.junie', '.idea', '.vscode', '.fleet',
-  'coverage', 'playwright-report', '.playwright-mcp', '.phpunit.cache',
+  'coverage', 'playwright-report', '.playwright-mcp', '.playwright-cli', '.phpunit.cache',
+  // husky's generated hook shims; the tracked hooks in .husky/ stay watched.
+  '.husky/_',
 ]
 
 // A root-relative test, not a glob: '**/vendor/**' also hid resources/views/vendor,
